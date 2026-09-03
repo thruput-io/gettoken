@@ -21,4 +21,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
       - run: sh test/mermaid.sh
