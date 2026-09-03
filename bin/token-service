@@ -1,0 +1,17 @@
+#!/bin/sh
+# token-service
+# First incarnation: transitive trust — the request arrives from the
+# already-privileged requester, so client_assertion is NOT verified yet.
+# Resolve: one known scope. Exchange: return the stored super-token as the
+# access_token, wrapped in a token-exchange response so the wire honors the
+# response contract from commit one.
+#
+# subject_token (the super-token) is fetched here, server-side, from the
+# secret-manager — the agent never holds it.
+
+req=$(cat)
+scope=$(printf '%s' "$req" | sed -n 's/.*"scope":"\([^"]*\)".*/\1/p')
+tok=$(cat "$SECRET_DIR/super-token")
+
+printf '{"access_token":"%s","issued_token_type":"urn:ietf:params:oauth:token-type:access_token","token_type":"Bearer","expires_in":3600,"scope":"%s"}\n' \
+  "$tok" "$scope"
