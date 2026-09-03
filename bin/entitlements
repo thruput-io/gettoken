@@ -1,0 +1,6 @@
+#!/bin/sh
+# entitlements
+# First incarnation: the supported scopes are a list baked into this script,
+# returned when the agent runs `gettoken --list`. Later: operator-managed,
+# organized by agent identity + context.
+echo github/thruput-io/gettoken/read
