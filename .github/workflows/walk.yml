@@ -1,0 +1,14 @@
+name: walk
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  chain:
+    name: chain runs end to end
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh test/walk.sh
