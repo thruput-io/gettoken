@@ -28,12 +28,12 @@ the first incarnation is what ships in this repo.
 
 | # | Component | Concern | First incarnation → future |
 |---|-----------|---------|----------------------------|
-| 1 | `gettoken` | agent's entry point; `--list` and `<scope>` | forwarder (stable) |
+| 1 | `gettoken` | agent's entry point; `--list` and `<capability>` | forwarder (stable) |
 | 2 | `token-requester` | privileged half; builds the request | local root/dev → gh app signing → orchestrator/container id |
 | 3 | `token-service` | authenticate, resolve, exchange | transitive trust, as-is → verify `signed` → off-the-shelf OAuth2 STS |
 | 4 | `notifier` | summon a human to renew | beep + shell → 2FA/phone → mostly automated |
 | 5 | `auth-canvas` | surface the human acts on | prepped shell (`gh auth login`) → mobile/web |
-| 6 | `secret-manager` | holds super-tokens on the privileged side, keyed by (agent, location, scope) | privileged folder → secrets manager |
+| 6 | `secret-manager` | holds super-tokens on the privileged side, keyed by (who, doing, wants) | privileged folder → secrets manager |
 | 7 | `entitlements` | what an agent may equip | script entry → operator-managed |
 | 8 | `agent-identity-authority` | proves who the agent is | local OS user → gh app signed → GCP service principal |
 
@@ -58,18 +58,18 @@ flowchart TD
 
   subgraph PRIV["privileged half · kernel is the trust root"]
     TR["token-requester"]
-    EN["entitlements · baked-in scope list"]
+    EN["entitlements · baked-in capability list"]
     TS["token-service · transitive trust"]
     SM[("secret-manager · SECRET_DIR")]
   end
 
   AG -->|"gettoken --list"| GT
-  AG -->|"gettoken scope"| GT
+  AG -->|"gettoken capability"| GT
   GT -->|"exec"| TR
   TR -->|"exec, when --list"| EN
   TR -->|"who, doing, wants, signed · stdin"| TS
   TS -->|"read super-token"| SM
-  EN -->|"scope list · stdout"| AG
+  EN -->|"capability list · stdout"| AG
   TS -->|"response · stdout"| AG
 
   NF["notifier · seat"] -.->|"super-token expired"| AC["auth-canvas · seat"]
@@ -107,16 +107,16 @@ super-token server-side from the secret-manager.
 sh test/walk.sh
 ```
 
-It lists the one known scope, checks the request `token-requester` builds, then
-requests the scope end to end and checks the exact response body. This is the
-invariant: keep it green.
+It lists the one known capability, checks the request `token-requester` builds,
+then requests the capability end to end and checks the exact response body. This
+is the invariant: keep it green.
 
 ## Vision
 
 Many agents running autonomous workflows in containers, self-serving scoped
 tokens from an OAuth2 STS. The operator sets what each agent may equip;
 everything is audited. A human is pulled in only for approvals — a tap on a
-phone to renew a super-token or grant a new scope.
+phone to renew a super-token or grant a new capability.
 
 ```mermaid
 flowchart LR
@@ -126,13 +126,13 @@ flowchart LR
     a3["agent · container"]
   end
 
-  WF -->|"gettoken scope"| STS["token-service · OAuth2 STS"]
+  WF -->|"gettoken capability"| STS["token-service · OAuth2 STS"]
   STS -->|"scoped tokens"| WF
 
   OP["operator · entitlements"] --> STS
   STS --> AUD[("audit / overview")]
 
-  STS -.->|"new scope / renewal"| PH["phone app"]
+  STS -.->|"new capability / renewal"| PH["phone app"]
   PH -.->|"2FA tap · approve"| STS
 ```
 
