@@ -1,52 +1,51 @@
-# gettoken
-
 A text-based, POSIX-native token broker for AI agents.
 
-An agent is a user, not a new kind of system. Identity, isolation, and authority
-are the OS user model, privilege separation, and a package manager — reused, not
-reinvented. The wire is stdin/stdout and exit codes. A request says who is
-asking, what they are doing, what they want, and what vouched for them — four
-readable fields, so anything on the wire can be read without decoding it.
+## The problem
+
+Agents need the same tools people use, and those tools ask for a person. A
+browser opens, a login is typed, a prompt waits for someone to approve. An agent
+cannot answer any of it.
+
+Handing the agent a long-lived credential instead removes that obstacle and
+creates a worse one. An agent can be talked into things by whatever it reads, and
+it can simply malfunction. Whatever authority it holds is the authority that goes
+wrong.
+
+`gettoken` gives an agent a token narrow enough for the job in front of it and
+nothing more, drawn from the credentials a human already holds.
 
 ## Principles
 
-- **Working end-to-end is an invariant, not a goal.** Every commit keeps the
-  chain running (`test/walk.sh` stays green).
-- **Completeness and depth are independent.** Every component exists as a stub
-  that honors its contract; the system is always complete, and depth is added to
-  one component at a time, on demand.
-- **Contracts are fixed; implementations are disposable.** The schemas in
-  `contracts/` are the sacred part. A stub behind a stable contract can be
-  replaced with the real thing invisibly to its neighbours.
-- **Reuse human-refined technology.** POSIX, apt, `gh`, an OAuth2 STS. Adopt the
-  vocabulary and semantics, never the transport you would not use yourself.
+- **Functional from the start.** Every component exists from the first commit at
+  whatever depth it needs, and the chain runs end to end at every commit. There
+  is no state in which the system is half-built and waiting to be wired up.
+- **Modular, evolvable one piece at a time.** The schemas in `contracts/` are
+  fixed; what sits behind them is not. Any component can be replaced or deepened
+  without its neighbours noticing.
+- **Scalable by adding tools.** A tool is integrated by publishing a package that
+  depends on `gettoken`. Nothing central is edited, so the hundredth tool costs
+  what the first one did.
 
 ## Components
 
-Fixed faces (name + concern). The implementation of each evolves top-to-bottom;
-the first incarnation is what ships in this repo.
+Fixed faces (name + concern). The implementation of each evolves left to right.
 
-| # | Component | Concern | First incarnation → future |
-|---|-----------|---------|----------------------------|
-| 1 | `gettoken` | agent's entry point; `--list` and `<capability>` | forwarder (stable) |
-| 2 | `token-requester` | privileged half; builds the request | local root/dev → gh app signing → orchestrator/container id |
-| 3 | `token-service` | authenticate, resolve, exchange | transitive trust, as-is → verify `signed` → off-the-shelf OAuth2 STS |
-| 4 | `notifier` | summon a human to renew | beep + shell → 2FA/phone → mostly automated |
-| 5 | `auth-canvas` | surface the human acts on | prepped shell (`gh auth login`) → mobile/web |
-| 6 | `secret-manager` | holds super-tokens on the privileged side, keyed by (who, doing, wants) | privileged folder → secrets manager |
-| 7 | `entitlements` | what an agent may equip | script entry → operator-managed |
-| 8 | `agent-identity-authority` | proves who the agent is | local OS user → gh app signed → GCP service principal |
-
-Components 4–8 are named seats. This walking skeleton implements the request
-path (1 → 2 → 3, with 6 and 7 as stubs). The notifier, auth-canvas, and
-identity authority are the next seats to fill, on demand.
+| # | Component | Concern | Beginning | Future |
+|---|-----------|---------|-----------|--------|
+| 1 | `gettoken` | agent's entry point; `--list` and `<capability>` | forwarder | stable |
+| 2 | `token-requester` | privileged half; builds the request | local root/dev | gh app signing → orchestrator/container id |
+| 3 | `token-service` | authenticate, resolve, exchange | transitive trust, as-is | verify `signed` → off-the-shelf OAuth2 STS |
+| 4 | `notifier` | summon a human to renew | beep + shell | 2FA/phone → mostly automated |
+| 5 | `auth-canvas` | surface the human acts on | prepped shell (`gh auth login`) | mobile/web |
+| 6 | `secret-manager` | holds super-tokens on the privileged side, keyed by (who, doing, wants) | privileged folder | secrets manager |
+| 7 | `entitlements` | what an agent may equip | script entry | operator-managed |
+| 8 | `agent-identity-authority` | proves who the agent is | local OS user | gh app signed → GCP service principal |
 
 ## Architecture
 
-The request path as it runs today. `gettoken` is the only face the agent sees;
-everything past the privilege boundary is the trusted half. The super-token
-never crosses back — `token-service` reads it server-side and returns only the
-exchanged response. Nodes marked *seat* are named but not yet implemented.
+The request path. `gettoken` is the only face the agent sees; everything past
+the privilege boundary is the trusted half. The super-token never crosses back —
+`token-service` reads it server-side and returns only the exchanged response.
 
 ```mermaid
 flowchart TD
@@ -72,9 +71,9 @@ flowchart TD
   EN -->|"capability list · stdout"| AG
   TS -->|"response · stdout"| AG
 
-  NF["notifier · seat"] -.->|"super-token expired"| AC["auth-canvas · seat"]
+  NF["notifier"] -.->|"super-token expired"| AC["auth-canvas"]
   AC -.->|"gh auth login · fresh super-token"| SM
-  AIA["agent-identity-authority · seat"] -.->|"real proof behind signed"| TR
+  AIA["agent-identity-authority"] -.->|"real proof behind signed"| TR
 ```
 
 ## Contracts
@@ -94,22 +93,15 @@ flowchart TD
 }
 ```
 
-The agent must never hold the super-token, so no subject token appears in the
-request. `who` and `doing` are top-level, so the caller's identity and context
-are readable without decoding anything. `signed` names what vouched for the
-request: `host-privileged` means it was produced on the privileged side of this
-host, and token-service does not verify it yet. token-service fetches the
-super-token server-side from the secret-manager.
-
-## Run the walking skeleton
+## Run it
 
 ```sh
-sh test/walk.sh
+make test
 ```
 
-It lists the one known capability, checks the request `token-requester` builds
-and the response `token-service` returns, then checks that `gettoken` emits the
-token and nothing else. This is the invariant: keep it green.
+The chain runs end to end: a capability is listed, a request is built, a response
+comes back, and `gettoken` emits the token and nothing else. This is the
+invariant: keep it green.
 
 ## Vision
 
