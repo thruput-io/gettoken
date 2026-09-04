@@ -9,6 +9,6 @@
     "who": { "$ref": "defs.schema.json#/$defs/Agent" },
     "doing": { "$ref": "defs.schema.json#/$defs/Activity" },
     "wants": { "$ref": "defs.schema.json#/$defs/Capability" },
-    "signed": { "$ref": "defs.schema.json#/$defs/Voucher" }
+    "signed": { "$ref": "defs.schema.json#/$defs/Signature" }
   }
 }
