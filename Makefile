@@ -1,7 +1,7 @@
 .PHONY: test diagrams
 
 test:
-	sh test/walk.sh
+	sh integration/integration.sh
 
 diagrams:
-	sh test/mermaid.sh
+	sh integration/mermaid.sh

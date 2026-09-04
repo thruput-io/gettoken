@@ -4,15 +4,15 @@ on:
   pull_request:
     paths:
       - README.md
-      - test/mermaid.sh
-      - test/fixtures/**
+      - integration/mermaid.sh
+      - integration/fixtures/**
       - .github/workflows/diagrams.yml
   push:
     branches: [main]
     paths:
       - README.md
-      - test/mermaid.sh
-      - test/fixtures/**
+      - integration/mermaid.sh
+      - integration/fixtures/**
       - .github/workflows/diagrams.yml
 
 jobs:
@@ -25,4 +25,4 @@ jobs:
         with:
           node-version: '20'
       - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-      - run: sh test/mermaid.sh
+      - run: make diagrams
