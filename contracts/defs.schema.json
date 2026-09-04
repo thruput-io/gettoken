@@ -2,13 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://thruput.io/gettoken/defs.schema.json",
   "$defs": {
-    "GrantType": { "const": "urn:ietf:params:oauth:grant-type:token-exchange" },
-    "Scope": { "type": "string", "pattern": "^[a-z0-9-]+(/[a-z0-9._-]+)+$" },
-    "ClientAssertionType": { "const": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer" },
-    "ClientAssertion": { "type": "string", "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$" },
+    "Agent": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
+    "Activity": { "type": "string", "pattern": "^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$" },
+    "Capability": { "type": "string", "pattern": "^[a-z0-9-]+(/[a-z0-9._-]+)+$" },
+    "Voucher": { "type": "string", "enum": ["host-privileged"] },
     "AccessToken": { "type": "string", "minLength": 1 },
-    "IssuedTokenType": { "const": "urn:ietf:params:oauth:token-type:access_token" },
-    "TokenType": { "const": "Bearer" },
     "ExpiresIn": { "type": "integer", "minimum": 1 }
   }
 }

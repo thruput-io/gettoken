@@ -1,7 +1,5 @@
 #!/bin/sh
-# Walking-skeleton test: runs the whole chain end to end and checks a
-# token-exchange response comes out. Keep this green after every commit.
-set -e
+set -eu
 
 root=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
 export PATH="$root/bin:$PATH"
@@ -15,12 +13,22 @@ echo "$list"
 [ "$list" = "github/thruput-io/gettoken/read" ] || { echo "FAIL: unexpected scope list"; exit 1; }
 
 echo
+echo "# token-requester github/thruput-io/gettoken/read, with token-service stubbed out to echo the request"
+stub_dir=$(mktemp -d)
+printf '#!/bin/sh\ncat\n' > "$stub_dir/token-service"
+chmod +x "$stub_dir/token-service"
+request=$(PATH="$stub_dir:$PATH" token-requester github/thruput-io/gettoken/read)
+echo "$request"
+expected_request="{\"who\":\"$USER\",\"doing\":\"$(hostname)\",\"wants\":\"github/thruput-io/gettoken/read\",\"signed\":\"host-privileged\"}"
+[ "$request" = "$expected_request" ] || { echo "FAIL: request is not $expected_request"; exit 1; }
+rm -rf "$stub_dir"
+
+echo
 echo "# gettoken github/thruput-io/gettoken/read"
 out=$(gettoken github/thruput-io/gettoken/read)
 echo "$out"
-
-echo "$out" | grep -q '"access_token"' || { echo "FAIL: no access_token in response"; exit 1; }
-echo "$out" | grep -q '"scope":"github/thruput-io/gettoken/read"' || { echo "FAIL: scope not echoed"; exit 1; }
+expected_response='{"access_token":"super-token-dev-000","expires_in":3600,"scope":"github/thruput-io/gettoken/read"}'
+[ "$out" = "$expected_response" ] || { echo "FAIL: response is not $expected_response"; exit 1; }
 
 echo
 echo "PASS: chain runs end to end"

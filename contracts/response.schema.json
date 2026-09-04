@@ -1,15 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://thruput.io/gettoken/response.schema.json",
-  "title": "token-exchange response (RFC 8693)",
+  "title": "gettoken response",
   "type": "object",
   "additionalProperties": false,
-  "required": ["access_token", "issued_token_type", "token_type", "expires_in", "scope"],
+  "required": ["access_token", "expires_in", "scope"],
   "properties": {
     "access_token": { "$ref": "defs.schema.json#/$defs/AccessToken" },
-    "issued_token_type": { "$ref": "defs.schema.json#/$defs/IssuedTokenType" },
-    "token_type": { "$ref": "defs.schema.json#/$defs/TokenType" },
     "expires_in": { "$ref": "defs.schema.json#/$defs/ExpiresIn" },
-    "scope": { "$ref": "defs.schema.json#/$defs/Scope" }
+    "scope": { "$ref": "defs.schema.json#/$defs/Capability" }
   }
 }

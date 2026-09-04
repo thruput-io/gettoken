@@ -1,14 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://thruput.io/gettoken/request.schema.json",
-  "title": "token-exchange request (RFC 8693 / 7523)",
+  "title": "gettoken request",
   "type": "object",
   "additionalProperties": false,
-  "required": ["grant_type", "scope", "client_assertion_type", "client_assertion"],
+  "required": ["who", "doing", "wants", "signed"],
   "properties": {
-    "grant_type": { "$ref": "defs.schema.json#/$defs/GrantType" },
-    "scope": { "$ref": "defs.schema.json#/$defs/Scope" },
-    "client_assertion_type": { "$ref": "defs.schema.json#/$defs/ClientAssertionType" },
-    "client_assertion": { "$ref": "defs.schema.json#/$defs/ClientAssertion" }
+    "who": { "$ref": "defs.schema.json#/$defs/Agent" },
+    "doing": { "$ref": "defs.schema.json#/$defs/Activity" },
+    "wants": { "$ref": "defs.schema.json#/$defs/Capability" },
+    "signed": { "$ref": "defs.schema.json#/$defs/Voucher" }
   }
 }

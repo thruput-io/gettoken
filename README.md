@@ -4,10 +4,9 @@ A text-based, POSIX-native token broker for AI agents.
 
 An agent is a user, not a new kind of system. Identity, isolation, and authority
 are the OS user model, privilege separation, and a package manager — reused, not
-reinvented. The wire is stdin/stdout and exit codes. The request/response
-contract is OAuth2 token exchange (RFC 8693) with a JWT client assertion
-(RFC 7523), so the eventual off-the-shelf STS drops into place speaking its
-native shape.
+reinvented. The wire is stdin/stdout and exit codes. A request says who is
+asking, what they are doing, what they want, and what vouched for them — four
+readable fields, so anything on the wire can be read without decoding it.
 
 ## Principles
 
@@ -30,8 +29,8 @@ the first incarnation is what ships in this repo.
 | # | Component | Concern | First incarnation → future |
 |---|-----------|---------|----------------------------|
 | 1 | `gettoken` | agent's entry point; `--list` and `<scope>` | forwarder (stable) |
-| 2 | `token-requester` | privileged half; builds the signed exchange request | local root/dev → gh app signing → orchestrator/container id |
-| 3 | `token-service` | authenticate, resolve, exchange | transitive trust, as-is → validate assertion → off-the-shelf OAuth2 STS |
+| 2 | `token-requester` | privileged half; builds the request | local root/dev → gh app signing → orchestrator/container id |
+| 3 | `token-service` | authenticate, resolve, exchange | transitive trust, as-is → verify `signed` → off-the-shelf OAuth2 STS |
 | 4 | `notifier` | summon a human to renew | beep + shell → 2FA/phone → mostly automated |
 | 5 | `auth-canvas` | surface the human acts on | prepped shell (`gh auth login`) → mobile/web |
 | 6 | `secret-manager` | holds super-tokens on the privileged side, keyed by (agent, location, scope) | privileged folder → secrets manager |
@@ -59,7 +58,6 @@ flowchart TD
 
   subgraph PRIV["privileged half · kernel is the trust root"]
     TR["token-requester"]
-    SG["sign · agent-identity-authority"]
     EN["entitlements · baked-in scope list"]
     TS["token-service · transitive trust"]
     SM[("secret-manager · SECRET_DIR")]
@@ -69,29 +67,39 @@ flowchart TD
   AG -->|"gettoken scope"| GT
   GT -->|"exec"| TR
   TR -->|"exec, when --list"| EN
-  TR -->|"USER, hostname"| SG
-  SG -->|"client_assertion · JWT"| TR
-  TR -->|"RFC 8693 request · stdin"| TS
+  TR -->|"who, doing, wants, signed · stdin"| TS
   TS -->|"read super-token"| SM
   EN -->|"scope list · stdout"| AG
-  TS -->|"token-exchange response · stdout"| AG
+  TS -->|"response · stdout"| AG
 
   NF["notifier · seat"] -.->|"super-token expired"| AC["auth-canvas · seat"]
   AC -.->|"gh auth login · fresh super-token"| SM
+  AIA["agent-identity-authority · seat"] -.->|"real proof behind signed"| TR
 ```
 
 ## Contracts
 
-- `contracts/request.schema.json` — RFC 8693 token-exchange request.
-- `contracts/response.schema.json` — token-exchange response.
+- `contracts/request.schema.json` — the request: `who`, `doing`, `wants`, `signed`.
+- `contracts/response.schema.json` — the response: `access_token`, `expires_in`,
+  `scope`.
 - `contracts/defs.schema.json` — every domain object defined once; the request
   and response only `$ref` these, never inline a constraint.
 
-Deliberate deviation from vanilla token-exchange: the agent must never hold the
-super-token, so `subject_token` is **not** in the request. token-service fetches
-it server-side from the secret-manager, keyed on the client_assertion's claims +
-scope. Agent identity and location are claims **inside** `client_assertion`, not
-top-level request fields.
+```json
+{
+  "who":    "rasmus",
+  "doing":  "johans-laptop/review",
+  "wants":  "github/thruput-io/gettoken/pr/create",
+  "signed": "host-privileged"
+}
+```
+
+The agent must never hold the super-token, so no subject token appears in the
+request. `who` and `doing` are top-level, so the caller's identity and context
+are readable without decoding anything. `signed` names what vouched for the
+request: `host-privileged` means it was produced on the privileged side of this
+host, and token-service does not verify it yet. token-service fetches the
+super-token server-side from the secret-manager.
 
 ## Run the walking skeleton
 
@@ -99,8 +107,9 @@ top-level request fields.
 sh test/walk.sh
 ```
 
-It lists the one known scope, requests it, and checks a token-exchange response
-comes back. This is the invariant: keep it green.
+It lists the one known scope, checks the request `token-requester` builds, then
+requests the scope end to end and checks the exact response body. This is the
+invariant: keep it green.
 
 ## Vision
 
@@ -130,7 +139,7 @@ flowchart LR
 ## Layout
 
 ```
-bin/         the executables (gettoken, token-requester, token-service, entitlements, sign)
+bin/         the executables (gettoken, token-requester, token-service, entitlements)
 contracts/   the fixed schemas — the sacred part
 test/        the end-to-end walk
 ```
