@@ -5,4 +5,4 @@ request=$(cat)
 wants=$(printf '%s' "$request" | sed -n 's/.*"wants":"\([^"]*\)".*/\1/p')
 super_token=$(cat "$SECRET_DIR/super-token")
 
-printf '{"access_token":"%s","expires_in":3600,"scope":"%s"}\n' "$super_token" "$wants"
+printf '{"access_token":"%s","expires_in":3600,"wants":"%s"}\n' "$super_token" "$wants"
