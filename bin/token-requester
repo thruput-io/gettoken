@@ -1,15 +1,9 @@
 #!/bin/sh
-# token-requester (privileged / trusted half)
-# First incarnation: runs as root / on the dev box. Builds a signed
-# client_assertion (JWT) carrying agent + location claims, wraps it in an
-# RFC 8693 token-exchange request, and forwards to token-service.
-# token-service does not verify the assertion yet (transitive trust).
+set -eu
 
-[ "$1" = --list ] && exec entitlements
+if [ "$1" = --list ]; then
+  exec entitlements
+fi
 
-te=urn:ietf:params:oauth:grant-type:token-exchange
-jb=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
-ca=$(sign "$USER" "$(hostname)")   # signed JWT (dev key at first)
-
-printf '{"grant_type":"%s","scope":"%s","client_assertion_type":"%s","client_assertion":"%s"}' \
-  "$te" "$1" "$jb" "$ca" | token-service
+printf '{"who":"%s","doing":"%s","wants":"%s","signed":"host-privileged"}' \
+  "$USER" "$(hostname)" "$1" | token-service
