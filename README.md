@@ -133,5 +133,5 @@ flowchart LR
 ```
 bin/         the executables (gettoken, token-requester, token-service, entitlements)
 contracts/   the fixed schemas — the sacred part
-test/        the end-to-end walk
+integration/  the end-to-end test
 ```

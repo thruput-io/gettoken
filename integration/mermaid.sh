@@ -24,7 +24,8 @@ done
 
 echo
 echo "# the check must be able to fail"
-invalid="$root/test/fixtures/invalid-diagram.mmd"
+invalid="$root/integration/fixtures/invalid-diagram.mmd"
+[ -f "$invalid" ] || { echo "FAIL: $invalid is missing"; exit 1; }
 if npx -y "$mermaid_cli" -i "$invalid" -o "$work/invalid.svg" > "$work/invalid.log" 2>&1; then
   echo "FAIL: invalid-diagram.mmd rendered, so a broken diagram would pass unnoticed"
   exit 1

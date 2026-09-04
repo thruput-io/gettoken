@@ -1,4 +1,4 @@
-name: walk
+name: integration
 
 on:
   pull_request:
@@ -11,4 +11,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: sh test/walk.sh
+      - run: make test
