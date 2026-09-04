@@ -5,5 +5,14 @@ if [ "$1" = --list ]; then
   exec entitlements
 fi
 
-printf '{"who":"%s","doing":"%s","wants":"%s","signed":"host-privileged"}' \
-  "$USER" "$(hostname)" "$1" | token-service
+response=$(printf '{"who":"%s","doing":"%s","wants":"%s","signed":"host-privileged"}' \
+  "$USER" "$(hostname)" "$1" | token-service)
+
+access_token=$(printf '%s' "$response" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
+
+if [ -z "$access_token" ]; then
+  echo "gettoken: no token in response" >&2
+  exit 1
+fi
+
+printf '%s\n' "$access_token"
