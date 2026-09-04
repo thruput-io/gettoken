@@ -9,7 +9,7 @@ printf 'super-token-dev-000' > "$SECRET_DIR/super-token"
 
 capability=github/thruput-io/gettoken/read
 expected_request="{\"who\":\"$USER\",\"doing\":\"$(hostname)\",\"wants\":\"$capability\",\"signed\":\"host-privileged\"}"
-expected_response="{\"access_token\":\"super-token-dev-000\",\"expires_in\":3600,\"scope\":\"$capability\"}"
+expected_response="{\"access_token\":\"super-token-dev-000\",\"expires_in\":3600,\"wants\":\"$capability\"}"
 
 echo "# gettoken --list"
 list=$(gettoken --list)
@@ -24,7 +24,7 @@ export REQUEST_FILE
 cat > "$stub_dir/token-service" <<'STUB'
 #!/bin/sh
 cat > "$REQUEST_FILE"
-printf '{"access_token":"stub-token","expires_in":1,"scope":"stub/capability"}\n'
+printf '{"access_token":"stub-token","expires_in":1,"wants":"stub/capability"}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
 stub_out=$(PATH="$stub_dir:$PATH" token-requester "$capability")

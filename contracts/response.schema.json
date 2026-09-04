@@ -4,10 +4,10 @@
   "title": "gettoken response",
   "type": "object",
   "additionalProperties": false,
-  "required": ["access_token", "expires_in", "scope"],
+  "required": ["access_token", "expires_in", "wants"],
   "properties": {
     "access_token": { "$ref": "defs.schema.json#/$defs/AccessToken" },
     "expires_in": { "$ref": "defs.schema.json#/$defs/ExpiresIn" },
-    "scope": { "$ref": "defs.schema.json#/$defs/Capability" }
+    "wants": { "$ref": "defs.schema.json#/$defs/Capability" }
   }
 }

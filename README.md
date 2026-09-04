@@ -81,7 +81,7 @@ flowchart TD
 
 - `contracts/request.schema.json` — the request: `who`, `doing`, `wants`, `signed`.
 - `contracts/response.schema.json` — the response: `access_token`, `expires_in`,
-  `scope`.
+  `wants`.
 - `contracts/defs.schema.json` — every domain object defined once; the request
   and response only `$ref` these, never inline a constraint.
 
@@ -107,9 +107,9 @@ super-token server-side from the secret-manager.
 sh test/walk.sh
 ```
 
-It lists the one known capability, checks the request `token-requester` builds,
-then requests the capability end to end and checks the exact response body. This
-is the invariant: keep it green.
+It lists the one known capability, checks the request `token-requester` builds
+and the response `token-service` returns, then checks that `gettoken` emits the
+token and nothing else. This is the invariant: keep it green.
 
 ## Vision
 
