@@ -131,7 +131,8 @@ flowchart LR
 ## Layout
 
 ```
-bin/         the executables (gettoken, token-requester, token-service, entitlements)
-contracts/   the fixed schemas — the sacred part
-integration/  the end-to-end test
+contracts/    the fixed schemas — the sacred part
+components/   machinery more than one tool shares; a seat where nothing implements it yet
+tools/        one directory per tool, each owning its privileged half
+integration/  what spans them
 ```

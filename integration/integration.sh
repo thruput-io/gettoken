@@ -2,7 +2,7 @@
 set -eu
 
 root=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
-export PATH="$root/bin:$PATH"
+export PATH="$root/components/token-service:$root/components/entitlements:$root/tools/gettoken/bin:$root/tools/gettoken/privileged:$PATH"
 SECRET_DIR=$(mktemp -d)
 export SECRET_DIR
 printf 'super-token-dev-000' > "$SECRET_DIR/super-token"
