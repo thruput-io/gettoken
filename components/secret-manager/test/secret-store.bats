@@ -2,7 +2,7 @@ bats_require_minimum_version 1.5.0
 
 setup() {
   root=$(CDPATH= cd "$BATS_TEST_DIRNAME/../../.." && pwd)
-  PATH="$root/components/secret-manager:$PATH"
+  PATH="$root/components/secret-manager:$root/components/contract:$PATH"
   SECRET_DIR=$(mktemp -d)
   export PATH SECRET_DIR
 }
@@ -57,4 +57,12 @@ teardown() { rm -rf "$SECRET_DIR"; }
 @test "nothing stored is a failure, not an empty answer" {
   run -1 --separate-stderr secret-get '{"holder":"nobody","service":"nothing"}'
   [ "$output" = "" ]
+}
+
+@test "secret-put refuses a document its contract forbids" {
+  run -1 --separate-stderr secret-put '{"holder":"johans-laptop","service":"GitHub","version":1}'
+}
+
+@test "secret-get refuses a document its contract forbids" {
+  run -1 --separate-stderr secret-get '{"holder":"johans-laptop"}'
 }
