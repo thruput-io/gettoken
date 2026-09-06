@@ -14,7 +14,7 @@ test: images
 	@echo "== debian latest — warns"
 	@rc=0; docker run --rm -v "$(CURDIR)":/work $(IMAGE):latest integration/suite.sh || rc=$$?; \
 	if [ $$rc -eq 0 ]; then echo "ok: debian latest"; \
-	else echo "WARNING: the suite exited $$rc on debian latest; this tier does not block"; fi
+	else echo "WARNING: the suite exited $$rc on debian latest; this verification does not block"; fi
 
 diagrams:
 	sh integration/mermaid.sh

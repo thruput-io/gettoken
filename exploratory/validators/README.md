@@ -1,7 +1,7 @@
 # Choosing a validator
 
 Evidence behind [ADR 13](../../docs/adrs/0013-validating-the-wire.md). It runs the
-candidates against this repository's own contracts, in both Debian tiers, and
+candidates against this repository's own contracts, on both Debian bases, and
 reports what each one did.
 
 `valid.json` is the control. A candidate that rejects it has been invoked wrongly,
