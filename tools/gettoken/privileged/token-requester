@@ -1,14 +1,25 @@
 #!/bin/sh
 set -eu
 
+if [ $# -eq 0 ]; then
+  echo "gettoken: usage: gettoken --list | gettoken <capability>" >&2
+  exit 1
+fi
+
 if [ "$1" = --list ]; then
   exec entitlements
 fi
 
-response=$(printf '{"who":"%s","doing":"%s","wants":"%s","signed":"host-privileged"}' \
-  "$USER" "$(hostname)" "$1" | token-service)
+request=$(jq -nc \
+  --arg who "$USER" \
+  --arg doing "$(hostname)" \
+  --arg wants "$1" \
+  --arg signed host-privileged \
+  '{who: $who, doing: $doing, wants: $wants, signed: $signed}')
 
-access_token=$(printf '%s' "$response" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
+response=$(printf '%s' "$request" | token-service)
+
+access_token=$(printf '%s' "$response" | jq -r '.access_token // empty')
 
 if [ -z "$access_token" ]; then
   echo "gettoken: no token in response" >&2

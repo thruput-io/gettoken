@@ -34,7 +34,7 @@ Fixed faces (name + concern). The implementation of each evolves left to right.
 |---|-----------|---------|-----------|--------|
 | 1 | `gettoken` | agent's entry point; `--list` and `<capability>` | forwarder | stable |
 | 2 | `token-requester` | privileged half; builds the request | local root/dev | gh app signing → orchestrator/container id |
-| 3 | `token-service` | authenticate, resolve, exchange | transitive trust, as-is | verify `signed` → off-the-shelf OAuth2 STS |
+| 3 | `token-service` | authenticate, resolve, hand the capability to an exchanger | transitive trust, as-is | verify `signed` → off-the-shelf OAuth2 STS |
 | 4 | `notifier` | summon a human to renew | beep + shell | 2FA/phone → mostly automated |
 | 5 | `auth-canvas` | surface the human acts on | prepped shell (`gh auth login`) | mobile/web |
 | 6 | `secret-manager` | holds super-tokens on the privileged side, keyed by (who, doing, wants) | privileged folder | secrets manager |
@@ -45,7 +45,8 @@ Fixed faces (name + concern). The implementation of each evolves left to right.
 
 The request path. `gettoken` is the only face the agent sees; everything past
 the privilege boundary is the trusted half. The super-token never crosses back —
-`token-service` reads it server-side and returns only the exchanged response.
+the exchanger is the only thing that touches it, and what comes back is the
+narrow token it issued.
 
 ```mermaid
 flowchart TD
@@ -53,13 +54,15 @@ flowchart TD
 
   subgraph UNPRIV["unprivileged half"]
     GT["gettoken · forwarder"]
+    TL["tool · runs on the narrow token"]
   end
 
   subgraph PRIV["privileged half · kernel is the trust root"]
     TR["token-requester"]
     EN["entitlements · baked-in capability list"]
-    TS["token-service · transitive trust"]
-    SM[("secret-manager · SECRET_DIR")]
+    TS["token-service · dispatches on the first segment"]
+    EX["exchanger · trades the super-token for a narrow one"]
+    SM[("secret-manager · /secret")]
   end
 
   AG -->|"gettoken --list"| GT
@@ -67,9 +70,11 @@ flowchart TD
   GT -->|"exec"| TR
   TR -->|"exec, when --list"| EN
   TR -->|"who, doing, wants, signed · stdin"| TS
-  TS -->|"read super-token"| SM
+  TS -->|"capability"| EX
+  EX -->|"read super-token"| SM
   EN -->|"capability list · stdout"| AG
   TS -->|"response · stdout"| AG
+  AG -->|"narrow token · environment"| TL
 
   NF["notifier"] -.->|"super-token expired"| AC["auth-canvas"]
   AC -.->|"gh auth login · fresh super-token"| SM
@@ -93,15 +98,23 @@ flowchart TD
 }
 ```
 
+An exchanger is not on the wire, so no schema fixes it. `token-service` finds it
+on `PATH` as `exchanger-<first segment of the capability>`, runs it with the
+capability, and reads the access token from the first line of its output and the
+lifetime in seconds from the second.
+
 ## Run it
 
 ```sh
 make test
 ```
 
-The chain runs end to end: a capability is listed, a request is built, a response
-comes back, and `gettoken` emits the token and nothing else. This is the
-invariant: keep it green.
+The chain runs end to end on the `integrationtest/ci/run` capability: the
+super-token goes into the store, the capability is listed, a request is built,
+the exchanger trades the super-token for a narrow one, `gettoken` emits that
+token and nothing else, and `integration-test-tool` runs on it. The same tool
+refuses the super-token, so a run that succeeds is a downgrade that happened.
+This is the invariant: keep it green.
 
 ## Vision
 
