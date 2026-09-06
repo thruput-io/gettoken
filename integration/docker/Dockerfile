@@ -4,7 +4,7 @@ FROM debian:${DEBIAN_TAG}
 ARG SOURCEMETA_VERSION=16.9.0
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates curl unzip jq bats \
+ && apt-get install -y --no-install-recommends ca-certificates curl unzip jq bats dpkg-dev debhelper lintian \
  && rm -rf /var/lib/apt/lists/*
 
 RUN arch=$(dpkg --print-architecture) \
