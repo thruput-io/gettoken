@@ -12,7 +12,14 @@ it can simply malfunction. Whatever authority it holds is the authority that goe
 wrong.
 
 `gettoken` gives an agent a token narrow enough for the job in front of it and
-nothing more, drawn from the credentials a human already holds.
+nothing more, drawn from the credentials a human already holds. The agent never
+holds the super-token: it says what it wants, and gets back a token for that job
+and nothing else.
+
+Accountability stays with the human. The human holds the super-token and grants
+pieces of it. This repository is retired when reasoning alone makes an agent
+trustworthy enough that nobody needs to hold a super-token and hand out pieces of
+it.
 
 ## Principles
 
@@ -45,6 +52,20 @@ Fixed faces (name + concern). The implementation of each evolves left to right.
 
 Components 1–8 are shared. 9 and 10 are shipped once per integrated tool: each
 knows one service, and neither knows anything about the others.
+
+`gettoken` writes the token and nothing else. The response document stays between
+`token-service` and `token-requester`; none of it reaches the agent. A failure
+writes to stderr and leaves stdout empty, so a caller cannot assign an error
+message to a credential. The agent asks again every time it needs a token — it is
+not told when one expires and does not track one. Caching belongs to the
+privileged half.
+
+`token-service` dispatches on the first segment of the capability, and the
+exchanger registered for that segment performs the exchange. An exchanger
+translates the capability into whatever that service actually wants — for GitHub a
+set of permissions on the repository named in the capability, not GitHub's own
+coarse scopes. It issues a token that lives as short a time as possible, ideally
+two minutes.
 
 ## Architecture
 
@@ -85,6 +106,25 @@ flowchart TD
   AC -.->|"gh auth login · fresh super-token"| SM
   AIA["agent-identity-authority"] -.->|"real proof behind signed"| TR
 ```
+
+## Vocabulary
+
+A **capability** is a name, and it is not a secret:
+
+```
+github/thruput-io/gettoken/pr/create
+```
+
+**`entitlements`** is a file named for the agent, listing the capabilities that
+agent has. It is the inventory — it answers "what do I have to work with", and it
+is what `gettoken --list` shows. It is also the control: a request for a
+capability that is not in the file is refused.
+
+**`signed`** names what vouched for the request. `host-privileged` means the
+request was produced on the privileged side of this host. That is accepted here,
+because it is true here; nothing off this host accepts it, because nothing off
+this host can know it. The key that signs a request is one-to-one with the first
+segment of **`doing`**, and the deployment is where that key is put.
 
 ## Contracts
 
@@ -148,10 +188,36 @@ flowchart LR
 
 ## Layout
 
+`contracts/` is the wire between the two sides and belongs to neither.
+`components/` holds machinery more than one tool shares; a component nothing
+implements yet carries a `SEAT.md` saying what it is for, so the list stays whole.
+A tool lives under `tools/` and owns its own privileged half, so the boundary sits
+inside the tool rather than across the top of the tree. Unit tests live with what
+they cover; `integration/` holds only what spans them; `exploratory/` answers a
+question rather than guarding the product, and `make test` does not run it.
+
 ```
-contracts/    the fixed schemas — the sacred part
-components/   machinery more than one tool shares; a seat where nothing implements it yet
-tools/        one directory per tool, each owning its privileged half
-integration/  what spans them
-exploratory/  answers a question rather than guarding the product; `make test` does not run it
+contracts/
+  defs.schema.json  request.schema.json  response.schema.json
+
+components/
+  token-service/
+  entitlements/
+  secret-manager/
+  notifier/                    SEAT.md
+  auth-canvas/                 SEAT.md
+  agent-identity-authority/    SEAT.md
+
+tools/
+  gettoken/
+    bin/gettoken
+    privileged/token-requester
+    test/  man/  packaging/
+  integration-test-tool/
+    bin/  privileged/  test/
+
+integration/
+  suite.sh  integration.sh  mermaid.sh  docker/
+
+exploratory/
 ```
