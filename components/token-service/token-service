@@ -2,7 +2,7 @@
 set -eu
 
 request=$(cat)
-wants=$(printf '%s' "$request" | sed -n 's/.*"wants":"\([^"]*\)".*/\1/p')
+wants=$(printf '%s' "$request" | jq -r '.wants // empty')
 
 if [ -z "$wants" ]; then
   echo "token-service: the request names no capability" >&2

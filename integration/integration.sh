@@ -26,6 +26,17 @@ echo "$list"
 [ "$list" = "$capability" ] || { echo "FAIL: unexpected capability list"; exit 1; }
 
 echo
+echo "# gettoken with no arguments refuses cleanly"
+noargs_err=$(mktemp)
+noargs_out=$(gettoken 2>"$noargs_err") && noargs_status=0 || noargs_status=$?
+echo "exit $noargs_status"
+cat "$noargs_err"
+[ "$noargs_status" -eq 1 ] || { echo "FAIL: no arguments exited $noargs_status, not 1"; exit 1; }
+[ -z "$noargs_out" ] || { echo "FAIL: no arguments put \"$noargs_out\" on stdout"; exit 1; }
+grep -q '^gettoken:' "$noargs_err" || { echo "FAIL: stderr does not name the tool the agent invoked, so this is a crash rather than a refusal"; exit 1; }
+rm -f "$noargs_err"
+
+echo
 echo "# the request token-requester builds, captured by a stubbed token-service"
 stub_dir=$(mktemp -d)
 REQUEST_FILE="$stub_dir/request.json"
@@ -41,6 +52,46 @@ request=$(cat "$REQUEST_FILE")
 echo "$request"
 [ "$request" = "$expected_request" ] || { echo "FAIL: request is not $expected_request"; exit 1; }
 [ "$stub_out" = "stub-token" ] || { echo "FAIL: token-requester did not return the token alone"; exit 1; }
+rm -rf "$stub_dir"
+
+echo
+echo "# an agent-supplied capability cannot forge fields in the request"
+injection='a","signed":"forged-by-agent'
+stub_dir=$(mktemp -d)
+REQUEST_FILE="$stub_dir/request.json"
+export REQUEST_FILE
+cat > "$stub_dir/token-service" <<'STUB'
+#!/bin/sh
+cat > "$REQUEST_FILE"
+printf '{"access_token":"stub-token","expires_in":1,"wants":"stub/capability"}\n'
+STUB
+chmod 755 "$stub_dir/token-service"
+PATH="$stub_dir:$PATH" token-requester "$injection" > /dev/null
+forged=$(cat "$REQUEST_FILE")
+echo "$forged"
+if ! printf '%s' "$forged" | jq -e . > /dev/null; then
+  echo "FAIL: the request token-requester built is not valid JSON"
+  exit 1
+fi
+carried=$(printf '%s' "$forged" | jq -r '.wants')
+[ "$carried" = "$injection" ] || { echo "FAIL: wants carried \"$carried\", not the capability it was handed"; exit 1; }
+carried_signed=$(printf '%s' "$forged" | jq -r '.signed')
+[ "$carried_signed" = host-privileged ] || { echo "FAIL: signed is \"$carried_signed\", so the agent forged it"; exit 1; }
+rm -rf "$stub_dir"
+
+echo
+echo "# a response carrying no token hands over nothing, not the word null"
+stub_dir=$(mktemp -d)
+cat > "$stub_dir/token-service" <<'STUB'
+#!/bin/sh
+cat > /dev/null
+printf '{"expires_in":120,"wants":"integrationtest/ci/run"}\n'
+STUB
+chmod 755 "$stub_dir/token-service"
+tokenless_out=$(PATH="$stub_dir:$PATH" token-requester "$capability") && tokenless_status=0 || tokenless_status=$?
+echo "exit $tokenless_status"
+[ "$tokenless_status" -eq 1 ] || { echo "FAIL: a tokenless response exited $tokenless_status, not 1"; exit 1; }
+[ -z "$tokenless_out" ] || { echo "FAIL: a tokenless response put \"$tokenless_out\" on stdout"; exit 1; }
 rm -rf "$stub_dir"
 
 echo
