@@ -40,6 +40,11 @@ Fixed faces (name + concern). The implementation of each evolves left to right.
 | 6 | `secret-manager` | holds super-tokens on the privileged side, keyed by (who, doing, wants) | privileged folder | secrets manager |
 | 7 | `entitlements` | what an agent may equip | script entry | operator-managed |
 | 8 | `agent-identity-authority` | proves who the agent is | local OS user | gh app signed → GCP service principal |
+| 9 | `exchanger` | turns a super-token into a narrow one for one service | one per capability segment, found on `PATH` | shipped in that tool's package |
+| 10 | `renewer` | obtains a fresh super-token for one service, with a human present | runs the tool's own login | device flow → phone approval |
+
+Components 1–8 are shared. 9 and 10 are shipped once per integrated tool: each
+knows one service, and neither knows anything about the others.
 
 ## Architecture
 
