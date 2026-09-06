@@ -12,6 +12,9 @@
       "pattern": "^[^\\u0000-\\u001F\\u007F]+$"
     },
     "AccessToken": { "type": "string", "minLength": 1 },
-    "ExpiresIn": { "type": "integer", "minimum": 1 }
+    "ExpiresIn": { "type": "integer", "minimum": 1 },
+    "Holder": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
+    "Service": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "Version": { "type": "integer", "minimum": 1 }
   }
 }

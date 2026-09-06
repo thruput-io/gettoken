@@ -8,7 +8,8 @@ case "$capability" in
   *) echo "exchanger-integrationtest: nothing is registered for $capability" >&2; exit 1 ;;
 esac
 
-super_token=$(secret-manager get integrationtest-super-token)
+secret=$(secret-get '{"holder":"host-privileged","service":"integrationtest"}')
+super_token=$(printf '%s' "$secret" | jq -r '.value // empty')
 
 if [ "$super_token" != integrationtest-supertoken ]; then
   echo "exchanger-integrationtest: the stored super-token is not one this exchanger can trade" >&2
