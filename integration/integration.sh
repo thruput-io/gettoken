@@ -14,8 +14,8 @@ expected_request="{\"who\":\"$(id -un)\",\"doing\":\"$(hostname)\",\"wants\":\"$
 expected_response="{\"access_token\":\"$narrow_token\",\"expires_in\":120}"
 
 echo "# the human puts the super-token in the store"
-printf '%s' "$super_token" | secret-manager put integrationtest-super-token
-held=$(secret-manager get integrationtest-super-token)
+printf '%s' "$super_token" | secret-put '{"holder":"host-privileged","service":"integrationtest","version":1}'
+held=$(secret-get '{"holder":"host-privileged","service":"integrationtest"}' | jq -r '.value')
 echo "$held"
 [ "$held" = "$super_token" ] || { echo "FAIL: the store did not return what was put in it"; exit 1; }
 
