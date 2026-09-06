@@ -1,0 +1,39 @@
+name: verifications
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  macos-stable:
+    name: macOS stable
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install jq bats-core sourcemeta/apps/jsonschema
+      - run: make check
+
+  macos-latest:
+    name: macOS latest
+    runs-on: macos-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install jq bats-core sourcemeta/apps/jsonschema
+      - run: make check
+
+  debian-stable:
+    name: Debian stable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make debian-stable
+
+  debian-latest:
+    name: Debian latest
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - run: make debian-latest
