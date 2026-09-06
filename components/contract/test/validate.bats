@@ -3,7 +3,8 @@ bats_require_minimum_version 1.5.0
 setup() {
   root=$(CDPATH= cd "$BATS_TEST_DIRNAME/../../.." && pwd)
   PATH="$root/components/contract:$PATH"
-  export PATH
+  CONTRACTS_DIR="$root/contracts"
+  export PATH CONTRACTS_DIR
 }
 
 @test "a document satisfying its contract is accepted" {

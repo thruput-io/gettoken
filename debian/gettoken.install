@@ -1,0 +1,2 @@
+tools/gettoken/bin/gettoken usr/bin
+tools/gettoken/privileged/token-requester usr/lib/gettoken

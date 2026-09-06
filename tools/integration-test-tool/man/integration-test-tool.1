@@ -1,0 +1,30 @@
+.TH INTEGRATION-TEST-TOOL 1 "2026-09-06" "gettoken" "User Commands"
+.SH NAME
+integration-test-tool \- stand in for an integrated tool so the chain can be verified
+.SH SYNOPSIS
+.B integration-test-tool
+.SH DESCRIPTION
+.B integration-test-tool
+is the tool the verification suite integrates. It exists so the whole chain can
+be exercised without reaching a real service.
+.PP
+It reads
+.B INTEGRATIONTEST_TOKEN
+from the environment and runs only when that variable holds the token the
+.I integrationtest/ci/run
+capability downgrades to. It refuses the super\-token that token was traded
+for, so a run that succeeds is proof that a downgrade happened.
+.SH ENVIRONMENT
+.TP
+.B INTEGRATIONTEST_TOKEN
+The access token to run on.
+.SH EXIT STATUS
+.TP
+.B 0
+The token allowed
+.IR integrationtest/ci/run .
+.TP
+.B 1
+It did not. The reason is on standard error.
+.SH SEE ALSO
+.BR gettoken (1)

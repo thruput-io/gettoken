@@ -1,0 +1,100 @@
+Source: gettoken
+Section: admin
+Priority: optional
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Homepage: https://github.com/thruput-io/gettoken
+Vcs-Git: https://github.com/thruput-io/gettoken.git
+Vcs-Browser: https://github.com/thruput-io/gettoken
+
+Package: gettoken
+Architecture: all
+Depends: ${misc:Depends},
+         jq,
+         gettoken-entitlements,
+         gettoken-token-service
+Description: token broker for AI agents
+ An agent that holds a long-lived credential holds whatever authority that
+ credential carries, and an agent can be talked into things by whatever it
+ reads. gettoken hands an agent a token narrow enough for the job in front of
+ it and nothing more, drawn from a super-token a human already holds.
+ .
+ This package contains the entry point the agent invokes and the privileged
+ half that builds the request on its behalf. The agent never holds the
+ super-token: it says what it wants, and gets back a token for that job.
+
+Package: gettoken-token-service
+Architecture: all
+Depends: ${misc:Depends},
+         jq
+Description: token broker for AI agents - exchange dispatcher
+ token-service authenticates a request, resolves what it asks for, and hands
+ the capability to the exchanger registered for the service named by the
+ capability's first segment.
+ .
+ It ships no exchanger. Each integrated tool installs its own into
+ /usr/lib/gettoken/exchangers, so adding the hundredth tool costs what the
+ first one did.
+
+Package: gettoken-entitlements
+Architecture: all
+Depends: ${misc:Depends}
+Description: token broker for AI agents - capability inventory
+ entitlements answers what an agent has to work with. It is what
+ "gettoken --list" shows, and it is also the control: a request for a
+ capability it does not list is refused.
+
+Package: gettoken-secret-manager
+Architecture: all
+Depends: ${misc:Depends},
+         jq,
+         gettoken-contract
+Description: token broker for AI agents - super-token store
+ The store holds the super-tokens a human placed on the privileged side,
+ keyed by who holds them and which service they are for, and keeps every
+ version that was put in.
+ .
+ The store is /var/lib/gettoken/secrets, and no account but the privileged one
+ can read it. Nothing an agent runs reaches it; only an exchanger does, and
+ only for as long as it takes to trade a super-token for a narrow one. Purging
+ this package takes the store with it.
+
+Package: gettoken-contract
+Architecture: all
+Depends: ${misc:Depends}
+Description: token broker for AI agents - wire contracts
+ Every hop between components carries a document, and every document is
+ checked against the contract that governs it. A schema no code path consults
+ describes a document rather than governing it.
+ .
+ This package holds the contracts and the program that checks a document
+ against one. That program calls the JSON Schema validator named in the
+ architectural decision records, which is not distributed as a package and
+ must be present on the host.
+
+Package: integration-test-tool
+Architecture: all
+Depends: ${misc:Depends}
+Description: token broker for AI agents - tool that verifies the chain
+ The tool the verification suite integrates, standing in for a real one so the
+ chain can be exercised without reaching a service. It runs on the token that
+ integrationtest/ci/run downgrades to and refuses the super-token that token
+ was traded for, so a run that succeeds is proof that a downgrade happened.
+
+Package: integration-test-tool-gettoken
+Architecture: all
+Depends: ${misc:Depends},
+         jq,
+         gettoken,
+         gettoken-secret-manager,
+         integration-test-tool
+Description: token broker for AI agents - integration-test-tool exchanger
+ Integrating a tool means publishing a package that depends on gettoken and on
+ that tool, and that carries what the tool needs. This is that package for
+ integration-test-tool, and it is the worked example of the shape every
+ integrated tool takes.
+ .
+ It installs one exchanger, which knows one service and nothing about any
+ other. It does not touch the tool it integrates.

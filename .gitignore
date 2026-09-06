@@ -1,2 +1,11 @@
 *.swp
 .DS_Store
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/*.debhelper.log
+debian/*.substvars
+debian/gettoken/
+debian/gettoken-*/
+debian/integration-test-tool/
+debian/integration-test-tool-gettoken/

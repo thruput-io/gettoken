@@ -2,9 +2,11 @@
 set -eu
 
 root=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
-export PATH="$root/components/token-service:$root/components/entitlements:$root/tools/gettoken/bin:$root/tools/gettoken/privileged:$root/components/secret-manager:$root/components/contract:$root/tools/integration-test-tool/bin:$root/tools/integration-test-tool/privileged:$PATH"
+export PATH="$root/components/token-service:$root/components/entitlements:$root/tools/gettoken/bin:$root/tools/gettoken/privileged:$root/components/secret-manager:$root/components/contract:$root/tools/integration-test-tool/bin:$PATH"
 SECRET_DIR=$(mktemp -d)
-export SECRET_DIR
+CONTRACTS_DIR="$root/contracts"
+EXCHANGER_DIR="$root/tools/integration-test-tool/privileged/exchangers"
+export SECRET_DIR CONTRACTS_DIR EXCHANGER_DIR
 
 capability=integrationtest/ci/run
 super_token=integrationtest-supertoken

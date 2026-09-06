@@ -1,0 +1,57 @@
+.TH GETTOKEN 1 "2026-09-06" "gettoken" "User Commands"
+.SH NAME
+gettoken \- obtain a narrow access token for one job
+.SH SYNOPSIS
+.B gettoken
+.I capability
+.br
+.B gettoken
+.B \-\-list
+.SH DESCRIPTION
+.B gettoken
+is the entry point an agent uses to obtain an access token. It holds no
+credential of its own. It forwards what it was asked for to the privileged half
+of the host, which draws on a super\-token a human already placed there and
+returns a token narrow enough for the named job and nothing more.
+.PP
+A capability is a name, and it is not a secret. Its first segment names the
+service, and the segments after it name what is wanted of that service, as in
+.IR github/thruput\-io/gettoken/pr/create .
+.PP
+A successful run writes the access token, and nothing else, to standard output.
+A failure writes to standard error and leaves standard output empty, so a
+caller cannot mistake a message for a credential.
+.PP
+The token is not cached and its lifetime is not reported. Ask again for each
+job that needs one.
+.SH OPTIONS
+.TP
+.B \-\-list
+Write the capabilities this agent may equip, one per line. A capability that is
+not listed is refused.
+.SH EXIT STATUS
+.TP
+.B 0
+A token was issued and written to standard output.
+.TP
+.B 1
+No token was issued. The reason is on standard error.
+.SH FILES
+.TP
+.I /usr/lib/gettoken
+The privileged half:
+.BR token\-requester ,
+.BR token\-service ,
+.B entitlements
+and the programs that reach the store.
+.TP
+.I /usr/lib/gettoken/exchangers
+One exchanger per service, named for the first segment of the capability it
+serves. Installed by the package that integrates that service.
+.TP
+.I /var/lib/gettoken/secrets
+The super-tokens a human placed on the privileged side. No account but that one
+can read it, and nothing an agent runs reaches it.
+.SH SEE ALSO
+The design and the vocabulary are described in the README under
+.IR /usr/share/doc/gettoken .

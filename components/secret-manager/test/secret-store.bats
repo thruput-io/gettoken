@@ -3,11 +3,12 @@ bats_require_minimum_version 1.5.0
 setup() {
   root=$(CDPATH= cd "$BATS_TEST_DIRNAME/../../.." && pwd)
   PATH="$root/components/secret-manager:$root/components/contract:$PATH"
-  SECRET_DIR=$(mktemp -d)
-  export PATH SECRET_DIR
+  SECRET_DIR="$(mktemp -d)/secrets"
+  CONTRACTS_DIR="$root/contracts"
+  export PATH SECRET_DIR CONTRACTS_DIR
 }
 
-teardown() { rm -rf "$SECRET_DIR"; }
+teardown() { rm -rf "$(dirname "$SECRET_DIR")"; }
 
 @test "a stored secret comes back with its version" {
   printf 'super-1' | secret-put '{"holder":"johans-laptop","service":"github","version":1}'
@@ -65,4 +66,16 @@ teardown() { rm -rf "$SECRET_DIR"; }
 
 @test "secret-get refuses a document its contract forbids" {
   run -1 --separate-stderr secret-get '{"holder":"johans-laptop"}'
+}
+
+@test "every directory the store is made of is closed to everyone but its owner" {
+  printf 'super-1' | secret-put '{"holder":"johans-laptop","service":"github","version":1}'
+  run --separate-stderr find "$SECRET_DIR" -type d -perm 700
+  [ "$(printf '%s\n' "$output" | sort)" = "$(printf '%s\n' "$SECRET_DIR" "$SECRET_DIR/johans-laptop" "$SECRET_DIR/johans-laptop/github" | sort)" ]
+}
+
+@test "the stored secret is closed to everyone but its owner" {
+  printf 'super-1' | secret-put '{"holder":"johans-laptop","service":"github","version":1}'
+  run --separate-stderr find "$SECRET_DIR" -type f -perm 600
+  [ "$output" = "$SECRET_DIR/johans-laptop/github/1" ]
 }

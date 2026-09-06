@@ -1,0 +1,2 @@
+components/contract/validate usr/lib/gettoken
+contracts/*.schema.json usr/share/gettoken/contracts

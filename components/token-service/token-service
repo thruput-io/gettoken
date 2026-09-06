@@ -1,6 +1,8 @@
 #!/bin/sh
 set -eu
 
+exchangers=${EXCHANGER_DIR:-/usr/lib/gettoken/exchangers}
+
 request=$(cat)
 wants=$(printf '%s' "$request" | jq -r '.wants // empty')
 
@@ -9,9 +11,9 @@ if [ -z "$wants" ]; then
   exit 1
 fi
 
-exchanger="exchanger-${wants%%/*}"
+exchanger="$exchangers/${wants%%/*}"
 
-if ! command -v "$exchanger" > /dev/null; then
+if [ ! -f "$exchanger" ] || [ ! -x "$exchanger" ]; then
   echo "token-service: no exchanger serves $wants" >&2
   exit 1
 fi

@@ -1,4 +1,4 @@
-.PHONY: check debian-stable debian-latest images diagrams
+.PHONY: check debian-stable debian-latest debian-packages images diagrams
 
 IMAGE = gettoken-test
 
@@ -14,6 +14,9 @@ debian-stable: images
 
 debian-latest: images
 	docker run --rm -v "$(CURDIR)":/work $(IMAGE):latest integration/suite.sh
+
+debian-packages: images
+	docker run --rm -v "$(CURDIR)":/work $(IMAGE):stable integration/packages.sh
 
 diagrams:
 	sh integration/mermaid.sh

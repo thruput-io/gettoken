@@ -53,7 +53,7 @@ Fixed faces (name + concern). The implementation of each evolves left to right.
 | 6 | `secret-manager` | holds super-tokens on the privileged side, keyed by (who, doing, wants) | privileged folder | secrets manager |
 | 7 | `entitlements` | what an agent may equip | script entry | operator-managed |
 | 8 | `agent-identity-authority` | proves who the agent is | local OS user | gh app signed → GCP service principal |
-| 9 | `exchanger` | turns a super-token into a narrow one for one service | one per capability segment, found on `PATH` | shipped in that tool's package |
+| 9 | `exchanger` | turns a super-token into a narrow one for one service | one per capability segment, found in `/usr/lib/gettoken/exchangers` | shipped in that tool's package |
 | 10 | `renewer` | obtains a fresh super-token for one service, with a human present | runs the tool's own login | device flow → phone approval |
 
 Components 1–8 are shared. 9 and 10 are shipped once per integrated tool: each
@@ -94,7 +94,7 @@ flowchart TD
     EN["entitlements · baked-in capability list"]
     TS["token-service · dispatches on the first segment"]
     EX["exchanger · trades the super-token for a narrow one"]
-    SM[("secret-manager · /secret")]
+    SM[("secret-manager · /var/lib/gettoken/secrets")]
   end
 
   AG -->|"gettoken --list"| GT
@@ -150,9 +150,11 @@ segment of **`doing`**, and the deployment is where that key is put.
 ```
 
 An exchanger is not on the wire, so no schema fixes it. `token-service` finds it
-on `PATH` as `exchanger-<first segment of the capability>`, runs it with the
-capability, and reads the access token from the first line of its output and the
-lifetime in seconds from the second.
+in `/usr/lib/gettoken/exchangers`, named for the first segment of the capability,
+runs it with the capability, and reads the access token from the first line of
+its output and the lifetime in seconds from the second. It is looked up in that
+one directory rather than on `PATH`, because it is run with the super-token in
+reach.
 
 ## Run it
 
@@ -166,6 +168,35 @@ the exchanger trades the super-token for a narrow one, `gettoken` emits that
 token and nothing else, and `integration-test-tool` runs on it. The same tool
 refuses the super-token, so a run that succeeds is a downgrade that happened.
 This is the invariant: keep it green.
+
+## Install it
+
+Distribution is `apt`. The components and the tools are one binary package each,
+built from this tree:
+
+| Package | Carries |
+|---------|---------|
+| `gettoken` | `/usr/bin/gettoken`, and `token-requester` behind it |
+| `gettoken-token-service` | the dispatch onto an exchanger |
+| `gettoken-entitlements` | what an agent may equip |
+| `gettoken-secret-manager` | the store, at `/var/lib/gettoken/secrets` |
+| `gettoken-contract` | the contracts, and the program that checks against them |
+| `integration-test-tool` | the tool the suite integrates |
+| `integration-test-tool-gettoken` | that tool's exchanger, and the worked example of an integration |
+
+`/usr/bin` carries the agent's entry point and nothing else. Everything on the
+privileged side lives in `/usr/lib/gettoken`, which `gettoken` puts on `PATH`
+before it crosses over; a human working on that side puts it on their own.
+Integrating a tool means publishing a package that depends on `gettoken` and on
+that tool, and that installs one exchanger into `/usr/lib/gettoken/exchangers`.
+
+```sh
+make debian-packages
+```
+
+builds the packages, has `lintian` read them, installs them, runs the chain
+against what was installed, and then purges it all and fails if anything is left
+behind.
 
 ## Vision
 
@@ -199,8 +230,11 @@ flowchart LR
 implements yet carries a `SEAT.md` saying what it is for, so the list stays whole.
 A tool lives under `tools/` and owns its own privileged half, so the boundary sits
 inside the tool rather than across the top of the tree. Unit tests live with what
-they cover; `integration/` holds only what spans them; `exploratory/` answers a
-question rather than guarding the product, and `make check` does not run it.
+they cover, and so do man pages; `integration/` holds only what spans them;
+`exploratory/` answers a question rather than guarding the product, and
+`make check` does not run it. `debian/` says which of these goes into which
+package, and it is one directory because Debian builds many packages from one
+source tree.
 
 ```
 contracts/
@@ -210,6 +244,7 @@ components/
   token-service/
   entitlements/
   secret-manager/
+  contract/
   notifier/                    SEAT.md
   auth-canvas/                 SEAT.md
   agent-identity-authority/    SEAT.md
@@ -218,12 +253,15 @@ tools/
   gettoken/
     bin/gettoken
     privileged/token-requester
-    test/  man/  packaging/
+    man/gettoken.1
   integration-test-tool/
-    bin/  privileged/  test/
+    bin/  privileged/exchangers/  test/  man/
+
+debian/
+  control  changelog  rules  copyright  *.install
 
 integration/
-  suite.sh  integration.sh  mermaid.sh  docker/
+  suite.sh  integration.sh  packages.sh  mermaid.sh  docker/
 
 exploratory/
 ```

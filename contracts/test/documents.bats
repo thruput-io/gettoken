@@ -4,7 +4,8 @@ setup() {
   root=$(CDPATH= cd "$BATS_TEST_DIRNAME/../.." && pwd)
   PATH="$root/components/secret-manager:$root/components/contract:$PATH"
   SECRET_DIR=$(mktemp -d)
-  export PATH SECRET_DIR
+  CONTRACTS_DIR="$root/contracts"
+  export PATH SECRET_DIR CONTRACTS_DIR
   command -v jsonschema > /dev/null || {
     echo "jsonschema is not installed; it is the validator this repository depends on" >&2
     return 1
