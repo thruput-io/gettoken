@@ -3,6 +3,26 @@ set -eu
 
 request=$(cat)
 wants=$(printf '%s' "$request" | sed -n 's/.*"wants":"\([^"]*\)".*/\1/p')
-super_token=$(cat "$SECRET_DIR/super-token")
 
-printf '{"access_token":"%s","expires_in":3600,"wants":"%s"}\n' "$super_token" "$wants"
+if [ -z "$wants" ]; then
+  echo "token-service: the request names no capability" >&2
+  exit 1
+fi
+
+exchanger="exchanger-${wants%%/*}"
+
+if ! command -v "$exchanger" > /dev/null; then
+  echo "token-service: no exchanger serves $wants" >&2
+  exit 1
+fi
+
+exchange=$("$exchanger" "$wants")
+access_token=$(printf '%s\n' "$exchange" | sed -n 1p)
+expires_in=$(printf '%s\n' "$exchange" | sed -n 2p)
+
+if [ -z "$access_token" ] || [ -z "$expires_in" ]; then
+  echo "token-service: $exchanger returned no token" >&2
+  exit 1
+fi
+
+printf '{"access_token":"%s","expires_in":%s,"wants":"%s"}\n' "$access_token" "$expires_in" "$wants"

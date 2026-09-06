@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+
+if [ "${INTEGRATIONTEST_TOKEN:-}" != integrationtest-ci-run-allowed ]; then
+  echo "integration-test-tool: INTEGRATIONTEST_TOKEN does not allow integrationtest/ci/run" >&2
+  exit 1
+fi
+
+echo "integration-test-tool: ran integrationtest/ci/run"

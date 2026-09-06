@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+capability=$1
+
+case "$capability" in
+  integrationtest/ci/run) ;;
+  *) echo "exchanger-integrationtest: nothing is registered for $capability" >&2; exit 1 ;;
+esac
+
+super_token=$(secret-manager get integrationtest-super-token)
+
+if [ "$super_token" != integrationtest-supertoken ]; then
+  echo "exchanger-integrationtest: the stored super-token is not one this exchanger can trade" >&2
+  exit 1
+fi
+
+printf 'integrationtest-ci-run-allowed\n120\n'
