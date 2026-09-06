@@ -1,8 +1,9 @@
 # Contributing
 
-## make test does not shrink
+## make check does not shrink
 
-`make test` is the entry point, and a pull request check runs it.
+`make check` is the entry point. Every verification runs it, on the machine it
+is invoked on or inside a named base.
 
 Its scope does not decrease. Not directly, by removing or weakening what it
 asserts. Not indirectly, by moving a check beyond its reach, making a case
@@ -21,7 +22,8 @@ and what the system always does are in [`README.md`](README.md), not there.
 
 ## Running the suite
 
-`make test` runs on the host and in both Debian bases. The host needs `jq`, `bats`
+`make check` runs the suite where you invoke it. `make debian-stable` and
+`make debian-latest` run the same suite inside a named base. The host needs `jq`, `bats`
 and the validator named in [record 13](docs/adrs/0013-validating-the-wire.md):
 
 ```sh

@@ -6,34 +6,20 @@ on:
     branches: [main]
 
 jobs:
-  macos-stable:
-    name: macOS stable
-    runs-on: macos-15
+  verify:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ !matrix.blocking }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: macOS stable,  os: macos-15,      target: check,         blocking: true,  brew: true }
+          - { name: macOS latest,  os: macos-latest,  target: check,         blocking: false, brew: true }
+          - { name: Debian stable, os: ubuntu-latest, target: debian-stable, blocking: true,  brew: false }
+          - { name: Debian latest, os: ubuntu-latest, target: debian-latest, blocking: false, brew: false }
     steps:
       - uses: actions/checkout@v4
-      - run: brew install jq bats-core sourcemeta/apps/jsonschema
-      - run: make check
-
-  macos-latest:
-    name: macOS latest
-    runs-on: macos-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - run: brew install jq bats-core sourcemeta/apps/jsonschema
-      - run: make check
-
-  debian-stable:
-    name: Debian stable
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: make debian-stable
-
-  debian-latest:
-    name: Debian latest
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - run: make debian-latest
+      - if: matrix.brew
+        run: brew install jq bats-core sourcemeta/apps/jsonschema
+      - run: make ${{ matrix.target }}

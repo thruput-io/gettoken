@@ -21,5 +21,5 @@ Bundling inlines those references into one self-contained document.
 
 `exploratory/` holds work that answers a question rather than work that guards the
 product. The comparison behind this choice is kept in `exploratory/validators/`
-and is re-run when a candidate changes or a new one appears. `make test` does not
+and is re-run when a candidate changes or a new one appears. `make check` does not
 run it.
