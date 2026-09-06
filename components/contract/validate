@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+
+contracts=${CONTRACTS_DIR:-$(CDPATH= cd "$(dirname "$0")/../../contracts" && pwd)}
+schema=$1
+
+if [ ! -f "$contracts/$schema" ]; then
+  echo "validate: no contract named $schema in $contracts" >&2
+  exit 1
+fi
+
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+
+jsonschema bundle -r "$contracts/defs.schema.json" "$contracts/$schema" > "$work/schema.json"
+
+if ! jsonschema validate "$work/schema.json" - > "$work/why" 2>&1; then
+  echo "validate: the document does not satisfy $schema" >&2
+  sed 's/^/  /' "$work/why" >&2
+  exit 1
+fi
