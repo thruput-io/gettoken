@@ -25,4 +25,4 @@ if [ -z "$access_token" ] || [ -z "$expires_in" ]; then
   exit 1
 fi
 
-printf '{"access_token":"%s","expires_in":%s,"wants":"%s"}\n' "$access_token" "$expires_in" "$wants"
+printf '{"access_token":"%s","expires_in":%s}\n' "$access_token" "$expires_in"

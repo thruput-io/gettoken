@@ -11,7 +11,7 @@ super_token=integrationtest-supertoken
 narrow_token=integrationtest-ci-run-allowed
 
 expected_request="{\"who\":\"$(id -un)\",\"doing\":\"$(hostname)\",\"wants\":\"$capability\",\"signed\":\"host-privileged\"}"
-expected_response="{\"access_token\":\"$narrow_token\",\"expires_in\":120,\"wants\":\"$capability\"}"
+expected_response="{\"access_token\":\"$narrow_token\",\"expires_in\":120}"
 
 echo "# the human puts the super-token in the store"
 printf '%s' "$super_token" | secret-manager put integrationtest-super-token
