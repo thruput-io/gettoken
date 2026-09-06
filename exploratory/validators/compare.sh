@@ -3,7 +3,7 @@ set -eu
 
 root=$(CDPATH= cd "$(dirname "$0")/../.." && pwd)
 defs="$root/contracts/defs.schema.json"
-fixtures="$root/integration/validators/fixtures"
+fixtures="$root/exploratory/validators/fixtures"
 bundle=/tmp/request.bundled.json
 
 sourcemeta-jsonschema bundle -r "$defs" "$root/contracts/request.schema.json" > "$bundle"
