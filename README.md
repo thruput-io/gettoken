@@ -157,7 +157,7 @@ lifetime in seconds from the second.
 ## Run it
 
 ```sh
-make test
+make check
 ```
 
 The chain runs end to end on the `integrationtest/ci/run` capability: the
@@ -200,7 +200,7 @@ implements yet carries a `SEAT.md` saying what it is for, so the list stays whol
 A tool lives under `tools/` and owns its own privileged half, so the boundary sits
 inside the tool rather than across the top of the tree. Unit tests live with what
 they cover; `integration/` holds only what spans them; `exploratory/` answers a
-question rather than guarding the product, and `make test` does not run it.
+question rather than guarding the product, and `make check` does not run it.
 
 ```
 contracts/
