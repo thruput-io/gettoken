@@ -23,15 +23,21 @@ it.
 
 ## Principles
 
-- **Functional from the start.** Every component exists from the first commit at
-  whatever depth it needs, and the chain runs end to end at every commit. There
-  is no state in which the system is half-built and waiting to be wired up.
-- **Modular, evolvable one piece at a time.** The schemas in `contracts/` are
-  fixed; what sits behind them is not. Any component can be replaced or deepened
-  without its neighbours noticing.
-- **Scalable by adding tools.** A tool is integrated by publishing a package that
-  depends on `gettoken`. Nothing central is edited, so the hundredth tool costs
-  what the first one did.
+1. **Package the tools humans already built.** We write no new tooling. The test
+   for anything added: does it replace the tool, or supply what the tool needs?
+   Replacing is a parallel path; supplying is packaging.
+2. **Non-intrusive.** A tool package does not change the tool. Nothing is
+   rewritten, no credential is left behind, and removing the package leaves
+   nothing behind either.
+3. **Functional from the start.** Every component exists from the first commit at
+   whatever depth it needs, and the chain runs end to end at every commit. There
+   is no state in which the system is half-built and waiting to be wired up.
+4. **Modular, evolvable one piece at a time.** The schemas in `contracts/` are
+   fixed; what sits behind them is not. Any component can be replaced or deepened
+   without its neighbours noticing.
+5. **Scalable by adding tools.** A tool is integrated by publishing a package that
+   depends on `gettoken`. Nothing central is edited, so the hundredth tool costs
+   what the first one did.
 
 ## Components
 
