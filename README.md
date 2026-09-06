@@ -153,4 +153,5 @@ contracts/    the fixed schemas — the sacred part
 components/   machinery more than one tool shares; a seat where nothing implements it yet
 tools/        one directory per tool, each owning its privileged half
 integration/  what spans them
+exploratory/  answers a question rather than guarding the product; `make test` does not run it
 ```
