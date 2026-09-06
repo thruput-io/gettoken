@@ -10,7 +10,7 @@ capability=integrationtest/ci/run
 super_token=integrationtest-supertoken
 narrow_token=integrationtest-ci-run-allowed
 
-expected_request="{\"who\":\"$USER\",\"doing\":\"$(hostname)\",\"wants\":\"$capability\",\"signed\":\"host-privileged\"}"
+expected_request="{\"who\":\"$(id -un)\",\"doing\":\"$(hostname)\",\"wants\":\"$capability\",\"signed\":\"host-privileged\"}"
 expected_response="{\"access_token\":\"$narrow_token\",\"expires_in\":120,\"wants\":\"$capability\"}"
 
 echo "# the human puts the super-token in the store"
@@ -52,6 +52,13 @@ request=$(cat "$REQUEST_FILE")
 echo "$request"
 [ "$request" = "$expected_request" ] || { echo "FAIL: request is not $expected_request"; exit 1; }
 [ "$stub_out" = "stub-token" ] || { echo "FAIL: token-requester did not return the token alone"; exit 1; }
+
+echo
+echo "# the agent cannot dictate who it is by setting USER"
+USER=impostor PATH="$stub_dir:$PATH" token-requester "$capability" > /dev/null
+spoofed=$(cat "$REQUEST_FILE")
+echo "$spoofed"
+[ "$spoofed" = "$expected_request" ] || { echo "FAIL: USER=impostor changed the request; who must come from the kernel, not the environment"; exit 1; }
 rm -rf "$stub_dir"
 
 echo

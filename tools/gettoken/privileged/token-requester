@@ -11,7 +11,7 @@ if [ "$1" = --list ]; then
 fi
 
 request=$(jq -nc \
-  --arg who "$USER" \
+  --arg who "$(id -un)" \
   --arg doing "$(hostname)" \
   --arg wants "$1" \
   --arg signed host-privileged \
