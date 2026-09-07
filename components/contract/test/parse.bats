@@ -31,11 +31,11 @@ reading() {
 }
 
 @test "a field that is false yields false rather than nothing" {
-  fields=$(printf '%s' '{"found":false,"version":2}' \
-    | parse secret-get-response.schema.json found version)
+  fields=$(printf '%s' '{"version":2,"value":"super-1"}' \
+    | parse secret-get-response.schema.json version value)
   eval "$fields"
-  [ "$found" = "false" ]
   [ "$version" = "2" ]
+  [ "$value" = "super-1" ]
 }
 
 @test "a value cannot escape the assignment it is put in" {

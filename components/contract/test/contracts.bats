@@ -14,14 +14,15 @@ requesting() {
     '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:$signed}'
 }
 
-@test "a secret-get response claiming to be found without a value is refused" {
-  run -1 --separate-stderr admits secret-get-response.schema.json '{"found":true,"version":1}'
+@test "a secret-get response carrying no secret is refused, because there is no such answer" {
+  run -1 --separate-stderr admits secret-get-response.schema.json '{"version":1}'
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-get-response.schema.json"* ]]
 }
 
-@test "a secret-get response claiming not to be found while carrying a value is refused" {
-  run -1 --separate-stderr admits secret-get-response.schema.json '{"found":false,"version":1,"value":"leaked"}'
+@test "a secret-get response saying whether it found anything is refused, because the status says" {
+  run -1 --separate-stderr admits secret-get-response.schema.json \
+    '{"found":true,"version":1,"value":"super-1"}'
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-get-response.schema.json"* ]]
 }

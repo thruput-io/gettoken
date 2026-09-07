@@ -19,26 +19,20 @@ setup() {
   [ "$(printf '%s' "$document" | jq -r '.access_token | type')" = "string" ]
 }
 
-@test "a value that is a boolean goes in as a boolean" {
-  document=$(format secret-get-response.schema.json found=false version=2)
-  [ "$(printf '%s' "$document" | jq -r '.found | type')" = "boolean" ]
-  [ "$(printf '%s' "$document" | jq -r '.found')" = "false" ]
-}
-
 @test "a value the command line must not carry is read from a file" {
   printf 'super-1' > "$BATS_TEST_TMPDIR/secret"
-  document=$(format secret-get-response.schema.json found=true version=1 "value@$BATS_TEST_TMPDIR/secret")
+  document=$(format secret-get-response.schema.json version=1 "value@$BATS_TEST_TMPDIR/secret")
   [ "$(printf '%s' "$document" | jq -r '.value')" = "super-1" ]
 }
 
 @test "a value is read from standard input when the file is named -" {
-  document=$(printf 'super-1' | format secret-get-response.schema.json found=true version=1 value@-)
+  document=$(printf 'super-1' | format secret-get-response.schema.json version=1 value@-)
   [ "$(printf '%s' "$document" | jq -r '.value')" = "super-1" ]
 }
 
 @test "a value read from a file stays a string even when it reads as JSON" {
   printf '12345' > "$BATS_TEST_TMPDIR/secret"
-  document=$(format secret-get-response.schema.json found=true version=1 "value@$BATS_TEST_TMPDIR/secret")
+  document=$(format secret-get-response.schema.json version=1 "value@$BATS_TEST_TMPDIR/secret")
   [ "$(printf '%s' "$document" | jq -r '.value | type')" = "string" ]
   [ "$(printf '%s' "$document" | jq -r '.value')" = "12345" ]
 }
@@ -52,7 +46,7 @@ setup() {
 
 @test "a file that is not there is refused, and says which" {
   run -1 --separate-stderr format secret-get-response.schema.json \
-    found=true version=1 "value@$BATS_TEST_TMPDIR/nosuch"
+    version=1 "value@$BATS_TEST_TMPDIR/nosuch"
   [ "$output" = "" ]
   [[ "$stderr" == *"nosuch"* ]]
 }
@@ -65,9 +59,9 @@ setup() {
 }
 
 @test "a document the contract forbids is refused and not written" {
-  run -1 --separate-stderr format secret-get-response.schema.json found=false version=1 value=leaked
+  run -1 --separate-stderr format secret-get-response.schema.json version=1
   [ "$output" = "" ]
-  [ -n "$stderr" ]
+  [[ "$stderr" == *"does not satisfy secret-get-response.schema.json"* ]]
 }
 
 @test "a field the contract does not govern is refused" {
@@ -77,7 +71,7 @@ setup() {
 }
 
 @test "a value that is not the type the contract names is refused" {
-  run -1 --separate-stderr format secret-get-response.schema.json found=true version=x value=y
+  run -1 --separate-stderr format secret-get-response.schema.json version=x value=y
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-get-response.schema.json"* ]]
 }

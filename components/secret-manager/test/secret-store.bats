@@ -46,20 +46,17 @@ getting() {
   [ "$(printf '%s' "$output" | jq -r '.value')" = "super-1" ]
 }
 
-@test "asking for a version that does not exist yet is an answer, not a failure" {
+@test "asking for a version that is not there hands over nothing and says so" {
   putting johans-laptop/github super-1
-  run -0 --separate-stderr getting johans-laptop/github 1
-  [ "$(printf '%s' "$output" | jq -r '.found')" = "false" ]
-  [ "$(printf '%s' "$output" | jq -r '.version')" = "0" ]
-  [ "$(printf '%s' "$output" | jq -r 'has("value")')" = "false" ]
+  run -1 --separate-stderr getting johans-laptop/github 1
+  [ "$output" = "" ]
+  [[ "$stderr" == *"johans-laptop/github has no version 1"* ]]
 }
 
-@test "what secret-get emits when it finds the secret carries the value and says so" {
+@test "what secret-get emits is the secret and the version it is" {
   putting johans-laptop/github super-1
   run -0 --separate-stderr getting johans-laptop/github
-  [ "$(printf '%s' "$output" | jq -r '.found')" = true ]
-  [ "$(printf '%s' "$output" | jq -r '.version')" = 0 ]
-  [ "$(printf '%s' "$output" | jq -r '.value')" = super-1 ]
+  [ "$output" = '{"value":"super-1","version":0}' ]
 }
 
 @test "the secret never appears on stderr" {

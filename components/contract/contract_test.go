@@ -90,10 +90,10 @@ func TestABodyThatIsNotJSONIsRefusedRatherThanReadAsEmpty(t *testing.T) {
 
 func TestBuildChecksBeforeItYieldsADocument(t *testing.T) {
 	governing := open(t, "secret-get-response.schema.json")
-	if _, err := governing.Build(map[string]any{"found": false, "version": 1.0, "value": "leaked"}); err == nil {
+	if _, err := governing.Build(map[string]any{"version": 1.0}); err == nil {
 		t.Fatal("a document the contract forbids was built")
 	}
-	document, err := governing.Build(map[string]any{"found": true, "version": 1.0, "value": "super-1"})
+	document, err := governing.Build(map[string]any{"version": 1.0, "value": "super-1"})
 	if err != nil {
 		t.Fatalf("a document the contract admits was refused: %v", err)
 	}
@@ -104,7 +104,7 @@ func TestBuildChecksBeforeItYieldsADocument(t *testing.T) {
 
 func TestADocumentCannotBeChangedThroughWhatBuiltItOrWhatItAnswers(t *testing.T) {
 	governing := open(t, "secret-get-response.schema.json")
-	values := map[string]any{"found": true, "version": 1.0, "value": "super-1"}
+	values := map[string]any{"version": 1.0, "value": "super-1"}
 	document, err := governing.Build(values)
 	if err != nil {
 		t.Fatal(err)
