@@ -7,7 +7,7 @@ setup() {
   export PATH CONTRACTS_DIR
 }
 
-admits() { printf '%s' "$2" | validate "$1"; }
+admits() { printf '%s' "$2" | parse "$1"; }
 
 @test "a secret-get response claiming to be found without a value is refused" {
   run -1 --separate-stderr admits secret-get-response.schema.json '{"found":true,"version":1}'

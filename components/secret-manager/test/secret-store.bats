@@ -84,12 +84,12 @@ teardown() { rm -rf "$(dirname "$SECRET_DIR")"; }
   printf 'super-1' | secret-put '{"holder":"johans-laptop","service":"github","version":1}'
   run --separate-stderr secret-get '{"holder":"johans-laptop","service":"github"}'
   [ "$status" -eq 0 ]
-  printf '%s' "$output" | validate secret-get-response.schema.json
+  printf '%s' "$output" | parse secret-get-response.schema.json
 }
 
 @test "what secret-get emits when the version is not there satisfies its contract" {
   printf 'super-1' | secret-put '{"holder":"johans-laptop","service":"github","version":1}'
   run --separate-stderr secret-get '{"holder":"johans-laptop","service":"github","version":2}'
   [ "$status" -eq 0 ]
-  printf '%s' "$output" | validate secret-get-response.schema.json
+  printf '%s' "$output" | parse secret-get-response.schema.json
 }
