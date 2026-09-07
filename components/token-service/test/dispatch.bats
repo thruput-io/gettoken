@@ -25,7 +25,7 @@ dispatch() { printf '%s' "$1" | token-service; }
 asking() { dispatch "$(wanting "$1")"; }
 
 @test "the exchanger registered for the first segment is handed the whole capability" {
-  register integrationtest 'printf "%s\n120\n" "$1"'
+  register integrationtest 'format response.schema.json "access_token=$1" expires_in=120'
   run -0 --separate-stderr asking integrationtest/ci/run
   [ "$(printf '%s' "$output" | jq -r '.access_token')" = "integrationtest/ci/run" ]
   [ "$(printf '%s' "$output" | jq -r '.expires_in')" = "120" ]
@@ -33,14 +33,14 @@ asking() { dispatch "$(wanting "$1")"; }
 }
 
 @test "an exchanger claiming a lifetime shorter than a minute hands over nothing" {
-  register integrationtest 'printf "%s\n1\n" narrow-token'
+  register integrationtest 'echo "{\"access_token\":\"narrow-token\",\"expires_in\":1}"'
   run -1 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy response.schema.json"* ]]
 }
 
 @test "an exchanger claiming a lifetime longer than a day hands over nothing" {
-  register integrationtest 'printf "%s\n86401\n" narrow-token'
+  register integrationtest 'echo "{\"access_token\":\"narrow-token\",\"expires_in\":86401}"'
   run -1 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy response.schema.json"* ]]
@@ -77,11 +77,18 @@ asking() { dispatch "$(wanting "$1")"; }
   [[ "$stderr" == *"does not satisfy request.schema.json"* ]]
 }
 
-@test "an exchanger returning no lifetime is refused" {
+@test "an exchanger answering with no lifetime is refused" {
+  register integrationtest 'echo "{\"access_token\":\"narrow-token\"}"'
+  run -1 --separate-stderr asking integrationtest/ci/run
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy response.schema.json"* ]]
+}
+
+@test "an exchanger answering with something that is not a document is refused" {
   register integrationtest 'printf "%s\n" narrow-token'
   run -1 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "" ]
-  [[ "$stderr" == *"returned no token"* ]]
+  [[ "$stderr" == *"not JSON"* ]]
 }
 
 @test "an exchanger that fails takes the request down with it" {

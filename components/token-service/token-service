@@ -14,13 +14,10 @@ if [ ! -f "$exchanger" ] || [ ! -x "$exchanger" ]; then
   exit 1
 fi
 
-exchange=$("$exchanger" "$wants")
-access_token=$(printf '%s\n' "$exchange" | sed -n 1p)
-expires_in=$(printf '%s\n' "$exchange" | sed -n 2p)
+response=$("$exchanger" "$wants")
 
-if [ -z "$access_token" ] || [ -z "$expires_in" ]; then
-  echo "token-service: $exchanger returned no token" >&2
-  exit 1
-fi
+# An exchanger is dropped into this directory rather than shipped by any package
+# here, so its answer is the one document on this path that comes from outside.
+printf '%s' "$response" | parse response.schema.json
 
-printf '%s' "$access_token" | format response.schema.json access_token@- "expires_in=$expires_in"
+printf '%s\n' "$response"

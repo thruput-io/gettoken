@@ -18,4 +18,6 @@ if [ "$value" != integrationtest-supertoken ]; then
   exit 1
 fi
 
-printf 'integrationtest-ci-run-allowed\n120\n'
+format response.schema.json \
+  access_token=integrationtest-ci-run-allowed \
+  expires_in=120
