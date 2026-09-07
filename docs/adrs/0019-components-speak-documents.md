@@ -53,7 +53,7 @@ is being built is said by which names are given, not by leaving something out.
 An exchanger is dropped into `/usr/lib/gettoken/exchangers` rather than shipped by
 any package here, so its answer is the one document on that path that arrives from
 outside anything this repository builds. `token-service` holds it to
-`response.schema.json` before passing it on, which is why the lifetime bounds in
+`token-response.schema.json` before passing it on, which is why the lifetime bounds in
 record 18 are enforced there and nowhere else.
 
 ## A failure is a status, not a field

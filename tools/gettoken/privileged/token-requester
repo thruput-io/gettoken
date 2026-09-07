@@ -1,16 +1,14 @@
 #!/bin/sh
 set -eu
 
-fields=$(parse ask.schema.json wants query)
-wants='' query=''
-eval "$fields"
+if [ "${1:-}" = "--list" ]; then
+  parse agent-list-request.schema.json > /dev/null
 
-who=$(id -un)
-doing=$(hostname)
-signed=host-privileged
-export who doing signed
+  who=$(id -un)
+  doing=$(hostname)
+  signed=host-privileged
+  export who doing signed
 
-if [ "$query" = list ]; then
   request=$(format entitlements-request.schema.json who doing signed)
 
   entitled=$(printf '%s' "$request" | entitlements)
@@ -19,12 +17,20 @@ if [ "$query" = list ]; then
   exit 0
 fi
 
-export wants
-request=$(format request.schema.json who doing wants signed)
+fields=$(parse agent-capability-request.schema.json wants)
+wants=''
+eval "$fields"
+
+who=$(id -un)
+doing=$(hostname)
+signed=host-privileged
+export who doing signed wants
+
+request=$(format token-request.schema.json who doing wants signed)
 
 response=$(printf '%s' "$request" | token-service)
 
-fields=$(printf '%s' "$response" | parse response.schema.json access_token)
+fields=$(printf '%s' "$response" | parse token-response.schema.json access_token)
 access_token=''
 eval "$fields"
 

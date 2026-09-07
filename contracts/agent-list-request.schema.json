@@ -5,11 +5,15 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "wants": { "$ref": "defs.schema.json#/$defs/Capability" },
-    "query": { "const": "list" }
+    "query": {
+      "const": "list"
+    }
   },
   "oneOf": [
-    { "required": ["wants"], "not": { "required": ["query"] } },
-    { "required": ["query"], "not": { "required": ["wants"] } }
+    {
+      "required": [
+        "query"
+      ]
+    }
   ]
 }

@@ -3,7 +3,7 @@ set -eu
 
 exchangers=${EXCHANGER_DIR:-/usr/lib/gettoken/exchangers}
 
-fields=$(parse request.schema.json who wants)
+fields=$(parse token-request.schema.json who wants)
 who='' wants=''
 eval "$fields"
 
@@ -18,6 +18,6 @@ export who wants
 exchange=$(format exchange-request.schema.json who wants)
 response=$(printf '%s' "$exchange" | "$exchanger")
 
-printf '%s' "$response" | parse response.schema.json
+printf '%s' "$response" | parse token-response.schema.json
 
 printf '%s\n' "$response"

@@ -12,11 +12,11 @@ fi
 if [ "$1" = --list ]; then
   query=list
   export query
-  ask=$(format ask.schema.json query)
+  ask=$(format agent-list-request.schema.json query)
+  printf '%s' "$ask" | token-requester --list
 else
   wants=$1
   export wants
-  ask=$(format ask.schema.json wants)
+  ask=$(format agent-capability-request.schema.json wants)
+  printf '%s' "$ask" | token-requester
 fi
-
-printf '%s' "$ask" | token-requester

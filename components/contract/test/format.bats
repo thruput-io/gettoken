@@ -10,7 +10,7 @@ setup() {
 @test "a value that is not JSON is the one that gets quoted" {
   who=tore doing=mac.lan wants=integrationtest/ci/run signed=host-privileged
   export who doing wants signed
-  document=$(format request.schema.json who doing wants signed)
+  document=$(format token-request.schema.json who doing wants signed)
   [ "$(printf '%s' "$document" | jq -r '.who | type')" = "string" ]
   [ "$(printf '%s' "$document" | jq -r '.wants | type')" = "string" ]
   [ "$(printf '%s' "$document" | jq -r '.who')" = "tore" ]
@@ -19,7 +19,7 @@ setup() {
 @test "a value that is a number goes in as a number" {
   access_token=narrow expires_in=120
   export access_token expires_in
-  document=$(format response.schema.json access_token expires_in)
+  document=$(format token-response.schema.json access_token expires_in)
   [ "$(printf '%s' "$document" | jq -r '.expires_in | type')" = "number" ]
   [ "$(printf '%s' "$document" | jq -r '.access_token | type')" = "string" ]
 }
@@ -44,7 +44,7 @@ a second line'
   who=tore doing=mac.lan wants=integrationtest/ci/run
   export who doing wants
   unset signed
-  run -1 --separate-stderr format request.schema.json who doing wants signed
+  run -1 --separate-stderr format token-request.schema.json who doing wants signed
   [ "$output" = "" ]
   [[ "$stderr" == *"signed is not set"* ]]
 }
@@ -52,7 +52,7 @@ a second line'
 @test "a field named twice is refused" {
   who=tore doing=mac.lan wants=integrationtest/ci/run signed=host-privileged
   export who doing wants signed
-  run -1 --separate-stderr format request.schema.json who who doing wants signed
+  run -1 --separate-stderr format token-request.schema.json who who doing wants signed
   [ "$output" = "" ]
   [[ "$stderr" == *"who is named twice"* ]]
 }

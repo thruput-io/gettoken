@@ -14,7 +14,7 @@ key=host-privileged/integrationtest
 export key
 asked=$(format secret-get-request.schema.json key)
 
-fields=$(printf '%s' "$asked" | secret-get | parse secret-get-response.schema.json value)
+fields=$(printf '%s' "$asked" | secret-get --with-key | parse secret-get-response.schema.json value)
 value=''
 eval "$fields"
 
@@ -27,4 +27,4 @@ access_token=integrationtest-ci-run-allowed
 expires_in=120
 export access_token expires_in
 
-format response.schema.json access_token expires_in
+format token-response.schema.json access_token expires_in

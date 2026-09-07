@@ -14,13 +14,13 @@ requesting() {
     '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:$signed}'
 }
 
-@test "a secret-get response carrying no secret is refused, because there is no such answer" {
+@test "a secret response carrying no secret is refused, because there is no such answer" {
   run -1 --separate-stderr admits secret-get-response.schema.json '{"version":1}'
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-get-response.schema.json"* ]]
 }
 
-@test "a secret-get response saying whether it found anything is refused, because the status says" {
+@test "a secret response saying whether it found anything is refused, because the status says" {
   run -1 --separate-stderr admits secret-get-response.schema.json \
     '{"found":true,"version":1,"value":"super-1"}'
   [ "$output" = "" ]
@@ -28,41 +28,41 @@ requesting() {
 }
 
 @test "a request whose signature is ordinary text is admitted" {
-  run -0 --separate-stderr admits request.schema.json "$(requesting host-privileged)"
+  run -0 --separate-stderr admits token-request.schema.json "$(requesting host-privileged)"
   [ "$stderr" = "" ]
 }
 
 @test "a request whose signature carries a control character is refused" {
-  run -1 --separate-stderr admits request.schema.json "$(requesting "host$(printf '\001')privileged")"
+  run -1 --separate-stderr admits token-request.schema.json "$(requesting "host$(printf '\001')privileged")"
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy request.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy token-request.schema.json"* ]]
 }
 
 @test "a request whose signature carries a delete character is refused" {
-  run -1 --separate-stderr admits request.schema.json "$(requesting "host$(printf '\177')privileged")"
+  run -1 --separate-stderr admits token-request.schema.json "$(requesting "host$(printf '\177')privileged")"
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy request.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy token-request.schema.json"* ]]
 }
 
 @test "a request whose signature ends in a newline is refused" {
-  run -1 --separate-stderr admits request.schema.json \
+  run -1 --separate-stderr admits token-request.schema.json \
     "$(jq -nc '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:"host-privileged\n"}')"
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy request.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy token-request.schema.json"* ]]
 }
 
 @test "a capability ending in a newline is refused" {
-  run -1 --separate-stderr admits request.schema.json \
+  run -1 --separate-stderr admits token-request.schema.json \
     "$(jq -nc '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run\n",signed:"host-privileged"}')"
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy request.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy token-request.schema.json"* ]]
 }
 
 @test "an agent name ending in a newline is refused" {
-  run -1 --separate-stderr admits request.schema.json \
+  run -1 --separate-stderr admits token-request.schema.json \
     "$(jq -nc '{who:"tore\n",doing:"mac.lan",wants:"integrationtest/ci/run",signed:"host-privileged"}')"
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy request.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy token-request.schema.json"* ]]
 }
 
 @test "a document the contract does not govern is refused, and says so differently" {
@@ -88,90 +88,90 @@ requesting() {
 }
 
 @test "the first version and the last one the store can hold are both admitted" {
-  run -0 --separate-stderr admits secret-get-request.schema.json '{"key":"johans-laptop/github","version":0}'
+  run -0 --separate-stderr admits secret-get-request-version.schema.json '{"key":"johans-laptop/github","version":0}'
   [ "$stderr" = "" ]
-  run -0 --separate-stderr admits secret-get-request.schema.json '{"key":"johans-laptop/github","version":1000000}'
+  run -0 --separate-stderr admits secret-get-request-version.schema.json '{"key":"johans-laptop/github","version":1000000}'
   [ "$stderr" = "" ]
 }
 
 @test "a version before the first one the store can hold is refused" {
-  run -1 --separate-stderr admits secret-get-request.schema.json '{"key":"johans-laptop/github","version":-1}'
+  run -1 --separate-stderr admits secret-get-request-version.schema.json '{"key":"johans-laptop/github","version":-1}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-get-request.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy secret-get-request-version.schema.json"* ]]
 }
 
 @test "a version past the last one the store can hold is refused" {
-  run -1 --separate-stderr admits secret-get-request.schema.json '{"key":"johans-laptop/github","version":1000001}'
+  run -1 --separate-stderr admits secret-get-request-version.schema.json '{"key":"johans-laptop/github","version":1000001}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-get-request.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy secret-get-request-version.schema.json"* ]]
 }
 
 @test "a minute and a day are both admitted as lifetimes" {
-  run -0 --separate-stderr admits response.schema.json '{"access_token":"narrow","expires_in":60}'
+  run -0 --separate-stderr admits token-response.schema.json '{"access_token":"narrow","expires_in":60}'
   [ "$stderr" = "" ]
-  run -0 --separate-stderr admits response.schema.json '{"access_token":"narrow","expires_in":86400}'
+  run -0 --separate-stderr admits token-response.schema.json '{"access_token":"narrow","expires_in":86400}'
   [ "$stderr" = "" ]
 }
 
 @test "a lifetime shorter than a minute is refused" {
-  run -1 --separate-stderr admits response.schema.json '{"access_token":"narrow","expires_in":59}'
+  run -1 --separate-stderr admits token-response.schema.json '{"access_token":"narrow","expires_in":59}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy response.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy token-response.schema.json"* ]]
 }
 
 @test "a lifetime longer than a day is refused" {
-  run -1 --separate-stderr admits response.schema.json '{"access_token":"narrow","expires_in":86401}'
+  run -1 --separate-stderr admits token-response.schema.json '{"access_token":"narrow","expires_in":86401}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy response.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy token-response.schema.json"* ]]
 }
 
 @test "a response carrying a field the contract does not govern is refused" {
-  run -1 --separate-stderr admits response.schema.json \
+  run -1 --separate-stderr admits token-response.schema.json \
     '{"access_token":"narrow","expires_in":120,"wants":"integrationtest/ci/run"}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy response.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy token-response.schema.json"* ]]
 }
 
 @test "an ask naming a capability is admitted" {
-  run -0 --separate-stderr admits ask.schema.json '{"wants":"integrationtest/ci/run"}'
+  run -0 --separate-stderr admits agent-capability-request.schema.json '{"wants":"integrationtest/ci/run"}'
   [ "$stderr" = "" ]
 }
 
 @test "an ask for the list is admitted" {
-  run -0 --separate-stderr admits ask.schema.json '{"query":"list"}'
+  run -0 --separate-stderr admits agent-list-request.schema.json '{"query":"list"}'
   [ "$stderr" = "" ]
 }
 
 @test "an ask that is neither is refused" {
-  run -1 --separate-stderr admits ask.schema.json '{}'
+  run -1 --separate-stderr admits agent-capability-request.schema.json '{}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy ask.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy agent-capability-request.schema.json"* ]]
 }
 
 @test "an ask that is both at once is refused" {
-  run -1 --separate-stderr admits ask.schema.json \
+  run -1 --separate-stderr admits agent-capability-request.schema.json \
     '{"wants":"integrationtest/ci/run","query":"list"}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy ask.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy agent-capability-request.schema.json"* ]]
 }
 
 @test "an ask querying anything but the list is refused" {
-  run -1 --separate-stderr admits ask.schema.json '{"query":"everything"}'
+  run -1 --separate-stderr admits agent-list-request.schema.json '{"query":"everything"}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy ask.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy agent-list-request.schema.json"* ]]
 }
 
 @test "an ask carrying a field the agent has no say over is refused" {
-  run -1 --separate-stderr admits ask.schema.json \
+  run -1 --separate-stderr admits agent-capability-request.schema.json \
     '{"wants":"integrationtest/ci/run","signed":"forged-by-agent"}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy ask.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy agent-capability-request.schema.json"* ]]
 }
 
 @test "an ask whose capability is not one is refused" {
-  run -1 --separate-stderr admits ask.schema.json '{"wants":"../../bin/sh"}'
+  run -1 --separate-stderr admits agent-capability-request.schema.json '{"wants":"../../bin/sh"}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy ask.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy agent-capability-request.schema.json"* ]]
 }
 
 @test "an exchange request naming who is asking and what for is admitted" {
@@ -234,15 +234,8 @@ requesting() {
   [[ "$stderr" == *"does not satisfy entitlements-request.schema.json"* ]]
 }
 
-@test "a secret-put response says which key and which version it stored" {
-  run -0 --separate-stderr admits secret-put-response.schema.json \
-    '{"key":"johans-laptop/github","version":0}'
+@test "a secret response says which version and value it carried" {
+  run -0 --separate-stderr admits secret-get-response.schema.json \
+    '{"version":0,"value":"super-1"}'
   [ "$stderr" = "" ]
-}
-
-@test "a secret-put response carrying the secret back is refused" {
-  run -1 --separate-stderr admits secret-put-response.schema.json \
-    '{"key":"johans-laptop/github","version":0,"value":"super-1"}'
-  [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-put-response.schema.json"* ]]
 }

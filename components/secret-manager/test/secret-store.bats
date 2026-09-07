@@ -22,15 +22,15 @@ getting() {
   if [ $# -eq 2 ]; then
     version=$2
     export version
-    format secret-get-request.schema.json key version | secret-get
+    format secret-get-request-version.schema.json key version | secret-get
   else
-    format secret-get-request.schema.json key | secret-get
+    format secret-get-request.schema.json key | secret-get --with-key
   fi
 }
 
-@test "storing a secret answers with the key and the version it was given" {
+@test "storing a secret answers with version and value" {
   run -0 --separate-stderr putting johans-laptop/github super-1
-  [ "$output" = '{"key":"johans-laptop/github","version":0}' ]
+  [ "$output" = '{"value":"super-1","version":0}' ]
   [ "$stderr" = "" ]
 }
 
@@ -104,7 +104,7 @@ getting() {
 }
 
 @test "asking with no key at all is refused" {
-  run -1 --separate-stderr sh -c 'printf %s "{}" | secret-get'
+  run -1 --separate-stderr sh -c 'printf %s "{}" | secret-get --with-key'
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-get-request.schema.json"* ]]
 }

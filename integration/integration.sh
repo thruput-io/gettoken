@@ -21,7 +21,7 @@ key=host-privileged/integrationtest
 value=$super_token
 export key value
 format secret-put-request.schema.json key value | secret-put
-stored=$(format secret-get-request.schema.json key | secret-get)
+stored=$(format secret-get-request.schema.json key | secret-get --with-key)
 printf '%s' "$stored" | parse secret-get-response.schema.json
 held=$(printf '%s' "$stored" | jq -r '.value')
 echo "$held"
@@ -43,7 +43,7 @@ echo "# the ask gettoken hands the privileged half"
 asked=$(mktemp)
 wants=$capability
 export wants
-format ask.schema.json wants > "$asked"
+format agent-capability-request.schema.json wants > "$asked"
 cat "$asked"
 
 echo

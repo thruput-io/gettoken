@@ -23,11 +23,11 @@ reading() {
 }
 
 @test "a field the document does not carry yields an empty value" {
-  fields=$(printf '%s' '{"key":"johans-laptop/github"}' \
-    | parse secret-get-request.schema.json key version)
+  fields=$(printf '%s' '{"key":"johans-laptop/github","version":0}' \
+    | parse secret-get-request-version.schema.json key version)
   eval "$fields"
   [ "$key" = "johans-laptop/github" ]
-  [ -z "$version" ]
+  [ "$version" = "0" ]
 }
 
 @test "a field that is false yields false rather than nothing" {
@@ -42,7 +42,7 @@ reading() {
   want="'; touch $BATS_TEST_TMPDIR/escaped; '"
   document=$(jq -nc --arg signed "$want" \
     '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:$signed}')
-  fields=$(printf '%s' "$document" | parse request.schema.json signed)
+  fields=$(printf '%s' "$document" | parse token-request.schema.json signed)
   eval "$fields"
   [ "$signed" = "$want" ]
   [ ! -e "$BATS_TEST_TMPDIR/escaped" ]
@@ -57,23 +57,23 @@ reading() {
 
 @test "a document missing a required field is refused" {
   run -1 --separate-stderr reading secret-put-request.schema.json \
-    '{"key":"johans-laptop/github"}' key
+    '{}' key
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
 }
 
 @test "a field breaking its type is refused" {
   run -1 --separate-stderr reading secret-put-request.schema.json \
-    '{"key":"Johans-Laptop/github","value":"super-1"}' key
+    '{"key":"Johans-Laptop","value":"super-1"}' key
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
 }
 
 @test "a version below the first one the store can hold is refused" {
-  run -1 --separate-stderr reading secret-get-request.schema.json \
+  run -1 --separate-stderr reading secret-get-request-version.schema.json \
     '{"key":"johans-laptop/github","version":-1}' version
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-get-request.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy secret-get-request-version.schema.json"* ]]
 }
 
 @test "naming a contract that does not exist is refused, and says so differently" {

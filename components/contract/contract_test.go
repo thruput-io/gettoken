@@ -39,8 +39,8 @@ func TestAContractThatIsNotASchemaIsNotReportedAsMissing(t *testing.T) {
 }
 
 func TestADocumentItsContractAdmitsAnswersByKey(t *testing.T) {
-	governing := open(t, "secret-put-request.schema.json")
-	document, err := governing.Hold([]byte(`{"key":"johans-laptop/github","value":"super-1"}`))
+	governing := open(t, "secret-get-request-version.schema.json")
+	document, err := governing.Hold([]byte(`{"key":"johans-laptop/github","version":0}`))
 	if err != nil {
 		t.Fatalf("a document the contract admits was refused: %v", err)
 	}
@@ -51,12 +51,12 @@ func TestADocumentItsContractAdmitsAnswersByKey(t *testing.T) {
 }
 
 func TestAFieldTheDocumentDoesNotCarryIsToldApartFromOneItDoes(t *testing.T) {
-	governing := open(t, "secret-get-request.schema.json")
-	document, err := governing.Hold([]byte(`{"key":"johans-laptop/github"}`))
+	governing := open(t, "secret-get-request-version.schema.json")
+	document, err := governing.Hold([]byte(`{"key":"johans-laptop/github","version":0}`))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, carried := document.Value("version"); carried {
+	if _, carried := document.Value("nosuch"); carried {
 		t.Error("a field the document does not carry answered as carried")
 	}
 	if _, carried := document.Value("key"); !carried {
@@ -65,21 +65,21 @@ func TestAFieldTheDocumentDoesNotCarryIsToldApartFromOneItDoes(t *testing.T) {
 }
 
 func TestADocumentTheContractRefusesYieldsNothingToRead(t *testing.T) {
-	governing := open(t, "secret-put-request.schema.json")
-	document, err := governing.Hold([]byte(`{"key":"johans-laptop/github"}`))
+	governing := open(t, "secret-get-request-version.schema.json")
+	document, err := governing.Hold([]byte(`{"version":1}`))
 	if err == nil {
 		t.Fatal("a document missing a required field was held")
 	}
 	if document != nil {
 		t.Error("a refused document was still handed back")
 	}
-	if !strings.Contains(err.Error(), "does not satisfy secret-put-request.schema.json") {
+	if !strings.Contains(err.Error(), "does not satisfy secret-get-request-version.schema.json") {
 		t.Errorf("the failure does not name the contract: %v", err)
 	}
 }
 
 func TestABodyThatIsNotJSONIsRefusedRatherThanReadAsEmpty(t *testing.T) {
-	governing := open(t, "secret-put-request.schema.json")
+	governing := open(t, "secret-get-request-version.schema.json")
 	if _, err := governing.Hold([]byte("not json")); err == nil {
 		t.Fatal("a body that is not JSON was held")
 	}

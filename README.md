@@ -134,8 +134,8 @@ segment of **`doing`**, and the deployment is where that key is put.
 
 ## Contracts
 
-- `contracts/request.schema.json` — the request: `who`, `doing`, `wants`, `signed`.
-- `contracts/response.schema.json` — the response: `access_token`, `expires_in`.
+- `contracts/token-request.schema.json` — the request: `who`, `doing`, `wants`, `signed`.
+- `contracts/token-response.schema.json` — the response: `access_token`, `expires_in`.
 - `contracts/defs.schema.json` — every domain object defined once; the request
   and response only `$ref` these, never inline a constraint.
 
@@ -244,9 +244,11 @@ source tree.
 
 ```
 contracts/
-  defs.schema.json  request.schema.json  response.schema.json
-  secret-get-request.schema.json  secret-get-response.schema.json
-  secret-put-request.schema.json
+  agent-capability-request.schema.json  agent-list-request.schema.json
+  defs.schema.json  entitlements-request.schema.json  entitlements-response.schema.json
+  exchange-request.schema.json  secret-request-version.schema.json
+  secret-request.schema.json  secret-response.schema.json
+  token-request.schema.json  token-response.schema.json
 
 components/
   token-service/
