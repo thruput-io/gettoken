@@ -4,8 +4,9 @@
   "title": "what token-service asks an exchanger to trade for",
   "type": "object",
   "additionalProperties": false,
-  "required": ["wants"],
+  "required": ["who", "wants"],
   "properties": {
+    "who": { "$ref": "defs.schema.json#/$defs/Agent" },
     "wants": { "$ref": "defs.schema.json#/$defs/Capability" }
   }
 }

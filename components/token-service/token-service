@@ -3,8 +3,8 @@ set -eu
 
 exchangers=${EXCHANGER_DIR:-/usr/lib/gettoken/exchangers}
 
-fields=$(parse request.schema.json wants)
-wants=''
+fields=$(parse request.schema.json who wants)
+who='' wants=''
 eval "$fields"
 
 exchanger="$exchangers/${wants%%/*}"
@@ -14,7 +14,9 @@ if [ ! -f "$exchanger" ] || [ ! -x "$exchanger" ]; then
   exit 1
 fi
 
-exchange=$(format exchange-request.schema.json "wants=$wants")
+# The exchanger is told who is asking and what for, because that is what it
+# trades on. Nothing else in the request is its business.
+exchange=$(format exchange-request.schema.json "who=$who" "wants=$wants")
 response=$(printf '%s' "$exchange" | "$exchanger")
 
 # An exchanger is dropped into this directory rather than shipped by any package

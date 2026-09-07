@@ -159,14 +159,28 @@ requesting() {
   [[ "$stderr" == *"does not satisfy ask.schema.json"* ]]
 }
 
-@test "an exchange request naming a capability is admitted" {
-  run -0 --separate-stderr admits exchange-request.schema.json '{"wants":"integrationtest/ci/run"}'
+@test "an exchange request naming who is asking and what for is admitted" {
+  run -0 --separate-stderr admits exchange-request.schema.json \
+    '{"who":"tore","wants":"integrationtest/ci/run"}'
   [ "$stderr" = "" ]
 }
 
-@test "an exchange request carrying anything else is refused" {
+@test "an exchange request naming no agent is refused" {
+  run -1 --separate-stderr admits exchange-request.schema.json '{"wants":"integrationtest/ci/run"}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy exchange-request.schema.json"* ]]
+}
+
+@test "an exchange request does not carry the signature the request was signed with" {
   run -1 --separate-stderr admits exchange-request.schema.json \
-    '{"wants":"integrationtest/ci/run","who":"tore"}'
+    '{"who":"tore","wants":"integrationtest/ci/run","signed":"host-privileged"}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy exchange-request.schema.json"* ]]
+}
+
+@test "an exchange request does not carry what the agent was doing" {
+  run -1 --separate-stderr admits exchange-request.schema.json \
+    '{"who":"tore","wants":"integrationtest/ci/run","doing":"mac.lan"}'
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy exchange-request.schema.json"* ]]
 }
