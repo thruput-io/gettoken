@@ -9,7 +9,7 @@
       "type": "string",
       "minLength": 3,
       "maxLength": 4096,
-      "pattern": "^[^\\u0000-\\u001F\\u007F]+$"
+      "pattern": "^[^\u0000-\u001F\u007F]+$"
     },
     "AccessToken": { "type": "string", "minLength": 1 },
     "ExpiresIn": { "type": "integer", "minimum": 1 },

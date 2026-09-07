@@ -14,12 +14,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: macOS stable,  os: macos-15,      target: check,         blocking: true,  brew: true }
-          - { name: macOS latest,  os: macos-latest,  target: check,         blocking: false, brew: true }
-          - { name: Debian stable, os: ubuntu-latest, target: debian-stable, blocking: true,  brew: false }
-          - { name: Debian latest, os: ubuntu-latest, target: debian-latest, blocking: false, brew: false }
+          - { name: macOS stable,    os: macos-15,      target: check,           blocking: true,  brew: true }
+          - { name: macOS latest,    os: macos-latest,  target: check,           blocking: false, brew: true }
+          - { name: Debian stable,   os: ubuntu-latest, target: debian-stable,   blocking: true,  brew: false }
+          - { name: Debian latest,   os: ubuntu-latest, target: debian-latest,   blocking: false, brew: false }
+          - { name: Debian packages, os: ubuntu-latest, target: debian-packages, blocking: true,  brew: false }
     steps:
       - uses: actions/checkout@v4
       - if: matrix.brew
-        run: brew install jq bats-core sourcemeta/apps/jsonschema
+        run: |
+          brew install jq bats-core perl cpanminus
+          "$(brew --prefix perl)/bin/perl" "$(brew --prefix cpanminus)/bin/cpanm" \
+            --notest --local-lib "$HOME/perl5" JSON::Schema::Modern Getopt::Long::Descriptive
+          echo "$HOME/perl5/bin" >> "$GITHUB_PATH"
+          echo "PERL5LIB=$HOME/perl5/lib/perl5" >> "$GITHUB_ENV"
       - run: make ${{ matrix.target }}

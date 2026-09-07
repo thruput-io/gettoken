@@ -1,5 +1,7 @@
 #!/bin/sh
-# gettoken <scope>  |  gettoken --list
-# The agent's entry point. Thin: forwards to the privileged half.
-# Scope names and usage live in the man page (man/--help), not a protocol.
+set -eu
+
+PATH="/usr/lib/gettoken:$PATH"
+export PATH
+
 exec token-requester "$@"

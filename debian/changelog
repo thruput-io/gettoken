@@ -1,0 +1,5 @@
+gettoken (0.1.0) unstable; urgency=medium
+
+  * One binary package per component, one per tool, from one source package.
+
+ -- Johan Granlund <johan.granlund@thruput.se>  Sun, 06 Sep 2026 00:00:00 +0000
