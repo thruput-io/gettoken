@@ -1,2 +1,2 @@
-components/contract/validate usr/lib/gettoken
+components/contract/parse usr/lib/gettoken
 contracts/*.schema.json usr/share/gettoken/contracts

@@ -22,7 +22,7 @@ no such package to stand beside, so the tool and its exchanger go together.
 
 `/usr/bin` carries the agent's entry point and nothing else. The rest goes to
 `/usr/lib/gettoken`, which `gettoken` puts on `PATH` before it crosses into the
-privileged half. Names like `validate`, `entitlements` and `token-service` are
+privileged half. Names like `parse`, `entitlements` and `token-service` are
 not ours to claim on a public `PATH`, and an agent must not be able to shadow
 what runs on the privileged side by placing a file of its own earlier on `PATH`.
 
