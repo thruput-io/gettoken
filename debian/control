@@ -41,7 +41,8 @@ Description: token broker for AI agents - exchange dispatcher
 
 Package: gettoken-entitlements
 Architecture: all
-Depends: ${misc:Depends}
+Depends: ${misc:Depends},
+         gettoken-contract
 Description: token broker for AI agents - capability inventory
  entitlements answers what an agent has to work with. It is what
  "gettoken --list" shows, and it is also the control: a request for a

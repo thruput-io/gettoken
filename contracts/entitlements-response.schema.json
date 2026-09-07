@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thruput.io/gettoken/entitlements-response.schema.json",
+  "title": "what an agent may ask for, and what it has to say to ask",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entitlements"],
+  "properties": {
+    "entitlements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["capability", "description", "variables"],
+        "properties": {
+          "capability": { "$ref": "defs.schema.json#/$defs/CapabilityPattern" },
+          "description": { "$ref": "defs.schema.json#/$defs/Description" },
+          "variables": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "description"],
+              "properties": {
+                "name": { "$ref": "defs.schema.json#/$defs/VariableName" },
+                "description": { "$ref": "defs.schema.json#/$defs/Description" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -25,6 +25,22 @@
     },
     "AccessToken": { "type": "string", "minLength": 1 },
     "ExpiresIn": { "type": "integer", "minimum": 60, "maximum": 86400 },
+    "CapabilityPattern": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+(/([a-z0-9._-]+|\\{[a-z][a-z0-9_]*\\}))+$",
+      "not": { "pattern": "[^a-z0-9._/{}-]" }
+    },
+    "VariableName": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "not": { "pattern": "[^a-z0-9_]" }
+    },
+    "Description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "not": { "pattern": "[\u0000-\u001F\u007F]" }
+    },
     "Holder": {
       "type": "string",
       "pattern": "^[A-Za-z0-9._-]+$",

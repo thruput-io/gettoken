@@ -21,7 +21,10 @@ chain_runs() {
   echo "# gettoken --list"
   list=$(gettoken --list)
   echo "$list"
-  [ "$list" = "$capability" ] || { echo "FAIL: unexpected capability list"; exit 1; }
+  case "$list" in
+    *"\"capability\":\"$capability\""*) ;;
+    *) echo "FAIL: the entitlements do not name $capability"; exit 1 ;;
+  esac
 
   echo
   echo "# gettoken $capability"

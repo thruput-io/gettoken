@@ -1,6 +1,20 @@
 #!/bin/sh
 set -eu
 
+if [ "${1:-}" = --list ]; then
+  parse entitlements-ask.schema.json
+
+  request=$(format entitlements-request.schema.json \
+    "who=$(id -un)" \
+    "doing=$(hostname)" \
+    signed=host-privileged)
+
+  entitled=$(printf '%s' "$request" | entitlements)
+  printf '%s' "$entitled" | parse entitlements-response.schema.json
+  printf '%s\n' "$entitled"
+  exit 0
+fi
+
 fields=$(parse ask.schema.json wants)
 wants=''
 eval "$fields"
