@@ -41,9 +41,15 @@ archive carries.
 
 ## Verification
 
-`make debian-packages` builds the packages inside a named base, has `lintian`
-read them, installs them with `apt`, and runs the chain against what was
-installed rather than against the checkout: the store is the real one, the
-capability is listed, `gettoken` is invoked by name from a default `PATH`, and
-the tool runs on what comes back. It then purges every package and fails if
-anything is left behind.
+`make debian-packages` builds the packages inside a base that carries the tools
+to build them and nothing they run on, has `lintian` read them, installs them
+with `apt`, and runs the chain against what was installed rather than against the
+checkout: the store is the real one, the capability is listed, `gettoken` is
+invoked by name from a default `PATH`, and the tool runs on what comes back. It
+then purges every package and fails if anything is left behind.
+
+The base is bare on purpose. A rig that installs what the packages need is a rig
+in which `Depends` is decorative: nothing would fail if a package forgot to
+declare something, because it would already be there. So the run asserts the
+absence first, and asserts afterwards that `apt` drew each one in — and that
+purging takes them away again.

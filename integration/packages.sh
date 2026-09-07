@@ -4,12 +4,15 @@ set -eu
 root=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
 
 capability=integrationtest/ci/run
+runtime="jq libjson-schema-modern-perl"
 super_token=integrationtest-supertoken
 narrow_token=integrationtest-ci-run-allowed
 store=/var/lib/gettoken/secrets
 
 build=$(mktemp -d)
 trap 'rm -rf "$build"' EXIT
+
+installed() { dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -qx 'install ok installed'; }
 
 echo "# the packages are built from the source tree"
 cp -a "$root" "$build/source"
@@ -22,16 +25,26 @@ echo "# lintian passes on every package"
 lintian "$build"/*.deb
 
 echo
-echo "# apt installs them, and resolves what each declares it depends on"
+echo "# nothing the packages run on is on this base, so apt has to resolve every"
+echo "# dependency they declare rather than find it already there"
+for needed in $runtime; do
+  ! installed "$needed" \
+    || { echo "FAIL: $needed is already installed, so this run cannot show that apt draws it in"; exit 1; }
+done
+echo "ok: $runtime — none of them installed"
+
+echo
+echo "# apt installs the packages, and resolves what each declares it depends on"
+apt-get update
 apt-get install -y --no-install-recommends "$build"/*.deb
 
 echo
-echo "# the validator is a dependency apt is holding, not one a machine has to be told about"
-dpkg-query -W -f='${Depends}' gettoken-contract | grep -q libjson-schema-modern-perl \
-  || { echo "FAIL: gettoken-contract does not declare the validator it runs"; exit 1; }
-command -v json-schema-eval > /dev/null \
-  || { echo "FAIL: the validator apt was told about is not installed"; exit 1; }
-echo "ok: gettoken-contract depends on libjson-schema-modern-perl, and apt installed it"
+echo "# apt drew in what the packages declare, so the declarations are load-bearing"
+for needed in $runtime; do
+  installed "$needed" \
+    || { echo "FAIL: apt did not install $needed, so some package does not declare it"; exit 1; }
+done
+echo "ok: $runtime — all installed by apt"
 
 echo
 echo "# the agent's entry point is the only thing the packages put on a public PATH"
@@ -90,10 +103,15 @@ echo "# purging takes the packages away, and the store with them"
 apt-get purge -y gettoken gettoken-token-service gettoken-entitlements \
   gettoken-secret-manager gettoken-contract integration-test-tool \
   integration-test-tool-gettoken
+apt-get autoremove --purge -y
 for path in /usr/bin/gettoken /usr/lib/gettoken /usr/share/gettoken /var/lib/gettoken; do
   [ ! -e "$path" ] || { echo "FAIL: purging left $path behind"; exit 1; }
 done
-echo "ok: nothing is left behind"
+for needed in $runtime; do
+  ! installed "$needed" \
+    || { echo "FAIL: purging left $needed behind, which this base carried only because a package asked for it"; exit 1; }
+done
+echo "ok: nothing is left behind, down to what the packages drew in"
 
 echo
 echo "PASS: the packages carry the chain"

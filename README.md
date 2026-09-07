@@ -194,9 +194,10 @@ that tool, and that installs one exchanger into `/usr/lib/gettoken/exchangers`.
 make debian-packages
 ```
 
-builds the packages, has `lintian` read them, installs them, runs the chain
-against what was installed, and then purges it all and fails if anything is left
-behind.
+builds the packages in a base carrying nothing they run on, has `lintian` read
+them, installs them — `apt` drawing in every dependency they declare — runs the
+chain against what was installed, and then purges it all and fails if anything is
+left behind.
 
 ## Vision
 
