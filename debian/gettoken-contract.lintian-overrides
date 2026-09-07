@@ -1,0 +1,4 @@
+# Go links its runtime into every program it builds. There is no shared library
+# to link against, so a static binary is what this package can ship.
+gettoken-contract: statically-linked-binary [usr/lib/gettoken/parse]
+gettoken-contract: statically-linked-binary [usr/lib/gettoken/format]

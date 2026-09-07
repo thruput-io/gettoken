@@ -135,8 +135,7 @@ segment of **`doing`**, and the deployment is where that key is put.
 ## Contracts
 
 - `contracts/request.schema.json` — the request: `who`, `doing`, `wants`, `signed`.
-- `contracts/response.schema.json` — the response: `access_token`, `expires_in`,
-  `wants`.
+- `contracts/response.schema.json` — the response: `access_token`, `expires_in`.
 - `contracts/defs.schema.json` — every domain object defined once; the request
   and response only `$ref` these, never inline a constraint.
 
@@ -180,7 +179,7 @@ built from this tree:
 | `gettoken-token-service` | the dispatch onto an exchanger |
 | `gettoken-entitlements` | what an agent may equip |
 | `gettoken-secret-manager` | the store, at `/var/lib/gettoken/secrets` |
-| `gettoken-contract` | the contracts, and the program that checks against them |
+| `gettoken-contract` | the contracts, and the two programs that carry a document through one |
 | `integration-test-tool` | the tool the suite integrates, and its exchanger |
 
 `/usr/bin` carries the agent's entry point and nothing else. Everything on the
@@ -246,12 +245,14 @@ source tree.
 ```
 contracts/
   defs.schema.json  request.schema.json  response.schema.json
+  secret-get-request.schema.json  secret-get-response.schema.json
+  secret-put-request.schema.json
 
 components/
   token-service/
   entitlements/
   secret-manager/
-  contract/
+  contract/                    parse and format, in Go
   notifier/                    SEAT.md
   auth-canvas/                 SEAT.md
   agent-identity-authority/    SEAT.md

@@ -2,7 +2,8 @@ Source: gettoken
 Section: admin
 Priority: optional
 Maintainer: Johan Granlund <johan.granlund@thruput.se>
-Build-Depends: debhelper-compat (= 13)
+Build-Depends: debhelper-compat (= 13),
+               golang-any
 Standards-Version: 4.6.2
 Rules-Requires-Root: no
 Homepage: https://github.com/thruput-io/gettoken
@@ -62,19 +63,19 @@ Description: token broker for AI agents - super-token store
  this package takes the store with it.
 
 Package: gettoken-contract
-Architecture: all
+Architecture: any
 Depends: ${misc:Depends},
-         libjson-schema-modern-perl,
-         libgetopt-long-descriptive-perl
+         ${shlibs:Depends}
 Description: token broker for AI agents - wire contracts
  Every hop between components carries a document, and every document is
  checked against the contract that governs it. A schema no code path consults
  describes a document rather than governing it.
  .
- This package holds the contracts and the program that checks a document
- against one. The contracts are installed as they are written, and the
- validator reads them that way: there is no bundling step between what is
- committed and what governs a document.
+ This package holds the contracts and the two programs that carry a document
+ through one: parse reads a document and hands back its fields, format takes
+ fields and writes the document. The contracts are installed as they are
+ written and read that way: there is no bundling step between what is committed
+ and what governs a document.
 
 Package: integration-test-tool
 Architecture: all

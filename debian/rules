@@ -4,5 +4,9 @@
 	dh $@
 
 override_dh_auto_build:
+	cd components/contract && go build -mod=vendor -o parse ./cmd/parse
+	cd components/contract && go build -mod=vendor -o format ./cmd/format
 
 override_dh_auto_test:
+
+override_dh_dwz:

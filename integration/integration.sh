@@ -12,7 +12,7 @@ capability=integrationtest/ci/run
 super_token=integrationtest-supertoken
 narrow_token=integrationtest-ci-run-allowed
 
-expected_request="{\"who\":\"$(id -un)\",\"doing\":\"$(hostname)\",\"wants\":\"$capability\",\"signed\":\"host-privileged\"}"
+expected_request="{\"doing\":\"$(hostname)\",\"signed\":\"host-privileged\",\"wants\":\"$capability\",\"who\":\"$(id -un)\"}"
 expected_response="{\"access_token\":\"$narrow_token\",\"expires_in\":120}"
 
 echo "# the human puts the super-token in the store"
@@ -46,7 +46,7 @@ export REQUEST_FILE
 cat > "$stub_dir/token-service" <<'STUB'
 #!/bin/sh
 cat > "$REQUEST_FILE"
-printf '{"access_token":"stub-token","expires_in":1,"wants":"stub/capability"}\n'
+printf '{"access_token":"stub-token","expires_in":1}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
 stub_out=$(PATH="$stub_dir:$PATH" token-requester "$capability")
@@ -64,7 +64,7 @@ echo "$spoofed"
 rm -rf "$stub_dir"
 
 echo
-echo "# an agent-supplied capability cannot forge fields in the request"
+echo "# a capability the contract does not admit never reaches token-service"
 injection='a","signed":"forged-by-agent'
 stub_dir=$(mktemp -d)
 REQUEST_FILE="$stub_dir/request.json"
@@ -72,20 +72,14 @@ export REQUEST_FILE
 cat > "$stub_dir/token-service" <<'STUB'
 #!/bin/sh
 cat > "$REQUEST_FILE"
-printf '{"access_token":"stub-token","expires_in":1,"wants":"stub/capability"}\n'
+printf '{"access_token":"stub-token","expires_in":1}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
-PATH="$stub_dir:$PATH" token-requester "$injection" > /dev/null
-forged=$(cat "$REQUEST_FILE")
-echo "$forged"
-if ! printf '%s' "$forged" | jq -e . > /dev/null; then
-  echo "FAIL: the request token-requester built is not valid JSON"
-  exit 1
-fi
-carried=$(printf '%s' "$forged" | jq -r '.wants')
-[ "$carried" = "$injection" ] || { echo "FAIL: wants carried \"$carried\", not the capability it was handed"; exit 1; }
-carried_signed=$(printf '%s' "$forged" | jq -r '.signed')
-[ "$carried_signed" = host-privileged ] || { echo "FAIL: signed is \"$carried_signed\", so the agent forged it"; exit 1; }
+forged_out=$(PATH="$stub_dir:$PATH" token-requester "$injection") && forged_status=0 || forged_status=$?
+echo "exit $forged_status"
+[ "$forged_status" -ne 0 ] || { echo "FAIL: a capability carrying quotes was accepted"; exit 1; }
+[ -z "$forged_out" ] || { echo "FAIL: a refused capability put \"$forged_out\" on stdout"; exit 1; }
+[ ! -f "$REQUEST_FILE" ] || { echo "FAIL: a refused capability still reached token-service"; exit 1; }
 rm -rf "$stub_dir"
 
 echo
@@ -94,7 +88,7 @@ stub_dir=$(mktemp -d)
 cat > "$stub_dir/token-service" <<'STUB'
 #!/bin/sh
 cat > /dev/null
-printf '{"expires_in":120,"wants":"integrationtest/ci/run"}\n'
+printf '{"expires_in":120}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
 tokenless_out=$(PATH="$stub_dir:$PATH" token-requester "$capability") && tokenless_status=0 || tokenless_status=$?

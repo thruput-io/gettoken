@@ -1,2 +1,3 @@
 components/contract/parse usr/lib/gettoken
+components/contract/format usr/lib/gettoken
 contracts/*.schema.json usr/share/gettoken/contracts

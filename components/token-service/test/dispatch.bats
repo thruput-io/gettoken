@@ -4,7 +4,8 @@ setup() {
   root=$(CDPATH= cd "$BATS_TEST_DIRNAME/../../.." && pwd)
   PATH="$root/components/token-service:$PATH"
   EXCHANGER_DIR=$(mktemp -d)
-  export PATH EXCHANGER_DIR
+  CONTRACTS_DIR="$root/contracts"
+  export PATH EXCHANGER_DIR CONTRACTS_DIR
 }
 
 teardown() { rm -rf "$EXCHANGER_DIR"; }
