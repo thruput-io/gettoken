@@ -77,25 +77,18 @@ Description: token broker for AI agents - wire contracts
 
 Package: integration-test-tool
 Architecture: all
-Depends: ${misc:Depends}
+Depends: ${misc:Depends},
+         jq,
+         gettoken,
+         gettoken-secret-manager
 Description: token broker for AI agents - tool that verifies the chain
  The tool the verification suite integrates, standing in for a real one so the
  chain can be exercised without reaching a service. It runs on the token that
  integrationtest/ci/run downgrades to and refuses the super-token that token
  was traded for, so a run that succeeds is proof that a downgrade happened.
-
-Package: integration-test-tool-gettoken
-Architecture: all
-Depends: ${misc:Depends},
-         jq,
-         gettoken,
-         gettoken-secret-manager,
-         integration-test-tool
-Description: token broker for AI agents - integration-test-tool exchanger
- Integrating a tool means publishing a package that depends on gettoken and on
- that tool, and that carries what the tool needs. This is that package for
- integration-test-tool, and it is the worked example of the shape every
- integrated tool takes.
  .
- It installs one exchanger, which knows one service and nothing about any
- other. It does not touch the tool it integrates.
+ It is also the worked example of an integration: it depends on gettoken and
+ carries one exchanger, which knows one service and nothing about any other.
+ Installing it is what brings the chain onto a machine. A tool someone else
+ already packages is integrated by a second package alongside theirs, because
+ theirs is not ours to change; this tool is ours, so it is one package.

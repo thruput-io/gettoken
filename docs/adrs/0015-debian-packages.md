@@ -16,6 +16,10 @@ gets replaced. Splitting the source as well would put a release process between
 components that are edited in one commit and verified in one run, for no gain:
 Debian's source format already produces many binary packages from one tree.
 
+Per tool means one, not two. Record 7 shows `gh-gettoken` beside `gh` because
+`gh` is upstream's package and not ours to change. A tool we ship ourselves has
+no such package to stand beside, so the tool and its exchanger go together.
+
 `/usr/bin` carries the agent's entry point and nothing else. The rest goes to
 `/usr/lib/gettoken`, which `gettoken` puts on `PATH` before it crosses into the
 privileged half. Names like `validate`, `entitlements` and `token-service` are
@@ -48,8 +52,10 @@ checkout: the store is the real one, the capability is listed, `gettoken` is
 invoked by name from a default `PATH`, and the tool runs on what comes back. It
 then purges every package and fails if anything is left behind.
 
-The base is bare on purpose. A rig that installs what the packages need is a rig
-in which `Depends` is decorative: nothing would fail if a package forgot to
-declare something, because it would already be there. So the run asserts the
-absence first, and asserts afterwards that `apt` drew each one in — and that
-purging takes them away again.
+The base is bare on purpose, and one package is installed, not seven. A rig that
+installs what the packages need — or names them all itself — is a rig in which
+`Depends` is decorative: nothing would fail if a package forgot to declare
+something, because it would already be there. So the packages are served to `apt`
+as an archive it resolves by name, the run asserts the absence first, and asserts
+afterwards that everything else arrived marked as drawn in rather than asked for
+— and that purging the one package takes all of it away again.

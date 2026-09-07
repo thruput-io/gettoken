@@ -4,13 +4,16 @@ set -eu
 root=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
 
 capability=integrationtest/ci/run
+integration=integration-test-tool
+drawn_in="gettoken gettoken-token-service gettoken-entitlements gettoken-secret-manager gettoken-contract"
 runtime="jq libjson-schema-modern-perl"
 super_token=integrationtest-supertoken
 narrow_token=integrationtest-ci-run-allowed
 store=/var/lib/gettoken/secrets
 
 build=$(mktemp -d)
-trap 'rm -rf "$build"' EXIT
+source_list=/etc/apt/sources.list.d/gettoken-build.list
+trap 'rm -rf "$build" "$source_list"' EXIT
 
 installed() { dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -qx 'install ok installed'; }
 
@@ -25,34 +28,48 @@ echo "# lintian passes on every package"
 lintian "$build"/*.deb
 
 echo
-echo "# nothing the packages run on is on this base, so apt has to resolve every"
-echo "# dependency they declare rather than find it already there"
-for needed in $runtime; do
+echo "# the packages are put where apt can reach them by name, so nothing has to be"
+echo "# installed by naming a file"
+(cd "$build" && dpkg-scanpackages -m . > Packages)
+chmod 755 "$build"
+echo "deb [trusted=yes] file:$build ./" > "$source_list"
+apt-get update
+
+echo
+echo "# nothing the chain runs on is on this base, so apt has to resolve every"
+echo "# dependency the packages declare rather than find it already there"
+for needed in $drawn_in $runtime; do
   ! installed "$needed" \
     || { echo "FAIL: $needed is already installed, so this run cannot show that apt draws it in"; exit 1; }
 done
-echo "ok: $runtime — none of them installed"
+echo "ok: none of $drawn_in $runtime is installed"
 
 echo
-echo "# apt installs the packages, and resolves what each declares it depends on"
-apt-get update
-apt-get install -y --no-install-recommends "$build"/*.deb
+echo "# integrating a tool is installing that tool's package, and nothing else"
+apt-get install -y --no-install-recommends "$integration"
 
 echo
-echo "# apt drew in what the packages declare, so the declarations are load-bearing"
-for needed in $runtime; do
+echo "# the chain arrived because the packages declare it, not because it was asked for"
+auto=$(apt-mark showauto)
+for needed in $drawn_in $runtime; do
   installed "$needed" \
     || { echo "FAIL: apt did not install $needed, so some package does not declare it"; exit 1; }
+  printf '%s\n' "$auto" | grep -qx "$needed" \
+    || { echo "FAIL: $needed was not drawn in as a dependency"; exit 1; }
 done
-echo "ok: $runtime — all installed by apt"
+apt-mark showmanual | grep -qx "$integration" \
+  || { echo "FAIL: $integration is not the package that was asked for"; exit 1; }
+echo "ok: $integration was asked for; $drawn_in $runtime came with it"
 
 echo
-echo "# the agent's entry point is the only thing the packages put on a public PATH"
-installed=$(dpkg-query -L gettoken gettoken-token-service gettoken-entitlements \
-  gettoken-secret-manager gettoken-contract integration-test-tool-gettoken \
-  | grep '^/usr/bin/' | sort)
-echo "$installed"
-[ "$installed" = /usr/bin/gettoken ] || { echo "FAIL: the packages put more than gettoken on a public PATH"; exit 1; }
+echo "# the components put the agent's entry point on a public PATH and nothing else,"
+echo "# and the tool puts the tool: its exchanger is not something an agent can run"
+public=$(dpkg-query -L $drawn_in | grep '^/usr/bin/' | sort)
+echo "$public"
+[ "$public" = /usr/bin/gettoken ] || { echo "FAIL: the components put more than gettoken on a public PATH"; exit 1; }
+tool_public=$(dpkg-query -L "$integration" | grep '^/usr/bin/' | sort)
+echo "$tool_public"
+[ "$tool_public" = "/usr/bin/$integration" ] || { echo "FAIL: $integration puts more than the tool on a public PATH"; exit 1; }
 
 echo
 echo "# the exchanger directory belongs to root alone, because what is in it is run with the super-token in reach"
@@ -100,18 +117,16 @@ echo "exit $unknown_status"
 
 echo
 echo "# purging takes the packages away, and the store with them"
-apt-get purge -y gettoken gettoken-token-service gettoken-entitlements \
-  gettoken-secret-manager gettoken-contract integration-test-tool \
-  integration-test-tool-gettoken
+apt-get purge -y "$integration"
 apt-get autoremove --purge -y
+for needed in $drawn_in $runtime; do
+  ! installed "$needed" \
+    || { echo "FAIL: purging $integration left $needed behind"; exit 1; }
+done
 for path in /usr/bin/gettoken /usr/lib/gettoken /usr/share/gettoken /var/lib/gettoken; do
   [ ! -e "$path" ] || { echo "FAIL: purging left $path behind"; exit 1; }
 done
-for needed in $runtime; do
-  ! installed "$needed" \
-    || { echo "FAIL: purging left $needed behind, which this base carried only because a package asked for it"; exit 1; }
-done
-echo "ok: nothing is left behind, down to what the packages drew in"
+echo "ok: nothing is left behind, down to what the one package drew in"
 
 echo
 echo "PASS: the packages carry the chain"

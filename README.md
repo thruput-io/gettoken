@@ -181,23 +181,28 @@ built from this tree:
 | `gettoken-entitlements` | what an agent may equip |
 | `gettoken-secret-manager` | the store, at `/var/lib/gettoken/secrets` |
 | `gettoken-contract` | the contracts, and the program that checks against them |
-| `integration-test-tool` | the tool the suite integrates |
-| `integration-test-tool-gettoken` | that tool's exchanger, and the worked example of an integration |
+| `integration-test-tool` | the tool the suite integrates, and its exchanger |
 
 `/usr/bin` carries the agent's entry point and nothing else. Everything on the
 privileged side lives in `/usr/lib/gettoken`, which `gettoken` puts on `PATH`
 before it crosses over; a human working on that side puts it on their own.
-Integrating a tool means publishing a package that depends on `gettoken` and on
-that tool, and that installs one exchanger into `/usr/lib/gettoken/exchangers`.
+
+Integrating a tool means publishing a package that depends on `gettoken` and
+installs one exchanger into `/usr/lib/gettoken/exchangers`. Where the tool is one
+someone else already packages, that is a second package alongside theirs, because
+theirs is not ours to change — `gh-gettoken` next to `gh`. Where the tool is ours,
+as `integration-test-tool` is, it is the one package.
+
+Installing it is the whole installation: the components arrive because it says it
+needs them, and purging it takes them with it.
 
 ```sh
 make debian-packages
 ```
 
 builds the packages in a base carrying nothing they run on, has `lintian` read
-them, installs them — `apt` drawing in every dependency they declare — runs the
-chain against what was installed, and then purges it all and fails if anything is
-left behind.
+them, installs the one, runs the chain against what `apt` drew in, and then
+purges it and fails if anything is left behind.
 
 ## Vision
 
