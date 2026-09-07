@@ -3,8 +3,10 @@ FROM debian:${DEBIAN_TAG}
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      build-essential dpkg-dev debhelper lintian \
+      build-essential dpkg-dev debhelper lintian shellcheck \
  && rm -rf /var/lib/apt/lists/*
+
+ENV GETTOKEN_DISPOSABLE_BASE=yes
 
 WORKDIR /work
 ENTRYPOINT ["sh"]

@@ -1,7 +1,8 @@
 #!/bin/sh
 set -eu
 
-root=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
+root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
+. "$root/integration/chain.sh"
 export PATH="$root/components/token-service:$root/components/entitlements:$root/tools/gettoken/bin:$root/tools/gettoken/privileged:$root/components/secret-manager:$root/components/contract:$root/tools/integration-test-tool/bin:$PATH"
 SECRET_DIR=$(mktemp -d)
 CONTRACTS_DIR="$root/contracts"
@@ -17,15 +18,11 @@ expected_response="{\"access_token\":\"$narrow_token\",\"expires_in\":120}"
 
 echo "# the human puts the super-token in the store"
 printf '%s' "$super_token" | secret-put '{"holder":"host-privileged","service":"integrationtest","version":1}'
-held=$(secret-get '{"holder":"host-privileged","service":"integrationtest"}' | jq -r '.value')
+stored=$(secret-get '{"holder":"host-privileged","service":"integrationtest"}')
+printf '%s' "$stored" | parse secret-get-response.schema.json
+held=$(printf '%s' "$stored" | jq -r '.value')
 echo "$held"
 [ "$held" = "$super_token" ] || { echo "FAIL: the store did not return what was put in it"; exit 1; }
-
-echo
-echo "# gettoken --list"
-list=$(gettoken --list)
-echo "$list"
-[ "$list" = "$capability" ] || { echo "FAIL: unexpected capability list"; exit 1; }
 
 echo
 echo "# gettoken with no arguments refuses cleanly"
@@ -109,30 +106,25 @@ response=$(printf '%s' "$expected_request" | token-service)
 echo "$response"
 [ "$response" = "$expected_response" ] || { echo "FAIL: response is not $expected_response"; exit 1; }
 
-echo
-echo "# gettoken $capability"
-out=$(gettoken "$capability")
-echo "$out"
-[ "$out" = "$narrow_token" ] || { echo "FAIL: gettoken did not return the downgraded token alone"; exit 1; }
-[ "$out" != "$super_token" ] || { echo "FAIL: gettoken handed over the super-token"; exit 1; }
+chain_runs "$capability" "$super_token" "$narrow_token"
 
 echo
-echo "# the tool runs on what gettoken handed over"
-INTEGRATIONTEST_TOKEN="$out" integration-test-tool
-
-echo
-echo "# the tool refuses the super-token, so the run above proves a downgrade"
-if INTEGRATIONTEST_TOKEN="$super_token" integration-test-tool; then
-  echo "FAIL: the tool accepted the super-token, so it cannot tell the two apart"
-  exit 1
-fi
-
-echo
-echo "# a capability no exchanger serves is refused, and hands over nothing"
-unknown_out=$(gettoken nosuch/capability) && unknown_status=0 || unknown_status=$?
-echo "exit $unknown_status"
-[ "$unknown_status" -eq 1 ] || { echo "FAIL: an unserved capability exited $unknown_status, not 1"; exit 1; }
-[ -z "$unknown_out" ] || { echo "FAIL: an unserved capability put $unknown_out on stdout"; exit 1; }
+echo "# a program the agent puts earlier on PATH cannot stand in for one the"
+echo "# privileged half runs, because gettoken puts the system directories ahead"
+echo "# of whatever it inherited"
+sabotage=$(mktemp -d)
+for shadowed in sed id hostname ls sort tail cat; do
+  cat > "$sabotage/$shadowed" <<'SABOTAGE'
+#!/bin/sh
+echo "sabotage: a program the agent placed on PATH ran" >&2
+exit 1
+SABOTAGE
+  chmod 755 "$sabotage/$shadowed"
+done
+shadowed_out=$(PATH="$sabotage:$PATH" gettoken "$capability")
+echo "$shadowed_out"
+[ "$shadowed_out" = "$narrow_token" ] || { echo "FAIL: a program placed earlier on PATH stood in for one the privileged half runs"; exit 1; }
+rm -rf "$sabotage"
 
 echo
 echo "PASS: chain runs end to end"

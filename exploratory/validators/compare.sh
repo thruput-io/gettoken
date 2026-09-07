@@ -1,25 +1,30 @@
 #!/bin/sh
 set -eu
 
-root=$(CDPATH= cd "$(dirname "$0")/../.." && pwd)
+root=$(CDPATH='' cd "$(dirname "$0")/../.." && pwd)
 contracts="$root/contracts"
 fixtures="$root/exploratory/validators/fixtures"
 request="$contracts/request.schema.json"
 
-validate_jv()      { jv -m "https://thruput.io/gettoken/=$contracts" "$request" "$1" > /dev/null 2>&1; }
-validate_perl()    { json-schema-eval --add-schema "$contracts/defs.schema.json" --schema "$request" --data "$1" > /dev/null 2>&1; }
-validate_php()     { validate-json "$1" "$request" > /dev/null 2>&1; }
-validate_python()  { jsonschema -i "$1" "$request" > /dev/null 2>&1; }
+why=$(mktemp)
+trap 'rm -f "$why"' EXIT
 
-validate_jv_stdin()     { jv -m "https://thruput.io/gettoken/=$contracts" "$request" /dev/stdin < "$1" > /dev/null 2>&1; }
-validate_perl_stdin()   { json-schema-eval --add-schema "$contracts/defs.schema.json" --schema "$request" --data /dev/stdin < "$1" > /dev/null 2>&1; }
-validate_php_stdin()    { validate-json /dev/stdin "$request" < "$1" > /dev/null 2>&1; }
-validate_python_stdin() { jsonschema "$request" < "$1" > /dev/null 2>&1; }
+validate_jv()      { jv -m "https://thruput.io/gettoken/=$contracts" "$request" "$1" > /dev/null 2>"$why"; }
+validate_perl()    { json-schema-eval --add-schema "$contracts/defs.schema.json" --schema "$request" --data "$1" > /dev/null 2>"$why"; }
+validate_php()     { validate-json "$1" "$request" > /dev/null 2>"$why"; }
+validate_python()  { jsonschema -i "$1" "$request" > /dev/null 2>"$why"; }
 
-dialect_jv()     { jv "$fixtures/dialect.schema.json" "$fixtures/wrong-dialect.json" > /dev/null 2>&1; }
-dialect_perl()   { json-schema-eval --schema "$fixtures/dialect.schema.json" --data "$fixtures/wrong-dialect.json" > /dev/null 2>&1; }
-dialect_php()    { validate-json "$fixtures/wrong-dialect.json" "$fixtures/dialect.schema.json" > /dev/null 2>&1; }
-dialect_python() { jsonschema -i "$fixtures/wrong-dialect.json" "$fixtures/dialect.schema.json" > /dev/null 2>&1; }
+validate_jv_stdin()     { jv -m "https://thruput.io/gettoken/=$contracts" "$request" /dev/stdin < "$1" > /dev/null 2>"$why"; }
+validate_perl_stdin()   { json-schema-eval --add-schema "$contracts/defs.schema.json" --schema "$request" --data /dev/stdin < "$1" > /dev/null 2>"$why"; }
+validate_php_stdin()    { validate-json /dev/stdin "$request" < "$1" > /dev/null 2>"$why"; }
+validate_python_stdin() { jsonschema "$request" < "$1" > /dev/null 2>"$why"; }
+
+dialect_jv()     { jv "$fixtures/dialect.schema.json" "$fixtures/wrong-dialect.json" > /dev/null 2>"$why"; }
+dialect_perl()   { json-schema-eval --schema "$fixtures/dialect.schema.json" --data "$fixtures/wrong-dialect.json" > /dev/null 2>"$why"; }
+dialect_php()    { validate-json "$fixtures/wrong-dialect.json" "$fixtures/dialect.schema.json" > /dev/null 2>"$why"; }
+dialect_python() { jsonschema -i "$fixtures/wrong-dialect.json" "$fixtures/dialect.schema.json" > /dev/null 2>"$why"; }
+
+present() { command -v "$(bin_for "$1")" > /dev/null; }
 
 bin_for() {
   case $1 in
@@ -38,8 +43,8 @@ package_for() {
 candidates="jv perl php python"
 cases="valid:accept missing-wants:reject bad-capability:reject extra-field:reject malformed:reject empty:reject"
 
-. /etc/os-release
-echo "# $PRETTY_NAME"
+pretty=$(sed -n 's/^PRETTY_NAME="\(.*\)"$/\1/p' /etc/os-release)
+echo "# $pretty"
 echo "#"
 echo "# Every candidate is installed with apt from this base, which is the criterion"
 echo "# that put this comparison back on the table. The contracts are read as they"
@@ -49,7 +54,8 @@ echo "# only according to a constraint that lives behind that reference."
 echo
 
 for v in $candidates; do
-  echo "## $v — $(package_for "$v") — $(dpkg-query -W -f='${Version}' "$(package_for "$v")" 2>/dev/null || echo NOT INSTALLED)"
+  present "$v" || { echo "## $v — $(package_for "$v") — not installed on this base, so nothing below is run for it"; echo; continue; }
+  echo "## $v — $(package_for "$v") — $(dpkg-query -W -f='${Version}' "$(package_for "$v")")"
 
   control_ok=no
   failopen=""
@@ -63,6 +69,7 @@ for v in $candidates; do
       reject:*) verdict="ok (exit $got)" ;;
     esac
     printf '  %-16s want=%-6s exit=%-3s %s\n' "$name" "$want" "$got" "$verdict"
+    if [ "$verdict" = "CONTROL REJECTED" ]; then sed 's/^/    /' "$why"; fi
   done
 
   if [ "$control_ok" = no ]; then
@@ -81,6 +88,7 @@ echo "# earlier. A candidate that accepts it is reading our contracts in a diale
 echo "# they do not claim, and what else it silently ignores is unknown."
 echo
 for v in $candidates; do
+  present "$v" || { printf '  %-12s not installed on this base\n' "$v"; continue; }
   printf '  %-12s ' "$v"
   "dialect_$v" && got=0 || got=$?
   [ "$got" -eq 0 ] && echo "ACCEPTS IT — does not implement 2020-12" || echo "refuses it (exit $got)"
@@ -92,6 +100,7 @@ echo "# token-service reads its request from stdin; a validator that cannot forc
 echo "# the wrapper to write the document — token and all — to a file."
 echo
 for v in $candidates; do
+  present "$v" || { printf '  %-12s not installed on this base\n' "$v"; continue; }
   printf '  %-12s ' "$v"
   "validate_${v}_stdin" "$fixtures/valid.json" && ok=0 || ok=$?
   "validate_${v}_stdin" "$fixtures/malformed.json" && bad=0 || bad=$?
@@ -106,6 +115,7 @@ echo "# is a rejection told apart from a failure to read?"
 echo "# a caller that cannot tell them apart cannot report which one happened."
 echo
 for v in $candidates; do
+  present "$v" || { printf '  %-12s not installed on this base\n' "$v"; continue; }
   printf '  %-12s ' "$v"
   "validate_$v" "$fixtures/missing-wants.json" && invalid=0 || invalid=$?
   "validate_$v" "$fixtures/malformed.json" && unreadable=0 || unreadable=$?
