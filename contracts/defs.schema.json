@@ -24,7 +24,7 @@
       "not": { "pattern": "[\u0000-\u001F\u007F]" }
     },
     "AccessToken": { "type": "string", "minLength": 1 },
-    "ExpiresIn": { "type": "integer", "minimum": 1 },
+    "ExpiresIn": { "type": "integer", "minimum": 60, "maximum": 86400 },
     "Holder": {
       "type": "string",
       "pattern": "^[A-Za-z0-9._-]+$",
@@ -35,6 +35,6 @@
       "pattern": "^[a-z0-9-]+$",
       "not": { "pattern": "[^a-z0-9-]" }
     },
-    "Version": { "type": "integer", "minimum": 1 }
+    "Version": { "type": "integer", "minimum": 0, "maximum": 1000000 }
   }
 }

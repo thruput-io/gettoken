@@ -1,3 +1,14 @@
+// Command format assembles a JSON document from its arguments, checks it
+// against a contract and writes it to standard output.
+//
+// A value goes into the document as it stands. Only a string needs quoting, so
+// the only value that gets quoted is one that is not already JSON:
+//
+//	FIELD=VALUE   the value as written, taken as a string if it is not JSON
+//	FIELD@PATH    the contents of PATH, always a string; - is standard input
+//
+// Nothing here asks a contract what type a field has. Each argument carries
+// what it carries, and the contract then says whether that was allowed.
 package main
 
 import (
@@ -10,7 +21,7 @@ import (
 	"github.com/thruput-io/gettoken/components/contract"
 )
 
-func held(path string) (string, error) {
+func contents(path string) (string, error) {
 	if path == "-" {
 		raw, err := io.ReadAll(os.Stdin)
 		return string(raw), err
@@ -19,43 +30,60 @@ func held(path string) (string, error) {
 	return string(raw), err
 }
 
+// written takes a value as the JSON it already is, or as the string it can only
+// be if it is not JSON.
+func written(value string) any {
+	var already any
+	if err := json.Unmarshal([]byte(value), &already); err != nil {
+		return value
+	}
+	return already
+}
+
+// filling reads one argument as the field it fills and the value it carries.
+// The operator that comes first decides where the value is read from, so a
+// value that happens to contain the other operator is not mistaken for it.
+func filling(argument string) (string, any, error) {
+	at := strings.IndexByte(argument, '@')
+	is := strings.IndexByte(argument, '=')
+
+	if at >= 0 && (is < 0 || at < is) {
+		text, err := contents(argument[at+1:])
+		if err != nil {
+			return "", nil, err
+		}
+		return argument[:at], text, nil
+	}
+	if is < 0 {
+		return "", nil, fmt.Errorf("%q fills no field: write FIELD=VALUE or FIELD@PATH", argument)
+	}
+	return argument[:is], written(argument[is+1:]), nil
+}
+
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: format CONTRACT [FIELD=VALUE|FIELD=@FILE ...]")
+		return fmt.Errorf("usage: format CONTRACT [FIELD=VALUE|FIELD@PATH ...]")
 	}
-	governing, err := contract.Open(os.Args[1])
+	governing, err := contract.Open(contract.Directory(), os.Args[1])
 	if err != nil {
 		return err
 	}
-	document := map[string]any{}
+	values := map[string]any{}
 	for _, argument := range os.Args[2:] {
-		field, text, named := strings.Cut(argument, "=")
-		if !named {
-			return fmt.Errorf("%q names no field", argument)
-		}
-		kind, err := governing.Kind(field)
+		field, value, err := filling(argument)
 		if err != nil {
 			return err
 		}
-		if path, reading := strings.CutPrefix(text, "@"); reading {
-			if text, err = held(path); err != nil {
-				return err
-			}
+		if _, filled := values[field]; filled {
+			return fmt.Errorf("%s is filled twice", field)
 		}
-		value, err := kind.Read(text)
-		if err != nil {
-			return fmt.Errorf("%s: %w", field, err)
-		}
-		document[field] = value
+		values[field] = value
 	}
-	if err := governing.Check(document); err != nil {
-		return err
-	}
-	encoded, err := json.Marshal(document)
+	document, err := governing.Build(values)
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(encoded))
+	fmt.Println(string(document.JSON()))
 	return nil
 }
 

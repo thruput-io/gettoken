@@ -1,178 +1,146 @@
+// Package contract holds JSON documents to the schemas that govern them.
+//
+// The schemas in contracts/ are the whole statement of what a document may
+// carry. This package restates none of it: it names no field, knows no domain
+// type and derives nothing from a schema's shape. It reads a schema, hands a
+// document to it, and reports what the schema said.
+//
+// A document therefore exists in one form only, the held form. Hold and Build
+// both check before they return, so holding a Document is itself the proof that
+// its contract admitted it — there is no unchecked document to pass on by
+// mistake. A Document cannot be changed once made and answers only by key.
 package contract
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"net/url"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 
 	"github.com/google/jsonschema-go/jsonschema"
 )
 
 const namespace = "https://thruput.io/gettoken/"
 
-type Kind int
-
-const (
-	Text Kind = iota
-	Number
-	Boolean
-)
-
-type Contract struct {
-	name      string
-	directory string
-	root      *jsonschema.Schema
-	resolved  *jsonschema.Resolved
+// A Contract is one schema, resolved against the directory it was read from.
+// Open is the only way to obtain one.
+type Contract interface {
+	// Hold checks raw JSON against the contract and returns it as a Document.
+	Hold(raw []byte) (Document, error)
+	// Build checks an assembled set of values against the contract and returns
+	// them as a Document. The values are copied, so the caller cannot reach
+	// into the Document afterwards.
+	Build(values map[string]any) (Document, error)
 }
 
-func directory() string {
+// A Document is a JSON object that its contract has admitted. It cannot be
+// changed, and the only thing it does is answer by key.
+type Document interface {
+	// Value answers the value carried under key, and whether the document
+	// carries that key at all. A key present as JSON null answers (nil, true);
+	// a key that is absent answers (nil, false).
+	Value(key string) (any, bool)
+	// JSON is the document as its contract admitted it.
+	JSON() []byte
+}
+
+type held struct {
+	name     string
+	resolved *jsonschema.Resolved
+}
+
+type admitted struct {
+	values map[string]any
+	raw    []byte
+}
+
+// Directory is where the packages install the contracts, or where CONTRACTS_DIR
+// names instead. Entry points call it and pass what it answers to Open, so that
+// nothing below them reads the environment for itself.
+func Directory() string {
 	if named := os.Getenv("CONTRACTS_DIR"); named != "" {
 		return named
 	}
 	return "/usr/share/gettoken/contracts"
 }
 
-func read(from, name string) (*jsonschema.Schema, error) {
-	raw, err := os.ReadFile(filepath.Join(from, name))
+func read(directory, name string) (*jsonschema.Schema, error) {
+	raw, err := os.ReadFile(filepath.Join(directory, name))
 	if err != nil {
 		return nil, err
 	}
 	schema := new(jsonschema.Schema)
 	if err := json.Unmarshal(raw, schema); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("contract %s is not a readable schema: %w", name, err)
 	}
 	return schema, nil
 }
 
-func Open(name string) (*Contract, error) {
-	from := directory()
-	root, err := read(from, name)
+// Open reads the contract named by name from directory and resolves the
+// references it makes to its neighbours there.
+func Open(directory, name string) (Contract, error) {
+	root, err := read(directory, name)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("no contract named %s in %s", name, directory)
+	}
 	if err != nil {
-		return nil, fmt.Errorf("no contract named %s in %s", name, from)
+		return nil, err
 	}
 	resolved, err := root.Resolve(&jsonschema.ResolveOptions{
 		BaseURI: namespace + name,
 		Loader: func(reference *url.URL) (*jsonschema.Schema, error) {
-			return read(from, filepath.Base(reference.Path))
+			return read(directory, filepath.Base(reference.Path))
 		},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("contract %s does not resolve: %w", name, err)
 	}
-	return &Contract{name: name, directory: from, root: root, resolved: resolved}, nil
+	return held{name: name, resolved: resolved}, nil
 }
 
-func (c *Contract) Check(document any) error {
-	if err := c.resolved.Validate(document); err != nil {
-		return fmt.Errorf("the document does not satisfy %s\n%w", c.name, err)
+func (h held) admit(document any, raw []byte) (Document, error) {
+	if err := h.resolved.Validate(document); err != nil {
+		return nil, fmt.Errorf("the document does not satisfy %s\n%w", h.name, err)
 	}
-	return nil
+	values, keyed := document.(map[string]any)
+	if !keyed {
+		return nil, fmt.Errorf("%s admitted a document that carries no fields to read by name", h.name)
+	}
+	carried := make(map[string]any, len(values))
+	for key, value := range values {
+		carried[key] = value
+	}
+	return admitted{values: carried, raw: raw}, nil
 }
 
-func (c *Contract) governing(schema *jsonschema.Schema, field string) *jsonschema.Schema {
-	if schema == nil {
-		return nil
+func (h held) Hold(raw []byte) (Document, error) {
+	var document any
+	if err := json.Unmarshal(raw, &document); err != nil {
+		return nil, fmt.Errorf("the document is not JSON: %w", err)
 	}
-	if named := schema.Properties[field]; named != nil {
-		return named
-	}
-	for _, branches := range [][]*jsonschema.Schema{schema.OneOf, schema.AnyOf, schema.AllOf} {
-		for _, branch := range branches {
-			if found := c.governing(branch, field); found != nil {
-				return found
-			}
-		}
-	}
-	return nil
+	return h.admit(document, raw)
 }
 
-func (c *Contract) following(reference string) (*jsonschema.Schema, error) {
-	file, pointer, _ := strings.Cut(reference, "#")
-	root := c.root
-	if file != "" {
-		var err error
-		if root, err = read(c.directory, file); err != nil {
-			return nil, err
-		}
+func (h held) Build(values map[string]any) (Document, error) {
+	document := make(map[string]any, len(values))
+	for key, value := range values {
+		document[key] = value
 	}
-	named, found := strings.CutPrefix(pointer, "/$defs/")
-	if !found {
-		return nil, fmt.Errorf("%s references %s, which this reads no form of", c.name, reference)
+	raw, err := json.Marshal(document)
+	if err != nil {
+		return nil, err
 	}
-	target := root.Defs[named]
-	if target == nil {
-		return nil, fmt.Errorf("%s references %s, which is not there", c.name, reference)
-	}
-	return target, nil
+	return h.admit(document, raw)
 }
 
-func (c *Contract) Kind(field string) (Kind, error) {
-	schema := c.governing(c.root, field)
-	if schema == nil {
-		return Text, fmt.Errorf("%s governs no field named %s", c.name, field)
-	}
-	for schema.Ref != "" {
-		followed, err := c.following(schema.Ref)
-		if err != nil {
-			return Text, err
-		}
-		schema = followed
-	}
-	if schema.Const != nil {
-		switch (*schema.Const).(type) {
-		case bool:
-			return Boolean, nil
-		case float64:
-			return Number, nil
-		}
-		return Text, nil
-	}
-	types := schema.Types
-	if schema.Type != "" {
-		types = []string{schema.Type}
-	}
-	for _, named := range types {
-		switch named {
-		case "boolean":
-			return Boolean, nil
-		case "integer", "number":
-			return Number, nil
-		case "string":
-			return Text, nil
-		}
-	}
-	return Text, fmt.Errorf("%s says no type for %s", c.name, field)
+func (a admitted) Value(key string) (any, bool) {
+	value, carried := a.values[key]
+	return value, carried
 }
 
-func (k Kind) Read(text string) (any, error) {
-	switch k {
-	case Boolean:
-		return strconv.ParseBool(text)
-	case Number:
-		if whole, err := strconv.ParseInt(text, 10, 64); err == nil {
-			return whole, nil
-		}
-		fraction, err := strconv.ParseFloat(text, 64)
-		if err != nil {
-			return nil, fmt.Errorf("%q is not a number", text)
-		}
-		return fraction, nil
-	}
-	return text, nil
-}
-
-func Shell(value any) (string, error) {
-	text, ok := value.(string)
-	if !ok {
-		encoded, err := json.Marshal(value)
-		if err != nil {
-			return "", err
-		}
-		text = string(encoded)
-	}
-	return "'" + strings.ReplaceAll(text, "'", `'\''`) + "'", nil
+func (a admitted) JSON() []byte {
+	return append([]byte(nil), a.raw...)
 }

@@ -3,10 +3,22 @@
 %:
 	dh $@
 
+# The component states its own build once, so that the package and the suite
+# compile the same binaries the same way rather than each spelling it out.
+# Go's own checks — gofmt, vet and the unit tests — run inside it and need
+# nothing beyond the toolchain this package already builds against.
 override_dh_auto_build:
-	cd components/contract && go build -mod=vendor -o parse ./cmd/parse
-	cd components/contract && go build -mod=vendor -o format ./cmd/format
+	sh components/contract/build.sh build/bin
 
+override_dh_auto_clean:
+	rm -rf build
+
+# dh_auto_test would hand this tree to the makefile buildsystem and run
+# make check, which starts the containers the verifications run in. The tests
+# that belong to a package build run in override_dh_auto_build above; the ones
+# that prove this package installs are what integration/packages.sh exists for.
 override_dh_auto_test:
 
+# dwz cannot process the DWARF the Go linker emits and fails the build on it.
+# dh-golang drops dh_dwz from its sequence for the same reason.
 override_dh_dwz:

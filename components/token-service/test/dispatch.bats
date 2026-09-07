@@ -2,7 +2,7 @@ bats_require_minimum_version 1.5.0
 
 setup() {
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../.." && pwd)
-  PATH="$root/components/token-service:$root/components/contract:$PATH"
+  PATH="$root/components/token-service:$root/build/bin:$PATH"
   EXCHANGER_DIR=$(mktemp -d)
   CONTRACTS_DIR="$root/contracts"
   export PATH EXCHANGER_DIR CONTRACTS_DIR

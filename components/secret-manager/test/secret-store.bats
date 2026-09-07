@@ -2,7 +2,7 @@ bats_require_minimum_version 1.5.0
 
 setup() {
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../.." && pwd)
-  PATH="$root/components/secret-manager:$root/components/contract:$PATH"
+  PATH="$root/components/secret-manager:$root/build/bin:$PATH"
   SECRET_DIR="$(mktemp -d)/secrets"
   CONTRACTS_DIR="$root/contracts"
   export PATH SECRET_DIR CONTRACTS_DIR

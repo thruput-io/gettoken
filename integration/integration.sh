@@ -3,7 +3,7 @@ set -eu
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 . "$root/integration/chain.sh"
-export PATH="$root/components/token-service:$root/components/entitlements:$root/tools/gettoken/bin:$root/tools/gettoken/privileged:$root/components/secret-manager:$root/components/contract:$root/tools/integration-test-tool/bin:$PATH"
+export PATH="$root/components/token-service:$root/components/entitlements:$root/tools/gettoken/bin:$root/tools/gettoken/privileged:$root/components/secret-manager:$root/build/bin:$root/tools/integration-test-tool/bin:$PATH"
 SECRET_DIR=$(mktemp -d)
 CONTRACTS_DIR="$root/contracts"
 EXCHANGER_DIR="$root/tools/integration-test-tool/privileged/exchangers"
@@ -43,7 +43,7 @@ export REQUEST_FILE
 cat > "$stub_dir/token-service" <<'STUB'
 #!/bin/sh
 cat > "$REQUEST_FILE"
-printf '{"access_token":"stub-token","expires_in":1}\n'
+printf '{"access_token":"stub-token","expires_in":60}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
 stub_out=$(PATH="$stub_dir:$PATH" token-requester "$capability")
@@ -69,7 +69,7 @@ export REQUEST_FILE
 cat > "$stub_dir/token-service" <<'STUB'
 #!/bin/sh
 cat > "$REQUEST_FILE"
-printf '{"access_token":"stub-token","expires_in":1}\n'
+printf '{"access_token":"stub-token","expires_in":60}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
 forged_out=$(PATH="$stub_dir:$PATH" token-requester "$injection") && forged_status=0 || forged_status=$?

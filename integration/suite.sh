@@ -2,13 +2,12 @@
 set -eu
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
+bin="$root/build/bin"
 
-grep -rl '^#!/bin/sh' --exclude-dir=.git "$root" | xargs shellcheck -s sh -x
+grep -rl '^#!/bin/sh' --exclude-dir=.git --exclude-dir=build "$root" | xargs shellcheck -s sh -x
 
-bin=${GETTOKEN_BIN:-$(mktemp -d)}
-(cd "$root/components/contract" \
-  && go build -mod=vendor -o "$bin/parse" ./cmd/parse \
-  && go build -mod=vendor -o "$bin/format" ./cmd/format)
+sh "$root/components/contract/build.sh" "$bin"
+
 PATH="$bin:$PATH"
 export PATH
 

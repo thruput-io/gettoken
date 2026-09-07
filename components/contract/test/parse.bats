@@ -2,7 +2,7 @@ bats_require_minimum_version 1.5.0
 
 setup() {
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../.." && pwd)
-  PATH="$root/components/contract:$PATH"
+  PATH="$root/build/bin:$PATH"
   CONTRACTS_DIR="$root/contracts"
   export PATH CONTRACTS_DIR
 }
@@ -70,9 +70,9 @@ reading() {
   [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
 }
 
-@test "a version that is not a positive integer is refused" {
+@test "a version below the first one the store can hold is refused" {
   run -1 --separate-stderr reading secret-put-request.schema.json \
-    '{"holder":"johans-laptop","service":"github","version":0}' version
+    '{"holder":"johans-laptop","service":"github","version":-1}' version
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
 }

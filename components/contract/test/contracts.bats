@@ -2,7 +2,7 @@ bats_require_minimum_version 1.5.0
 
 setup() {
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../.." && pwd)
-  PATH="$root/components/contract:$PATH"
+  PATH="$root/build/bin:$PATH"
   CONTRACTS_DIR="$root/contracts"
   export PATH CONTRACTS_DIR
 }
@@ -84,4 +84,46 @@ requesting() {
   rm -rf "$probe"
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy dialect.schema.json"* ]]
+}
+
+@test "the first version and the last one the store can hold are both admitted" {
+  run -0 --separate-stderr admits secret-put-request.schema.json \
+    '{"holder":"johans-laptop","service":"github","version":0}'
+  [ "$stderr" = "" ]
+  run -0 --separate-stderr admits secret-put-request.schema.json \
+    '{"holder":"johans-laptop","service":"github","version":1000000}'
+  [ "$stderr" = "" ]
+}
+
+@test "a version before the first one the store can hold is refused" {
+  run -1 --separate-stderr admits secret-put-request.schema.json \
+    '{"holder":"johans-laptop","service":"github","version":-1}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
+}
+
+@test "a version past the last one the store can hold is refused" {
+  run -1 --separate-stderr admits secret-put-request.schema.json \
+    '{"holder":"johans-laptop","service":"github","version":1000001}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
+}
+
+@test "a minute and a day are both admitted as lifetimes" {
+  run -0 --separate-stderr admits response.schema.json '{"access_token":"narrow","expires_in":60}'
+  [ "$stderr" = "" ]
+  run -0 --separate-stderr admits response.schema.json '{"access_token":"narrow","expires_in":86400}'
+  [ "$stderr" = "" ]
+}
+
+@test "a lifetime shorter than a minute is refused" {
+  run -1 --separate-stderr admits response.schema.json '{"access_token":"narrow","expires_in":59}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy response.schema.json"* ]]
+}
+
+@test "a lifetime longer than a day is refused" {
+  run -1 --separate-stderr admits response.schema.json '{"access_token":"narrow","expires_in":86401}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy response.schema.json"* ]]
 }
