@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Johan Granlund <johan.granlund@thruput.se>
 Build-Depends: debhelper-compat (= 13),
                golang-any
-Standards-Version: 4.6.2
+Standards-Version: 4.7.2
 Rules-Requires-Root: no
 Homepage: https://github.com/thruput-io/gettoken
 Vcs-Git: https://github.com/thruput-io/gettoken.git
@@ -29,7 +29,7 @@ Description: token broker for AI agents
 Package: gettoken-token-service
 Architecture: all
 Depends: ${misc:Depends},
-         jq
+         gettoken-contract
 Description: token broker for AI agents - exchange dispatcher
  token-service authenticates a request, resolves what it asks for, and hands
  the capability to the exchanger registered for the service named by the
@@ -93,4 +93,5 @@ Description: token broker for AI agents - tool that verifies the chain
  carries one exchanger, which knows one service and nothing about any other.
  Installing it is what brings the chain onto a machine. A tool someone else
  already packages is integrated by a second package alongside theirs, because
- theirs is not ours to change; this tool is ours, so it is one package.
+ that packaging belongs to its own maintainer; this tool has no other, so it is
+ one package.

@@ -2,19 +2,39 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://thruput.io/gettoken/defs.schema.json",
   "$defs": {
-    "Agent": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
-    "Activity": { "type": "string", "pattern": "^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$" },
-    "Capability": { "type": "string", "pattern": "^[a-z0-9-]+(/[a-z0-9._-]+)+$" },
+    "Agent": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "not": { "pattern": "[^A-Za-z0-9._-]" }
+    },
+    "Activity": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$",
+      "not": { "pattern": "[^A-Za-z0-9._/-]" }
+    },
+    "Capability": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+(/[a-z0-9._-]+)+$",
+      "not": { "pattern": "[^a-z0-9._/-]" }
+    },
     "Signature": {
       "type": "string",
       "minLength": 3,
       "maxLength": 4096,
-      "pattern": "^[^\u0000-\u001F\u007F]+$"
+      "not": { "pattern": "[\u0000-\u001F\u007F]" }
     },
     "AccessToken": { "type": "string", "minLength": 1 },
     "ExpiresIn": { "type": "integer", "minimum": 1 },
-    "Holder": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
-    "Service": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "Holder": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "not": { "pattern": "[^A-Za-z0-9._-]" }
+    },
+    "Service": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "not": { "pattern": "[^a-z0-9-]" }
+    },
     "Version": { "type": "integer", "minimum": 1 }
   }
 }

@@ -26,13 +26,13 @@ and what the system always does are in [`README.md`](README.md), not there.
 `make debian-latest` run the same suite inside a named base. `make debian-packages`
 builds the packages inside a named base and runs the chain against them once they
 are installed, which is the only verification that reaches the paths a package
-puts things at. The host needs `jq`, `bats` and a Go toolchain, which builds the
-contract component named in
+puts things at. The host needs `jq`, `bats`, `shellcheck` and a Go toolchain,
+which builds the contract component named in
 [record 16](docs/adrs/0016-a-validator-brew-and-apt-can-carry.md):
 
 ```sh
-apt install jq bats golang-go
-brew install jq bats-core go
+apt install jq bats shellcheck golang-go
+brew install jq bats-core shellcheck go
 ```
 
 `make check` builds `parse` and `format` before it runs anything, into a

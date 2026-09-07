@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-root=$(CDPATH= cd "$(dirname "$0")/../../.." && pwd)
+root=$(CDPATH='' cd "$(dirname "$0")/../../.." && pwd)
 export PATH="$root/tools/integration-test-tool/bin:$PATH"
 
 command -v integration-test-tool > /dev/null || { echo "FAIL: integration-test-tool is not on PATH"; exit 1; }

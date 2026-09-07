@@ -1,10 +1,18 @@
 #!/bin/sh
 set -eu
 
-root=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
+root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
+. "$root/integration/chain.sh"
+
+[ "${GETTOKEN_DISPOSABLE_BASE:-}" = yes ] || {
+  echo "packages.sh: this run installs and purges packages and deletes the secret"
+  echo "store, so it refuses to touch a machine. It is meant for the throwaway base"
+  echo "make debian-packages builds, which sets GETTOKEN_DISPOSABLE_BASE=yes."
+  exit 1
+}
 
 capability=integrationtest/ci/run
-integration=integration-test-tool
+integration='integration-test-tool'
 drawn_in="gettoken gettoken-token-service gettoken-entitlements gettoken-secret-manager gettoken-contract"
 runtime="jq"
 super_token=integrationtest-supertoken
@@ -15,17 +23,23 @@ build=$(mktemp -d)
 source_list=/etc/apt/sources.list.d/gettoken-build.list
 trap 'rm -rf "$build" "$source_list"' EXIT
 
-installed() { dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -qx 'install ok installed'; }
+states=$(mktemp)
+installed() {
+  dpkg-query -W -f='${binary:Package} ${db:Status-Status}\n' > "$states"
+  grep -qx "$1 installed" "$states"
+}
 
 echo "# the packages are built from the source tree"
 cp -a "$root" "$build/source"
 rm -rf "$build/source/.git"
-(cd "$build/source" && dpkg-buildpackage -us -uc -b)
+(cd "$build/source" && dpkg-buildpackage -us -uc)
 ls "$build"/*.deb
 
 echo
-echo "# lintian passes on every package"
-lintian "$build"/*.deb
+echo "# lintian passes on the source and on every package, and a warning is"
+echo "# enough to fail: at its defaults only an error is, so a warning about a"
+echo "# permission or an owner this run asserts by hand would pass unnoticed"
+lintian --fail-on error,warning --display-level '>=pedantic' "$build"/*.changes
 
 echo
 echo "# the packages are put where apt can reach them by name, so nothing has to be"
@@ -64,7 +78,7 @@ echo "ok: $integration was asked for; $drawn_in $runtime came with it"
 echo
 echo "# the components put the agent's entry point on a public PATH and nothing else,"
 echo "# and the tool puts the tool: its exchanger is not something an agent can run"
-public=$(dpkg-query -L $drawn_in | grep '^/usr/bin/' | sort)
+public=$(for one in $drawn_in; do dpkg-query -L "$one"; done | grep '^/usr/bin/' | sort)
 echo "$public"
 [ "$public" = /usr/bin/gettoken ] || { echo "FAIL: the components put more than gettoken on a public PATH"; exit 1; }
 tool_public=$(dpkg-query -L "$integration" | grep '^/usr/bin/' | sort)
@@ -85,35 +99,7 @@ printf '%s' "$super_token" | PATH="/usr/lib/gettoken:$PATH" secret-put '{"holder
 [ -f "$store/host-privileged/integrationtest/1" ] || { echo "FAIL: the store is not $store"; exit 1; }
 echo "ok: the store is $store"
 
-echo
-echo "# gettoken --list"
-list=$(gettoken --list)
-echo "$list"
-[ "$list" = "$capability" ] || { echo "FAIL: unexpected capability list"; exit 1; }
-
-echo
-echo "# gettoken $capability"
-out=$(gettoken "$capability")
-echo "$out"
-[ "$out" = "$narrow_token" ] || { echo "FAIL: gettoken did not return the downgraded token alone"; exit 1; }
-
-echo
-echo "# the tool runs on what gettoken handed over"
-INTEGRATIONTEST_TOKEN="$out" integration-test-tool
-
-echo
-echo "# the tool refuses the super-token, so the run above proves a downgrade"
-if INTEGRATIONTEST_TOKEN="$super_token" integration-test-tool; then
-  echo "FAIL: the tool accepted the super-token, so it cannot tell the two apart"
-  exit 1
-fi
-
-echo
-echo "# a capability no exchanger serves is refused, and hands over nothing"
-unknown_out=$(gettoken nosuch/capability) && unknown_status=0 || unknown_status=$?
-echo "exit $unknown_status"
-[ "$unknown_status" -eq 1 ] || { echo "FAIL: an unserved capability exited $unknown_status, not 1"; exit 1; }
-[ -z "$unknown_out" ] || { echo "FAIL: an unserved capability put $unknown_out on stdout"; exit 1; }
+chain_runs "$capability" "$super_token" "$narrow_token"
 
 echo
 echo "# purging takes the packages away, and the store with them"

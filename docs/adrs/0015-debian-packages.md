@@ -52,10 +52,19 @@ checkout: the store is the real one, the capability is listed, `gettoken` is
 invoked by name from a default `PATH`, and the tool runs on what comes back. It
 then purges every package and fails if anything is left behind.
 
-The base is bare on purpose, and one package is installed, not seven. A rig that
+The base is bare on purpose, and one package is installed, not six. A rig that
 installs what the packages need — or names them all itself — is a rig in which
 `Depends` is decorative: nothing would fail if a package forgot to declare
 something, because it would already be there. So the packages are served to `apt`
 as an archive it resolves by name, the run asserts the absence first, and asserts
 afterwards that everything else arrived marked as drawn in rather than asked for
 — and that purging the one package takes all of it away again.
+
+That bareness is also why the package build itself runs no tests. `dh_auto_test`
+would find this tree's `check` target and run the whole suite, so `debian/rules`
+overrides it to nothing. Making it run the suite instead would mean build-depending
+on `jq`, `bats` and the validator, which would put them on the base before `apt`
+is asked for anything — and the absence of exactly those is what proves the
+packages declare what they need. The suite runs on the two bases that exist to
+run it, and the packages verification asks the question those two cannot: whether
+what was declared is enough. Running the tests here as well would cost the answer.

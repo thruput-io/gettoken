@@ -22,5 +22,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - if: matrix.brew
-        run: brew install jq bats-core go
+        run: brew install jq bats-core shellcheck go
       - run: make ${{ matrix.target }}

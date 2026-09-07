@@ -19,6 +19,7 @@ request=$(format request.schema.json \
 response=$(printf '%s' "$request" | token-service)
 
 fields=$(printf '%s' "$response" | parse response.schema.json access_token)
+access_token=''
 eval "$fields"
 
 printf '%s\n' "$access_token"

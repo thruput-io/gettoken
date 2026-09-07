@@ -3,13 +3,9 @@ set -eu
 
 exchangers=${EXCHANGER_DIR:-/usr/lib/gettoken/exchangers}
 
-request=$(cat)
-wants=$(printf '%s' "$request" | jq -r '.wants // empty')
-
-if [ -z "$wants" ]; then
-  echo "token-service: the request names no capability" >&2
-  exit 1
-fi
+fields=$(parse request.schema.json wants)
+wants=''
+eval "$fields"
 
 exchanger="$exchangers/${wants%%/*}"
 
