@@ -27,10 +27,12 @@ and what the system always does are in [`README.md`](README.md), not there.
 builds the packages inside a named base and runs the chain against them once they
 are installed, which is the only verification that reaches the paths a package
 puts things at. The host needs `jq`, `bats` and the validator named in
-[record 13](docs/adrs/0013-validating-the-wire.md):
+[record 16](docs/adrs/0016-a-validator-apt-can-install.md). On Debian that is one
+package; on macOS the validator comes from CPAN, which is how Perl distributes:
 
 ```sh
-brew install jq bats-core sourcemeta/apps/jsonschema
+apt install jq bats libjson-schema-modern-perl
+brew install jq bats-core cpanminus && cpanm JSON::Schema::Modern
 ```
 
 Nothing is skipped when a tool is missing. A test that cannot run fails.

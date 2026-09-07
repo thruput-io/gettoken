@@ -63,16 +63,17 @@ Description: token broker for AI agents - super-token store
 
 Package: gettoken-contract
 Architecture: all
-Depends: ${misc:Depends}
+Depends: ${misc:Depends},
+         libjson-schema-modern-perl
 Description: token broker for AI agents - wire contracts
  Every hop between components carries a document, and every document is
  checked against the contract that governs it. A schema no code path consults
  describes a document rather than governing it.
  .
  This package holds the contracts and the program that checks a document
- against one. That program calls the JSON Schema validator named in the
- architectural decision records, which is not distributed as a package and
- must be present on the host.
+ against one. The contracts are installed as they are written, and the
+ validator reads them that way: there is no bundling step between what is
+ committed and what governs a document.
 
 Package: integration-test-tool
 Architecture: all
