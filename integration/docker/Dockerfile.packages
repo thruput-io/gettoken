@@ -3,7 +3,7 @@ FROM debian:${DEBIAN_TAG}
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      dpkg-dev debhelper lintian \
+      build-essential dpkg-dev debhelper lintian \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /work

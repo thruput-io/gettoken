@@ -28,6 +28,15 @@ around installability and re-run on both bases. Of the candidates `apt` offers,
 `python3-jsonschema` cannot be told about a second schema file, and
 `jsonschema-jv` answers a rejection and a failure to read with the same status.
 
+## What it takes to install it
+
+`json-schema-eval` is a script the library ships rather than the library itself,
+and neither Debian testing nor CPAN counts what the script parses its arguments
+with as required, so `libgetopt-long-descriptive-perl` is named alongside the
+library everywhere the validator is installed. The script also needs a Perl that
+carries `blessed` as a builtin, which is 5.36 and later; macOS ships 5.34, so the
+macOS side installs a Perl before it installs the validator.
+
 ## Bundling is gone
 
 Record 13 bundled first, because the contracts reference each other through `$id`
