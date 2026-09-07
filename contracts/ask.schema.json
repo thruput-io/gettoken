@@ -4,8 +4,12 @@
   "title": "what an agent asks gettoken for",
   "type": "object",
   "additionalProperties": false,
-  "required": ["wants"],
   "properties": {
-    "wants": { "$ref": "defs.schema.json#/$defs/Capability" }
-  }
+    "wants": { "$ref": "defs.schema.json#/$defs/Capability" },
+    "query": { "const": "list" }
+  },
+  "oneOf": [
+    { "required": ["wants"], "not": { "required": ["query"] } },
+    { "required": ["query"], "not": { "required": ["wants"] } }
+  ]
 }

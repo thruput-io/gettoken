@@ -137,8 +137,26 @@ requesting() {
   [ "$stderr" = "" ]
 }
 
-@test "an ask naming no capability is refused" {
+@test "an ask for the list is admitted" {
+  run -0 --separate-stderr admits ask.schema.json '{"query":"list"}'
+  [ "$stderr" = "" ]
+}
+
+@test "an ask that is neither is refused" {
   run -1 --separate-stderr admits ask.schema.json '{}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy ask.schema.json"* ]]
+}
+
+@test "an ask that is both at once is refused" {
+  run -1 --separate-stderr admits ask.schema.json \
+    '{"wants":"integrationtest/ci/run","query":"list"}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy ask.schema.json"* ]]
+}
+
+@test "an ask querying anything but the list is refused" {
+  run -1 --separate-stderr admits ask.schema.json '{"query":"everything"}'
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy ask.schema.json"* ]]
 }

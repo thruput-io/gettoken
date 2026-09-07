@@ -1,9 +1,11 @@
 #!/bin/sh
 set -eu
 
-if [ "${1:-}" = --list ]; then
-  parse entitlements-ask.schema.json
+fields=$(parse ask.schema.json wants query)
+wants='' query=''
+eval "$fields"
 
+if [ "$query" = list ]; then
   request=$(format entitlements-request.schema.json \
     "who=$(id -un)" \
     "doing=$(hostname)" \
@@ -14,10 +16,6 @@ if [ "${1:-}" = --list ]; then
   printf '%s\n' "$entitled"
   exit 0
 fi
-
-fields=$(parse ask.schema.json wants)
-wants=''
-eval "$fields"
 
 request=$(format request.schema.json \
   "who=$(id -un)" \

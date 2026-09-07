@@ -1,8 +1,0 @@
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://thruput.io/gettoken/entitlements-ask.schema.json",
-  "title": "an agent asking what it may ask for",
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {}
-}
