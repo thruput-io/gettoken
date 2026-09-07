@@ -236,7 +236,8 @@ flowchart LR
 implements yet carries a `SEAT.md` saying what it is for, so the list stays whole.
 A tool lives under `tools/` and owns its own privileged half, so the boundary sits
 inside the tool rather than across the top of the tree. Unit tests live with what
-they cover, and so do man pages; `integration/` holds only what spans them;
+they cover, and so do man pages; a test that puts a second component under test
+belongs in `integration/`, which is the only place allowed to span them;
 `exploratory/` answers a question rather than guarding the product, and
 `make check` does not run it. `debian/` says which of these goes into which
 package, and it is one directory because Debian builds many packages from one
