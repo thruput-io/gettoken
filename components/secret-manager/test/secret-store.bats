@@ -1,7 +1,7 @@
 bats_require_minimum_version 1.5.0
 
 setup() {
-  root=$(CDPATH= cd "$BATS_TEST_DIRNAME/../../.." && pwd)
+  root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../.." && pwd)
   PATH="$root/components/secret-manager:$root/components/contract:$PATH"
   SECRET_DIR="$(mktemp -d)/secrets"
   CONTRACTS_DIR="$root/contracts"
@@ -80,16 +80,18 @@ teardown() { rm -rf "$(dirname "$SECRET_DIR")"; }
   [ "$output" = "$SECRET_DIR/johans-laptop/github/1" ]
 }
 
-@test "what secret-get emits when it finds the secret satisfies its contract" {
+@test "what secret-get emits when it finds the secret carries the value and says so" {
   printf 'super-1' | secret-put '{"holder":"johans-laptop","service":"github","version":1}'
-  run --separate-stderr secret-get '{"holder":"johans-laptop","service":"github"}'
-  [ "$status" -eq 0 ]
-  printf '%s' "$output" | parse secret-get-response.schema.json
+  run -0 --separate-stderr secret-get '{"holder":"johans-laptop","service":"github"}'
+  [ "$(printf '%s' "$output" | jq -r '.found')" = true ]
+  [ "$(printf '%s' "$output" | jq -r '.version')" = 1 ]
+  [ "$(printf '%s' "$output" | jq -r '.value')" = super-1 ]
 }
 
-@test "what secret-get emits when the version is not there satisfies its contract" {
+@test "what secret-get emits when the version is not there names the version it has and carries no value" {
   printf 'super-1' | secret-put '{"holder":"johans-laptop","service":"github","version":1}'
-  run --separate-stderr secret-get '{"holder":"johans-laptop","service":"github","version":2}'
-  [ "$status" -eq 0 ]
-  printf '%s' "$output" | parse secret-get-response.schema.json
+  run -0 --separate-stderr secret-get '{"holder":"johans-laptop","service":"github","version":2}'
+  [ "$(printf '%s' "$output" | jq -r '.found')" = false ]
+  [ "$(printf '%s' "$output" | jq -r '.version')" = 1 ]
+  [ "$(printf '%s' "$output" | jq -r 'has("value")')" = false ]
 }

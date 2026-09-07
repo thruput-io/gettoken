@@ -1,7 +1,7 @@
 bats_require_minimum_version 1.5.0
 
 setup() {
-  root=$(CDPATH= cd "$BATS_TEST_DIRNAME/../../.." && pwd)
+  root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../.." && pwd)
   PATH="$root/components/contract:$PATH"
   CONTRACTS_DIR="$root/contracts"
   export PATH CONTRACTS_DIR
@@ -9,24 +9,79 @@ setup() {
 
 admits() { printf '%s' "$2" | parse "$1"; }
 
+requesting() {
+  jq -nc --arg signed "$1" \
+    '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:$signed}'
+}
+
 @test "a secret-get response claiming to be found without a value is refused" {
   run -1 --separate-stderr admits secret-get-response.schema.json '{"found":true,"version":1}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy secret-get-response.schema.json"* ]]
 }
 
 @test "a secret-get response claiming not to be found while carrying a value is refused" {
   run -1 --separate-stderr admits secret-get-response.schema.json '{"found":false,"version":1,"value":"leaked"}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy secret-get-response.schema.json"* ]]
 }
 
 @test "a request whose signature is ordinary text is admitted" {
-  admits request.schema.json "$(jq -nc '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:"host-privileged"}')"
+  run -0 --separate-stderr admits request.schema.json "$(requesting host-privileged)"
+  [ "$stderr" = "" ]
 }
 
 @test "a request whose signature carries a control character is refused" {
-  signed="host$(printf '\001')privileged"
-  run -1 --separate-stderr admits request.schema.json "$(jq -nc --arg signed "$signed" '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:$signed}')"
+  run -1 --separate-stderr admits request.schema.json "$(requesting "host$(printf '\001')privileged")"
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy request.schema.json"* ]]
 }
 
 @test "a request whose signature carries a delete character is refused" {
-  signed="host$(printf '\177')privileged"
-  run -1 --separate-stderr admits request.schema.json "$(jq -nc --arg signed "$signed" '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:$signed}')"
+  run -1 --separate-stderr admits request.schema.json "$(requesting "host$(printf '\177')privileged")"
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy request.schema.json"* ]]
+}
+
+@test "a request whose signature ends in a newline is refused" {
+  run -1 --separate-stderr admits request.schema.json \
+    "$(jq -nc '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:"host-privileged\n"}')"
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy request.schema.json"* ]]
+}
+
+@test "a capability ending in a newline is refused" {
+  run -1 --separate-stderr admits request.schema.json \
+    "$(jq -nc '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run\n",signed:"host-privileged"}')"
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy request.schema.json"* ]]
+}
+
+@test "an agent name ending in a newline is refused" {
+  run -1 --separate-stderr admits request.schema.json \
+    "$(jq -nc '{who:"tore\n",doing:"mac.lan",wants:"integrationtest/ci/run",signed:"host-privileged"}')"
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy request.schema.json"* ]]
+}
+
+@test "a document the contract does not govern is refused, and says so differently" {
+  run -1 --separate-stderr admits nosuch.schema.json '{}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"no contract named nosuch.schema.json"* ]]
+}
+
+@test "the validator implements the dialect the contracts declare" {
+  probe=$(mktemp -d)
+  cp "$root/contracts"/*.schema.json "$probe"
+  jq -n '{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://thruput.io/gettoken/dialect.schema.json",
+    type: "object",
+    dependentRequired: { paid: ["method"] }
+  }' > "$probe/dialect.schema.json"
+  CONTRACTS_DIR="$probe"
+  run -1 --separate-stderr admits dialect.schema.json '{"paid":true}'
+  rm -rf "$probe"
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy dialect.schema.json"* ]]
 }

@@ -1,7 +1,9 @@
 #!/bin/sh
 set -eu
 
-root=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
+root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
+
+grep -rl '^#!/bin/sh' --exclude-dir=.git "$root" | xargs shellcheck -s sh -x
 
 bats --recursive "$root/components" "$root/tools"
 sh "$root/tools/integration-test-tool/test/exit-status.sh"
