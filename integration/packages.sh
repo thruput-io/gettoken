@@ -14,7 +14,6 @@ root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 capability=integrationtest/ci/run
 integration='integration-test-tool'
 drawn_in="gettoken gettoken-token-service gettoken-entitlements gettoken-secret-manager gettoken-contract"
-runtime="jq"
 super_token=integrationtest-supertoken
 narrow_token=integrationtest-ci-run-allowed
 store=/var/lib/gettoken/secrets
@@ -52,20 +51,26 @@ apt-get update
 echo
 echo "# nothing the chain runs on is on this base, so apt has to resolve every"
 echo "# dependency the packages declare rather than find it already there"
-for needed in $drawn_in $runtime; do
+for needed in $drawn_in; do
   ! installed "$needed" \
     || { echo "FAIL: $needed is already installed, so this run cannot show that apt draws it in"; exit 1; }
 done
-echo "ok: none of $drawn_in $runtime is installed"
+echo "ok: none of $drawn_in is installed"
 
 echo
 echo "# integrating a tool is installing that tool's package, and nothing else"
+present() {
+  dpkg-query -W -f='${binary:Package} ${db:Status-Status}\n' \
+    | sed -n 's/ installed$//p' | sort
+}
+before="$build/before"
+present > "$before"
 apt-get install -y --no-install-recommends "$integration"
 
 echo
 echo "# the chain arrived because the packages declare it, not because it was asked for"
 auto=$(apt-mark showauto)
-for needed in $drawn_in $runtime; do
+for needed in $drawn_in; do
   installed "$needed" \
     || { echo "FAIL: apt did not install $needed, so some package does not declare it"; exit 1; }
   printf '%s\n' "$auto" | grep -qx "$needed" \
@@ -73,7 +78,18 @@ for needed in $drawn_in $runtime; do
 done
 apt-mark showmanual | grep -qx "$integration" \
   || { echo "FAIL: $integration is not the package that was asked for"; exit 1; }
-echo "ok: $integration was asked for; $drawn_in $runtime came with it"
+echo "ok: $integration was asked for; $drawn_in came with it"
+
+echo
+echo "# and nothing else came with it: the chain runs on its own packages alone"
+present > "$build/after"
+for one in $(comm -13 "$before" "$build/after"); do
+  case " $drawn_in $integration " in
+    *" $one "*) ;;
+    *) echo "FAIL: installing $integration also brought in $one, which is not part of the chain"; exit 1 ;;
+  esac
+done
+echo "ok: the chain runs on its own packages and brought in nothing else"
 
 echo
 echo "# the components put the agent's entry point on a public PATH and nothing else,"
@@ -105,7 +121,7 @@ echo
 echo "# purging takes the packages away, and the store with them"
 apt-get purge -y "$integration"
 apt-get autoremove --purge -y
-for needed in $drawn_in $runtime; do
+for needed in $drawn_in; do
   ! installed "$needed" \
     || { echo "FAIL: purging $integration left $needed behind"; exit 1; }
 done

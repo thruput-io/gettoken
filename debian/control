@@ -13,7 +13,7 @@ Vcs-Browser: https://github.com/thruput-io/gettoken
 Package: gettoken
 Architecture: all
 Depends: ${misc:Depends},
-         jq,
+         gettoken-contract,
          gettoken-entitlements,
          gettoken-token-service
 Description: token broker for AI agents
@@ -50,7 +50,6 @@ Description: token broker for AI agents - capability inventory
 Package: gettoken-secret-manager
 Architecture: all
 Depends: ${misc:Depends},
-         jq,
          gettoken-contract
 Description: token broker for AI agents - super-token store
  The store holds the super-tokens a human placed on the privileged side,
@@ -80,9 +79,9 @@ Description: token broker for AI agents - wire contracts
 Package: integration-test-tool
 Architecture: all
 Depends: ${misc:Depends},
-         jq,
          gettoken,
-         gettoken-secret-manager
+         gettoken-secret-manager,
+         gettoken-contract
 Description: token broker for AI agents - tool that verifies the chain
  The tool the verification suite integrates, standing in for a real one so the
  chain can be exercised without reaching a service. It runs on the token that
