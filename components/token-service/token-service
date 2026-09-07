@@ -23,4 +23,12 @@ if [ -z "$access_token" ] || [ -z "$expires_in" ]; then
   exit 1
 fi
 
-printf '%s' "$access_token" | format response.schema.json access_token@- "expires_in=$expires_in"
+# An exchanger is dropped into a directory rather than shipped with this
+# package, so its answer is the one thing on this path that arrives unchecked.
+# Holding it to response.schema.json is what this is for. What leaves is the
+# token itself: the caller is this machine's own privileged half, one process
+# away, with nothing left to check that was not checked here.
+printf '%s' "$access_token" \
+  | format response.schema.json access_token@- "expires_in=$expires_in" > /dev/null
+
+printf '%s\n' "$access_token"

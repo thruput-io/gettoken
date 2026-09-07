@@ -14,7 +14,6 @@ super_token=integrationtest-supertoken
 narrow_token=integrationtest-ci-run-allowed
 
 expected_request="{\"doing\":\"$(hostname)\",\"signed\":\"host-privileged\",\"wants\":\"$capability\",\"who\":\"$(id -un)\"}"
-expected_response="{\"access_token\":\"$narrow_token\",\"expires_in\":120}"
 
 echo "# the human puts the super-token in the store"
 printf '%s' "$super_token" | secret-put '{"holder":"host-privileged","service":"integrationtest","version":1}'
@@ -43,7 +42,7 @@ export REQUEST_FILE
 cat > "$stub_dir/token-service" <<'STUB'
 #!/bin/sh
 cat > "$REQUEST_FILE"
-printf '{"access_token":"stub-token","expires_in":60}\n'
+printf 'stub-token\n'
 STUB
 chmod 755 "$stub_dir/token-service"
 stub_out=$(PATH="$stub_dir:$PATH" token-requester "$capability")
@@ -69,7 +68,7 @@ export REQUEST_FILE
 cat > "$stub_dir/token-service" <<'STUB'
 #!/bin/sh
 cat > "$REQUEST_FILE"
-printf '{"access_token":"stub-token","expires_in":60}\n'
+printf 'stub-token\n'
 STUB
 chmod 755 "$stub_dir/token-service"
 refused_with 1 "a capability carrying quotes" \
@@ -78,23 +77,10 @@ refused_with 1 "a capability carrying quotes" \
 rm -rf "$stub_dir"
 
 echo
-echo "# a response carrying no token hands over nothing, not the word null"
-stub_dir=$(mktemp -d)
-cat > "$stub_dir/token-service" <<'STUB'
-#!/bin/sh
-cat > /dev/null
-printf '{"expires_in":120}\n'
-STUB
-chmod 755 "$stub_dir/token-service"
-refused_with 1 "a tokenless response" \
-  env PATH="$stub_dir:$PATH" token-requester "$capability"
-rm -rf "$stub_dir"
-
-echo
-echo "# the response token-service returns"
+echo "# the token token-service returns"
 response=$(printf '%s' "$expected_request" | token-service)
 echo "$response"
-[ "$response" = "$expected_response" ] || { echo "FAIL: response is not $expected_response"; exit 1; }
+[ "$response" = "$narrow_token" ] || { echo "FAIL: token-service returned $response, not $narrow_token"; exit 1; }
 
 chain_runs "$capability" "$super_token" "$narrow_token"
 

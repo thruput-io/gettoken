@@ -27,12 +27,11 @@ asking() { dispatch "$(wanting "$1")"; }
 @test "the exchanger registered for the first segment is handed the whole capability" {
   register integrationtest 'printf "%s\n120\n" "$1"'
   run -0 --separate-stderr asking integrationtest/ci/run
-  [ "$(printf '%s' "$output" | jq -r '.access_token')" = "integrationtest/ci/run" ]
-  [ "$(printf '%s' "$output" | jq -r '.expires_in')" = "120" ]
+  [ "$output" = "integrationtest/ci/run" ]
   [ "$stderr" = "" ]
 }
 
-@test "an exchanger claiming a lifetime shorter than a minute hands over nothing" {
+@test "an exchanger claiming a lifetime the contract refuses hands over nothing" {
   register integrationtest 'printf "%s\n1\n" narrow-token'
   run -1 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "" ]
