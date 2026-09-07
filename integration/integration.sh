@@ -72,10 +72,8 @@ cat > "$REQUEST_FILE"
 printf '{"access_token":"stub-token","expires_in":60}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
-forged_out=$(PATH="$stub_dir:$PATH" token-requester "$injection") && forged_status=0 || forged_status=$?
-echo "exit $forged_status"
-[ "$forged_status" -ne 0 ] || { echo "FAIL: a capability carrying quotes was accepted"; exit 1; }
-[ -z "$forged_out" ] || { echo "FAIL: a refused capability put \"$forged_out\" on stdout"; exit 1; }
+refused_with 1 "a capability carrying quotes" \
+  env PATH="$stub_dir:$PATH" token-requester "$injection"
 [ ! -f "$REQUEST_FILE" ] || { echo "FAIL: a refused capability still reached token-service"; exit 1; }
 rm -rf "$stub_dir"
 
@@ -88,10 +86,8 @@ cat > /dev/null
 printf '{"expires_in":120}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
-tokenless_out=$(PATH="$stub_dir:$PATH" token-requester "$capability") && tokenless_status=0 || tokenless_status=$?
-echo "exit $tokenless_status"
-[ "$tokenless_status" -eq 1 ] || { echo "FAIL: a tokenless response exited $tokenless_status, not 1"; exit 1; }
-[ -z "$tokenless_out" ] || { echo "FAIL: a tokenless response put \"$tokenless_out\" on stdout"; exit 1; }
+refused_with 1 "a tokenless response" \
+  env PATH="$stub_dir:$PATH" token-requester "$capability"
 rm -rf "$stub_dir"
 
 echo

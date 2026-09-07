@@ -1,10 +1,10 @@
-# 16. A validator brew and apt can carry
+# 17. A validator brew and apt can carry
 
 ## Context
 
 Record 13 chose `sourcemeta/jsonschema`, which no `apt` carries. Record 15
-packaged the components, and a package says what it needs, so that was replaced
-with `json-schema-eval` from `libjson-schema-modern-perl`, which no `brew`
+packaged the components, and a package says what it needs, so record 16 replaced
+it with `json-schema-eval` from `libjson-schema-modern-perl`, which no `brew`
 carries. Each record held one half of the same requirement and dropped the other,
 and the second choice cost macOS a Homebrew Perl, forty CPAN distributions and a
 dependency upstream does not count as required.
@@ -12,11 +12,19 @@ dependency upstream does not count as required.
 A validator has to meet two conditions and no others: it reads JSON Schema, and
 both `brew` and `apt` can distribute it.
 
-Nothing meets both. `check-jsonschema` is the only JSON Schema validator in
-homebrew-core, and Debian carries it in testing alone. `jsonschema-jv`,
-`php-json-schema`, `python3-jsonschema` and `libjson-schema-modern-perl` are in
-both Debian bases and in no formula. `sourcemeta/jsonschema` is a tap and is
-AGPL, which is its own question.
+Nothing meets both. The conditions are narrower than they sound, so they are
+worth stating in full: a command-line program, reading the 2020-12 dialect the
+contracts declare, in homebrew-core and in Debian stable.
+
+`check-jsonschema` is the only formula in homebrew-core that meets the first two,
+and Debian carries it in testing alone. `valijson` is also in homebrew-core and in
+Debian as `libvalijson-dev`, so it clears the distribution condition both ways,
+but it is a C++ library with no command-line program and it reads draft 7, so a
+component could not run it and the contracts would have to be rewritten to a
+dialect they do not declare. `jsonschema-jv`, `php-json-schema`,
+`python3-jsonschema` and `libjson-schema-modern-perl` are in both Debian bases and
+in no formula. `sourcemeta/jsonschema` is a tap and is AGPL, which is its own
+question.
 
 ## Decision
 

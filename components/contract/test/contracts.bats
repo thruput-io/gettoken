@@ -127,3 +127,10 @@ requesting() {
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy response.schema.json"* ]]
 }
+
+@test "a response carrying a field the contract does not govern is refused" {
+  run -1 --separate-stderr admits response.schema.json \
+    '{"access_token":"narrow","expires_in":120,"wants":"integrationtest/ci/run"}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy response.schema.json"* ]]
+}

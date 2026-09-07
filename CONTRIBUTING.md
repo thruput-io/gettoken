@@ -28,7 +28,7 @@ builds the packages inside a named base and runs the chain against them once the
 are installed, which is the only verification that reaches the paths a package
 puts things at. The host needs `jq`, `bats`, `shellcheck` and a Go toolchain,
 which builds the contract component named in
-[record 16](docs/adrs/0016-a-validator-brew-and-apt-can-carry.md):
+[record 17](docs/adrs/0017-a-validator-brew-and-apt-can-carry.md):
 
 ```sh
 apt install jq bats shellcheck golang-go
