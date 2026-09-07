@@ -87,26 +87,22 @@ requesting() {
 }
 
 @test "the first version and the last one the store can hold are both admitted" {
-  run -0 --separate-stderr admits secret-put-request.schema.json \
-    '{"holder":"johans-laptop","service":"github","version":0}'
+  run -0 --separate-stderr admits secret-get-request.schema.json '{"key":"johans-laptop/github","version":0}'
   [ "$stderr" = "" ]
-  run -0 --separate-stderr admits secret-put-request.schema.json \
-    '{"holder":"johans-laptop","service":"github","version":1000000}'
+  run -0 --separate-stderr admits secret-get-request.schema.json '{"key":"johans-laptop/github","version":1000000}'
   [ "$stderr" = "" ]
 }
 
 @test "a version before the first one the store can hold is refused" {
-  run -1 --separate-stderr admits secret-put-request.schema.json \
-    '{"holder":"johans-laptop","service":"github","version":-1}'
+  run -1 --separate-stderr admits secret-get-request.schema.json '{"key":"johans-laptop/github","version":-1}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy secret-get-request.schema.json"* ]]
 }
 
 @test "a version past the last one the store can hold is refused" {
-  run -1 --separate-stderr admits secret-put-request.schema.json \
-    '{"holder":"johans-laptop","service":"github","version":1000001}'
+  run -1 --separate-stderr admits secret-get-request.schema.json '{"key":"johans-laptop/github","version":1000001}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy secret-get-request.schema.json"* ]]
 }
 
 @test "a minute and a day are both admitted as lifetimes" {

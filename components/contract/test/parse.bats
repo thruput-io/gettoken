@@ -15,19 +15,18 @@ reading() {
 }
 
 @test "a document satisfying its contract yields the fields it was asked for" {
-  fields=$(printf '%s' '{"holder":"johans-laptop","service":"github","version":1}' \
-    | parse secret-put-request.schema.json holder service version)
+  fields=$(printf '%s' '{"key":"johans-laptop/github","value":"super-1"}' \
+    | parse secret-put-request.schema.json key value)
   eval "$fields"
-  [ "$holder" = "johans-laptop" ]
-  [ "$service" = "github" ]
-  [ "$version" = "1" ]
+  [ "$key" = "johans-laptop/github" ]
+  [ "$value" = "super-1" ]
 }
 
 @test "a field the document does not carry yields an empty value" {
-  fields=$(printf '%s' '{"holder":"johans-laptop","service":"github"}' \
-    | parse secret-get-request.schema.json holder service version)
+  fields=$(printf '%s' '{"key":"johans-laptop/github"}' \
+    | parse secret-get-request.schema.json key version)
   eval "$fields"
-  [ "$holder" = "johans-laptop" ]
+  [ "$key" = "johans-laptop/github" ]
   [ -z "$version" ]
 }
 
@@ -51,30 +50,30 @@ reading() {
 
 @test "naming no field checks the document and yields nothing" {
   run -0 --separate-stderr reading secret-put-request.schema.json \
-    '{"holder":"johans-laptop","service":"github","version":1}'
+    '{"key":"johans-laptop/github","value":"super-1"}'
   [ "$output" = "" ]
   [ "$stderr" = "" ]
 }
 
 @test "a document missing a required field is refused" {
   run -1 --separate-stderr reading secret-put-request.schema.json \
-    '{"holder":"johans-laptop"}' holder
+    '{"key":"johans-laptop/github"}' key
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
 }
 
 @test "a field breaking its type is refused" {
   run -1 --separate-stderr reading secret-put-request.schema.json \
-    '{"holder":"johans-laptop","service":"GitHub","version":1}' service
+    '{"key":"Johans-Laptop/github","value":"super-1"}' key
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
 }
 
 @test "a version below the first one the store can hold is refused" {
-  run -1 --separate-stderr reading secret-put-request.schema.json \
-    '{"holder":"johans-laptop","service":"github","version":-1}' version
+  run -1 --separate-stderr reading secret-get-request.schema.json \
+    '{"key":"johans-laptop/github","version":-1}' version
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
+  [[ "$stderr" == *"does not satisfy secret-get-request.schema.json"* ]]
 }
 
 @test "naming a contract that does not exist is refused, and says so differently" {
@@ -84,19 +83,19 @@ reading() {
 }
 
 @test "a document that is refused yields nothing to evaluate" {
-  run -1 --separate-stderr reading secret-put-request.schema.json '{}' holder
+  run -1 --separate-stderr reading secret-put-request.schema.json '{}' key
   [ "$output" = "" ]
   [ -n "$stderr" ]
 }
 
 @test "a body that is not JSON at all is refused rather than read as empty" {
-  run -1 --separate-stderr reading secret-put-request.schema.json 'not json' holder
+  run -1 --separate-stderr reading secret-put-request.schema.json 'not json' key
   [ "$output" = "" ]
   [ -n "$stderr" ]
 }
 
 @test "an empty body is refused rather than read as an empty document" {
-  run -1 --separate-stderr reading secret-put-request.schema.json '' holder
+  run -1 --separate-stderr reading secret-put-request.schema.json '' key
   [ "$output" = "" ]
   [ -n "$stderr" ]
 }

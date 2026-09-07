@@ -41,15 +41,14 @@
       "maxLength": 200,
       "not": { "pattern": "[\u0000-\u001F\u007F]" }
     },
-    "Holder": {
+    "Key": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9._-]+$",
-      "not": { "pattern": "[^A-Za-z0-9._-]" }
+      "pattern": "^[a-z0-9-]+(/[a-z0-9-]+)*$",
+      "not": { "pattern": "[^a-z0-9/-]" }
     },
-    "Service": {
+    "Secret": {
       "type": "string",
-      "pattern": "^[a-z0-9-]+$",
-      "not": { "pattern": "[^a-z0-9-]" }
+      "minLength": 1
     },
     "Version": { "type": "integer", "minimum": 0, "maximum": 1000000 }
   }

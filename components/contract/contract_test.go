@@ -40,33 +40,33 @@ func TestAContractThatIsNotASchemaIsNotReportedAsMissing(t *testing.T) {
 
 func TestADocumentItsContractAdmitsAnswersByKey(t *testing.T) {
 	governing := open(t, "secret-put-request.schema.json")
-	document, err := governing.Hold([]byte(`{"holder":"johans-laptop","service":"github","version":1}`))
+	document, err := governing.Hold([]byte(`{"key":"johans-laptop/github","value":"super-1"}`))
 	if err != nil {
 		t.Fatalf("a document the contract admits was refused: %v", err)
 	}
-	holder, carried := document.Value("holder")
-	if !carried || holder != "johans-laptop" {
-		t.Errorf("holder answered (%v, %v)", holder, carried)
+	key, carried := document.Value("key")
+	if !carried || key != "johans-laptop/github" {
+		t.Errorf("key answered (%v, %v)", key, carried)
 	}
 }
 
 func TestAFieldTheDocumentDoesNotCarryIsToldApartFromOneItDoes(t *testing.T) {
 	governing := open(t, "secret-get-request.schema.json")
-	document, err := governing.Hold([]byte(`{"holder":"johans-laptop","service":"github"}`))
+	document, err := governing.Hold([]byte(`{"key":"johans-laptop/github"}`))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if _, carried := document.Value("version"); carried {
 		t.Error("a field the document does not carry answered as carried")
 	}
-	if _, carried := document.Value("holder"); !carried {
+	if _, carried := document.Value("key"); !carried {
 		t.Error("a field the document carries answered as absent")
 	}
 }
 
 func TestADocumentTheContractRefusesYieldsNothingToRead(t *testing.T) {
 	governing := open(t, "secret-put-request.schema.json")
-	document, err := governing.Hold([]byte(`{"holder":"johans-laptop"}`))
+	document, err := governing.Hold([]byte(`{"key":"johans-laptop/github"}`))
 	if err == nil {
 		t.Fatal("a document missing a required field was held")
 	}

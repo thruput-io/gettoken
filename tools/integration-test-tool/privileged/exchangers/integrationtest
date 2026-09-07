@@ -10,8 +10,8 @@ case "$wants" in
   *) echo "integrationtest: nothing is registered for $wants" >&2; exit 1 ;;
 esac
 
-fields=$(secret-get '{"holder":"host-privileged","service":"integrationtest"}' \
-  | parse secret-get-response.schema.json value)
+asked=$(format secret-get-request.schema.json key=host-privileged/integrationtest)
+fields=$(printf '%s' "$asked" | secret-get | parse secret-get-response.schema.json value)
 value=''
 eval "$fields"
 
