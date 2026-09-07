@@ -1,19 +1,14 @@
 #!/bin/sh
 set -eu
 
-if [ $# -eq 0 ]; then
-  echo "gettoken: usage: gettoken --list | gettoken <capability>" >&2
-  exit 1
-fi
-
-if [ "$1" = --list ]; then
-  exec entitlements
-fi
+fields=$(parse ask.schema.json wants)
+wants=''
+eval "$fields"
 
 request=$(format request.schema.json \
   "who=$(id -un)" \
   "doing=$(hostname)" \
-  "wants=$1" \
+  "wants=$wants" \
   signed=host-privileged)
 
 response=$(printf '%s' "$request" | token-service)

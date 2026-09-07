@@ -14,7 +14,8 @@ if [ ! -f "$exchanger" ] || [ ! -x "$exchanger" ]; then
   exit 1
 fi
 
-response=$("$exchanger" "$wants")
+exchange=$(format exchange-request.schema.json "wants=$wants")
+response=$(printf '%s' "$exchange" | "$exchanger")
 
 # An exchanger is dropped into this directory rather than shipped by any package
 # here, so its answer is the one document on this path that comes from outside.

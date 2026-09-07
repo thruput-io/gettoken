@@ -36,6 +36,12 @@ grep -q '^gettoken:' "$noargs_err" || { echo "FAIL: stderr does not name the too
 rm -f "$noargs_err"
 
 echo
+echo "# the ask gettoken hands the privileged half"
+asked=$(mktemp)
+format ask.schema.json "wants=$capability" > "$asked"
+cat "$asked"
+
+echo
 echo "# the request token-requester builds, captured by a stubbed token-service"
 stub_dir=$(mktemp -d)
 REQUEST_FILE="$stub_dir/request.json"
@@ -46,7 +52,7 @@ cat > "$REQUEST_FILE"
 printf '{"access_token":"stub-token","expires_in":60}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
-stub_out=$(PATH="$stub_dir:$PATH" token-requester "$capability")
+stub_out=$(PATH="$stub_dir:$PATH" token-requester < "$asked")
 request=$(cat "$REQUEST_FILE")
 echo "$request"
 [ "$request" = "$expected_request" ] || { echo "FAIL: request is not $expected_request"; exit 1; }
@@ -54,7 +60,7 @@ echo "$request"
 
 echo
 echo "# the agent cannot dictate who it is by setting USER"
-USER=impostor PATH="$stub_dir:$PATH" token-requester "$capability" > /dev/null
+USER=impostor PATH="$stub_dir:$PATH" token-requester < "$asked" > /dev/null
 spoofed=$(cat "$REQUEST_FILE")
 echo "$spoofed"
 [ "$spoofed" = "$expected_request" ] || { echo "FAIL: USER=impostor changed the request; who must come from the kernel, not the environment"; exit 1; }
@@ -72,8 +78,11 @@ cat > "$REQUEST_FILE"
 printf '{"access_token":"stub-token","expires_in":60}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
+forged=$(mktemp)
+printf '{"wants":"%s"}' "$injection" > "$forged"
 refused_with 1 "a capability carrying quotes" \
-  env PATH="$stub_dir:$PATH" token-requester "$injection"
+  env PATH="$stub_dir:$PATH" token-requester < "$forged"
+rm -f "$forged"
 [ ! -f "$REQUEST_FILE" ] || { echo "FAIL: a refused capability still reached token-service"; exit 1; }
 rm -rf "$stub_dir"
 
@@ -87,7 +96,7 @@ printf '{"expires_in":120}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
 refused_with 1 "a tokenless response" \
-  env PATH="$stub_dir:$PATH" token-requester "$capability"
+  env PATH="$stub_dir:$PATH" token-requester < "$asked"
 rm -rf "$stub_dir"
 
 echo
@@ -95,6 +104,8 @@ echo "# the response token-service returns"
 response=$(printf '%s' "$expected_request" | token-service)
 echo "$response"
 [ "$response" = "$expected_response" ] || { echo "FAIL: response is not $expected_response"; exit 1; }
+
+rm -f "$asked"
 
 chain_runs "$capability" "$super_token" "$narrow_token"
 

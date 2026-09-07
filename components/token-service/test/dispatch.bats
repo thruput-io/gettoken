@@ -25,7 +25,7 @@ dispatch() { printf '%s' "$1" | token-service; }
 asking() { dispatch "$(wanting "$1")"; }
 
 @test "the exchanger registered for the first segment is handed the whole capability" {
-  register integrationtest 'format response.schema.json "access_token=$1" expires_in=120'
+  register integrationtest 'fields=$(parse exchange-request.schema.json wants); wants=""; eval "$fields"; format response.schema.json "access_token=$wants" expires_in=120'
   run -0 --separate-stderr asking integrationtest/ci/run
   [ "$(printf '%s' "$output" | jq -r '.access_token')" = "integrationtest/ci/run" ]
   [ "$(printf '%s' "$output" | jq -r '.expires_in')" = "120" ]

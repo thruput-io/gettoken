@@ -1,11 +1,13 @@
 #!/bin/sh
 set -eu
 
-capability=$1
+fields=$(parse exchange-request.schema.json wants)
+wants=''
+eval "$fields"
 
-case "$capability" in
+case "$wants" in
   integrationtest/ci/run) ;;
-  *) echo "integrationtest: nothing is registered for $capability" >&2; exit 1 ;;
+  *) echo "integrationtest: nothing is registered for $wants" >&2; exit 1 ;;
 esac
 
 fields=$(secret-get '{"holder":"host-privileged","service":"integrationtest"}' \

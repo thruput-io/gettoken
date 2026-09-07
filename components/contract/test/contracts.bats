@@ -134,3 +134,39 @@ requesting() {
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy response.schema.json"* ]]
 }
+
+@test "an ask naming a capability is admitted" {
+  run -0 --separate-stderr admits ask.schema.json '{"wants":"integrationtest/ci/run"}'
+  [ "$stderr" = "" ]
+}
+
+@test "an ask naming no capability is refused" {
+  run -1 --separate-stderr admits ask.schema.json '{}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy ask.schema.json"* ]]
+}
+
+@test "an ask carrying a field the agent has no say over is refused" {
+  run -1 --separate-stderr admits ask.schema.json \
+    '{"wants":"integrationtest/ci/run","signed":"forged-by-agent"}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy ask.schema.json"* ]]
+}
+
+@test "an ask whose capability is not one is refused" {
+  run -1 --separate-stderr admits ask.schema.json '{"wants":"../../bin/sh"}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy ask.schema.json"* ]]
+}
+
+@test "an exchange request naming a capability is admitted" {
+  run -0 --separate-stderr admits exchange-request.schema.json '{"wants":"integrationtest/ci/run"}'
+  [ "$stderr" = "" ]
+}
+
+@test "an exchange request carrying anything else is refused" {
+  run -1 --separate-stderr admits exchange-request.schema.json \
+    '{"wants":"integrationtest/ci/run","who":"tore"}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy exchange-request.schema.json"* ]]
+}
