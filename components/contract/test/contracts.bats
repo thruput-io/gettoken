@@ -233,3 +233,16 @@ requesting() {
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy entitlements-request.schema.json"* ]]
 }
+
+@test "a secret-put response says which key and which version it stored" {
+  run -0 --separate-stderr admits secret-put-response.schema.json \
+    '{"key":"johans-laptop/github","version":0}'
+  [ "$stderr" = "" ]
+}
+
+@test "a secret-put response carrying the secret back is refused" {
+  run -1 --separate-stderr admits secret-put-response.schema.json \
+    '{"key":"johans-laptop/github","version":0,"value":"super-1"}'
+  [ "$output" = "" ]
+  [[ "$stderr" == *"does not satisfy secret-put-response.schema.json"* ]]
+}

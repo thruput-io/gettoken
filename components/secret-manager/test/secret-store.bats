@@ -24,6 +24,12 @@ getting() {
   fi
 }
 
+@test "storing a secret answers with the key and the version it was given" {
+  run -0 --separate-stderr putting johans-laptop/github super-1
+  [ "$output" = '{"key":"johans-laptop/github","version":0}' ]
+  [ "$stderr" = "" ]
+}
+
 @test "the first secret stored under a key is version zero" {
   putting johans-laptop/github super-1
   run -0 --separate-stderr getting johans-laptop/github
