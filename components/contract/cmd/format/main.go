@@ -1,34 +1,25 @@
-// Command format assembles a JSON document from its arguments, checks it
+// Command format assembles a JSON document from the environment, checks it
 // against a contract and writes it to standard output.
 //
-// A value goes into the document as it stands. Only a string needs quoting, so
-// the only value that gets quoted is one that is not already JSON:
+//	format CONTRACT FIELD...
 //
-//	FIELD=VALUE   the value as written, taken as a string if it is not JSON
-//	FIELD@PATH    the contents of PATH, always a string; - is standard input
+// Each FIELD names both a field of the document and the variable its value is
+// read from, so nothing but names is ever passed on a command line. That is the
+// mirror of parse, which reads a document and writes the assignments that put
+// its fields into those same variables.
 //
-// Nothing here asks a contract what type a field has. Each argument carries
-// what it carries, and the contract then says whether that was allowed.
+// A named field whose variable is not set is an error. No contract here has an
+// optional field, so there is no document with something missing from it to
+// build: which shape is being built is said by which names are given.
 package main
 
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
-	"strings"
 
 	"github.com/thruput-io/gettoken/components/contract"
 )
-
-func contents(path string) (string, error) {
-	if path == "-" {
-		raw, err := io.ReadAll(os.Stdin)
-		return string(raw), err
-	}
-	raw, err := os.ReadFile(path)
-	return string(raw), err
-}
 
 // written takes a value as the JSON it already is, or as the string it can only
 // be if it is not JSON.
@@ -40,44 +31,24 @@ func written(value string) any {
 	return already
 }
 
-// filling reads one argument as the field it fills and the value it carries.
-// The operator that comes first decides where the value is read from, so a
-// value that happens to contain the other operator is not mistaken for it.
-func filling(argument string) (string, any, error) {
-	at := strings.IndexByte(argument, '@')
-	is := strings.IndexByte(argument, '=')
-
-	if at >= 0 && (is < 0 || at < is) {
-		text, err := contents(argument[at+1:])
-		if err != nil {
-			return "", nil, err
-		}
-		return argument[:at], text, nil
-	}
-	if is < 0 {
-		return "", nil, fmt.Errorf("%q fills no field: write FIELD=VALUE or FIELD@PATH", argument)
-	}
-	return argument[:is], written(argument[is+1:]), nil
-}
-
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: format CONTRACT [FIELD=VALUE|FIELD@PATH ...]")
+		return fmt.Errorf("usage: format CONTRACT [FIELD ...]")
 	}
 	governing, err := contract.Open(contract.Directory(), os.Args[1])
 	if err != nil {
 		return err
 	}
 	values := map[string]any{}
-	for _, argument := range os.Args[2:] {
-		field, value, err := filling(argument)
-		if err != nil {
-			return err
+	for _, field := range os.Args[2:] {
+		if _, named := values[field]; named {
+			return fmt.Errorf("%s is named twice", field)
 		}
-		if _, filled := values[field]; filled {
-			return fmt.Errorf("%s is filled twice", field)
+		text, set := os.LookupEnv(field)
+		if !set {
+			return fmt.Errorf("%s is not set, so there is no value for the field of that name", field)
 		}
-		values[field] = value
+		values[field] = written(text)
 	}
 	document, err := governing.Build(values)
 	if err != nil {

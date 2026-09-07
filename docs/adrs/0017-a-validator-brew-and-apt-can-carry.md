@@ -43,6 +43,20 @@ component states its build once and both the package and the suite call it, so
 they compile the same binaries the same way. The repository gains no linter and
 no configuration for one.
 
+## What the package build does not do
+
+`dh_dwz` is overridden to do nothing. dwz skips both binaries -- "Found
+compressed .debug_abbrev section, not attempting dwz compression" -- which leaves
+"Too few files for multifile optimization", and dwz exits 1 on that, which
+`dh_dwz` reports as an error and aborts the build on. Removing the override was
+run to get that message rather than assumed.
+
+`dh_auto_test` is overridden to do nothing as well. Left alone it hands this tree
+to the makefile buildsystem, which would run `make check`, which starts the
+containers the verifications run in. The checks that belong to a package build are
+the ones `build.sh` runs before it links; the ones that prove this package
+installs are what `integration/packages.sh` is for.
+
 ## Both directions
 
 `parse` reads a document and hands back the fields the caller named. `format`

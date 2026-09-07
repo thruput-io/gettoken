@@ -111,9 +111,10 @@ echo "ok: /usr/lib/gettoken/exchangers belongs to root and nobody else may write
 
 echo
 echo "# the human puts the super-token in the store, working on the privileged side"
-printf '%s' "$super_token" \
-  | PATH="/usr/lib/gettoken:$PATH" format secret-put-request.schema.json \
-      key=host-privileged/integrationtest value@- \
+key=host-privileged/integrationtest
+value=$super_token
+export key value
+PATH="/usr/lib/gettoken:$PATH" format secret-put-request.schema.json key value \
   | PATH="/usr/lib/gettoken:$PATH" secret-put
 [ -f "$store/host-privileged/integrationtest/0" ] || { echo "FAIL: the store is not $store"; exit 1; }
 echo "ok: the store is $store"

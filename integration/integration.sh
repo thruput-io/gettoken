@@ -17,10 +17,11 @@ expected_request="{\"doing\":\"$(hostname)\",\"signed\":\"host-privileged\",\"wa
 expected_response="{\"access_token\":\"$narrow_token\",\"expires_in\":120}"
 
 echo "# the human puts the super-token in the store"
-printf '%s' "$super_token" \
-  | format secret-put-request.schema.json key=host-privileged/integrationtest value@- \
-  | secret-put
-stored=$(format secret-get-request.schema.json key=host-privileged/integrationtest | secret-get)
+key=host-privileged/integrationtest
+value=$super_token
+export key value
+format secret-put-request.schema.json key value | secret-put
+stored=$(format secret-get-request.schema.json key | secret-get)
 printf '%s' "$stored" | parse secret-get-response.schema.json
 held=$(printf '%s' "$stored" | jq -r '.value')
 echo "$held"
@@ -40,7 +41,9 @@ rm -f "$noargs_err"
 echo
 echo "# the ask gettoken hands the privileged half"
 asked=$(mktemp)
-format ask.schema.json "wants=$capability" > "$asked"
+wants=$capability
+export wants
+format ask.schema.json wants > "$asked"
 cat "$asked"
 
 echo

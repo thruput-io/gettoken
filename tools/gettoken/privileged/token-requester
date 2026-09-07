@@ -5,11 +5,13 @@ fields=$(parse ask.schema.json wants query)
 wants='' query=''
 eval "$fields"
 
+who=$(id -un)
+doing=$(hostname)
+signed=host-privileged
+export who doing signed
+
 if [ "$query" = list ]; then
-  request=$(format entitlements-request.schema.json \
-    "who=$(id -un)" \
-    "doing=$(hostname)" \
-    signed=host-privileged)
+  request=$(format entitlements-request.schema.json who doing signed)
 
   entitled=$(printf '%s' "$request" | entitlements)
   printf '%s' "$entitled" | parse entitlements-response.schema.json
@@ -17,11 +19,8 @@ if [ "$query" = list ]; then
   exit 0
 fi
 
-request=$(format request.schema.json \
-  "who=$(id -un)" \
-  "doing=$(hostname)" \
-  "wants=$wants" \
-  signed=host-privileged)
+export wants
+request=$(format request.schema.json who doing wants signed)
 
 response=$(printf '%s' "$request" | token-service)
 

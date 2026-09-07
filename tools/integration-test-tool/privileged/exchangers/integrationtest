@@ -10,7 +10,10 @@ case "$wants" in
   *) echo "integrationtest: nothing is registered for $wants" >&2; exit 1 ;;
 esac
 
-asked=$(format secret-get-request.schema.json key=host-privileged/integrationtest)
+key=host-privileged/integrationtest
+export key
+asked=$(format secret-get-request.schema.json key)
+
 fields=$(printf '%s' "$asked" | secret-get | parse secret-get-response.schema.json value)
 value=''
 eval "$fields"
@@ -20,6 +23,8 @@ if [ "$value" != integrationtest-supertoken ]; then
   exit 1
 fi
 
-format response.schema.json \
-  access_token=integrationtest-ci-run-allowed \
-  expires_in=120
+access_token=integrationtest-ci-run-allowed
+expires_in=120
+export access_token expires_in
+
+format response.schema.json access_token expires_in

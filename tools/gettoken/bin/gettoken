@@ -10,9 +10,13 @@ if [ $# -ne 1 ]; then
 fi
 
 if [ "$1" = --list ]; then
-  ask=$(format ask.schema.json query=list)
+  query=list
+  export query
+  ask=$(format ask.schema.json query)
 else
-  ask=$(format ask.schema.json "wants=$1")
+  wants=$1
+  export wants
+  ask=$(format ask.schema.json wants)
 fi
 
 printf '%s' "$ask" | token-requester

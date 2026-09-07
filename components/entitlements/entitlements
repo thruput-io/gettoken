@@ -3,5 +3,10 @@ set -eu
 
 parse entitlements-request.schema.json
 
-format entitlements-response.schema.json \
-  'entitlements=[{"capability":"integrationtest/ci/run","description":"Run the integration test suite on CI.","variables":[]}]'
+entitlements=$(cat <<'ENTITLEMENTS'
+[{"capability":"integrationtest/ci/run","description":"Run the integration test suite on CI.","variables":[]}]
+ENTITLEMENTS
+)
+export entitlements
+
+format entitlements-response.schema.json entitlements

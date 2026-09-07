@@ -8,82 +8,83 @@ setup() {
 }
 
 @test "a value that is not JSON is the one that gets quoted" {
-  document=$(format request.schema.json who=tore doing=mac.lan wants=integrationtest/ci/run signed=host-privileged)
+  who=tore doing=mac.lan wants=integrationtest/ci/run signed=host-privileged
+  export who doing wants signed
+  document=$(format request.schema.json who doing wants signed)
   [ "$(printf '%s' "$document" | jq -r '.who | type')" = "string" ]
   [ "$(printf '%s' "$document" | jq -r '.wants | type')" = "string" ]
+  [ "$(printf '%s' "$document" | jq -r '.who')" = "tore" ]
 }
 
 @test "a value that is a number goes in as a number" {
-  document=$(format response.schema.json access_token=narrow expires_in=120)
+  access_token=narrow expires_in=120
+  export access_token expires_in
+  document=$(format response.schema.json access_token expires_in)
   [ "$(printf '%s' "$document" | jq -r '.expires_in | type')" = "number" ]
   [ "$(printf '%s' "$document" | jq -r '.access_token | type')" = "string" ]
 }
 
-@test "a value the command line must not carry is read from a file" {
-  printf 'super-1' > "$BATS_TEST_TMPDIR/secret"
-  document=$(format secret-get-response.schema.json version=1 "value@$BATS_TEST_TMPDIR/secret")
+@test "a secret reaches a document without passing a command line" {
+  key=johans-laptop/github value=super-1
+  export key value
+  document=$(format secret-put-request.schema.json key value)
   [ "$(printf '%s' "$document" | jq -r '.value')" = "super-1" ]
 }
 
-@test "a value is read from standard input when the file is named -" {
-  document=$(printf 'super-1' | format secret-get-response.schema.json version=1 value@-)
-  [ "$(printf '%s' "$document" | jq -r '.value')" = "super-1" ]
+@test "a value carrying what would break a document is written whole" {
+  key=johans-laptop/github
+  value='super "1" \ and
+a second line'
+  export key value
+  document=$(format secret-put-request.schema.json key value)
+  [ "$(printf '%s' "$document" | jq -r '.value')" = "$value" ]
 }
 
-@test "a value read from a file stays a string even when it reads as JSON" {
-  printf '12345' > "$BATS_TEST_TMPDIR/secret"
-  document=$(format secret-get-response.schema.json version=1 "value@$BATS_TEST_TMPDIR/secret")
-  [ "$(printf '%s' "$document" | jq -r '.value | type')" = "string" ]
-  [ "$(printf '%s' "$document" | jq -r '.value')" = "12345" ]
-}
-
-@test "an @ inside a value is a value, not a file to read" {
-  run -1 --separate-stderr format request.schema.json \
-    who=tore doing=mac.lan "wants=@$BATS_TEST_TMPDIR/nosuch" signed=host-privileged
+@test "a field whose variable is not set is refused" {
+  who=tore doing=mac.lan wants=integrationtest/ci/run
+  export who doing wants
+  unset signed
+  run -1 --separate-stderr format request.schema.json who doing wants signed
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy request.schema.json"* ]]
+  [[ "$stderr" == *"signed is not set"* ]]
 }
 
-@test "a file that is not there is refused, and says which" {
-  run -1 --separate-stderr format secret-get-response.schema.json \
-    version=1 "value@$BATS_TEST_TMPDIR/nosuch"
+@test "a field named twice is refused" {
+  who=tore doing=mac.lan wants=integrationtest/ci/run signed=host-privileged
+  export who doing wants signed
+  run -1 --separate-stderr format request.schema.json who who doing wants signed
   [ "$output" = "" ]
-  [[ "$stderr" == *"nosuch"* ]]
-}
-
-@test "a field filled twice is refused rather than taking the last one" {
-  run -1 --separate-stderr format request.schema.json \
-    who=tore who=eve doing=mac.lan wants=integrationtest/ci/run signed=host-privileged
-  [ "$output" = "" ]
-  [[ "$stderr" == *"who is filled twice"* ]]
+  [[ "$stderr" == *"who is named twice"* ]]
 }
 
 @test "a document the contract forbids is refused and not written" {
-  run -1 --separate-stderr format secret-get-response.schema.json version=1
+  version=1
+  export version
+  run -1 --separate-stderr format secret-get-response.schema.json version
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-get-response.schema.json"* ]]
 }
 
 @test "a field the contract does not govern is refused" {
-  run -1 --separate-stderr format secret-get-response.schema.json nosuch=1
+  nosuch=1
+  export nosuch
+  run -1 --separate-stderr format secret-get-response.schema.json nosuch
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-get-response.schema.json"* ]]
 }
 
 @test "a value that is not the type the contract names is refused" {
-  run -1 --separate-stderr format secret-get-response.schema.json version=x value=y
+  version=x value=y
+  export version value
+  run -1 --separate-stderr format secret-get-response.schema.json version value
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-get-response.schema.json"* ]]
 }
 
-@test "an argument that fills no field is refused, and says what one looks like" {
-  run -1 --separate-stderr format request.schema.json who
-  [ "$output" = "" ]
-  [[ "$stderr" == *"fills no field"* ]]
-}
-
 @test "naming a contract that does not exist is refused, and says so differently" {
-  run -1 --separate-stderr format no-such-contract.schema.json who=tore
+  who=tore
+  export who
+  run -1 --separate-stderr format no-such-contract.schema.json who
   [ "$output" = "" ]
   [[ "$stderr" == *"no contract named no-such-contract.schema.json"* ]]
 }

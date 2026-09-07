@@ -11,16 +11,20 @@ setup() {
 teardown() { rm -rf "$(dirname "$SECRET_DIR")"; }
 
 putting() {
-  printf '%s' "$2" \
-    | format secret-put-request.schema.json "key=$1" value@- \
-    | secret-put
+  key=$1 value=$2
+  export key value
+  format secret-put-request.schema.json key value | secret-put
 }
 
 getting() {
+  key=$1
+  export key
   if [ $# -eq 2 ]; then
-    format secret-get-request.schema.json "key=$1" "version=$2" | secret-get
+    version=$2
+    export version
+    format secret-get-request.schema.json key version | secret-get
   else
-    format secret-get-request.schema.json "key=$1" | secret-get
+    format secret-get-request.schema.json key | secret-get
   fi
 }
 
