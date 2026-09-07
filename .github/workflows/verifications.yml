@@ -22,5 +22,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - if: matrix.brew
-        run: brew install jq bats-core sourcemeta/apps/jsonschema
+        run: brew install jq bats-core cpanminus && cpanm --notest JSON::Schema::Modern
       - run: make ${{ matrix.target }}

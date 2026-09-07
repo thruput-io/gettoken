@@ -35,10 +35,9 @@ state, which is what `/var/lib` is for. Purging the package that owns it takes
 the store with it, because a super-token left behind on a machine that no longer
 runs any of this is the failure the whole design exists to avoid.
 
-The validator named in record 13 is not distributed as a Debian package, so
-`gettoken-contract` cannot declare a dependency on it and `apt` cannot install
-it. It has to be on the host already. This is stated so it is read as a known
-gap rather than an oversight.
+`gettoken-contract` depends on the validator, which is the reason record 16
+replaced the one record 13 had chosen: a package can only declare what the
+archive carries.
 
 ## Verification
 

@@ -26,6 +26,14 @@ echo "# apt installs them, and resolves what each declares it depends on"
 apt-get install -y --no-install-recommends "$build"/*.deb
 
 echo
+echo "# the validator is a dependency apt is holding, not one a machine has to be told about"
+dpkg-query -W -f='${Depends}' gettoken-contract | grep -q libjson-schema-modern-perl \
+  || { echo "FAIL: gettoken-contract does not declare the validator it runs"; exit 1; }
+command -v json-schema-eval > /dev/null \
+  || { echo "FAIL: the validator apt was told about is not installed"; exit 1; }
+echo "ok: gettoken-contract depends on libjson-schema-modern-perl, and apt installed it"
+
+echo
 echo "# the agent's entry point is the only thing the packages put on a public PATH"
 installed=$(dpkg-query -L gettoken gettoken-token-service gettoken-entitlements \
   gettoken-secret-manager gettoken-contract integration-test-tool-gettoken \

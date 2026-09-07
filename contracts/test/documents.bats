@@ -6,22 +6,20 @@ setup() {
   SECRET_DIR=$(mktemp -d)
   CONTRACTS_DIR="$root/contracts"
   export PATH SECRET_DIR CONTRACTS_DIR
-  command -v jsonschema > /dev/null || {
-    echo "jsonschema is not installed; it is the validator this repository depends on" >&2
+  command -v json-schema-eval > /dev/null || {
+    echo "json-schema-eval is not installed; it is the validator this repository depends on" >&2
     return 1
   }
 }
 
 teardown() { rm -rf "$SECRET_DIR"; }
 
-bundle() {
-  jsonschema bundle -r "$root/contracts/defs.schema.json" "$root/contracts/$1"
-}
-
 validates() {
-  bundle "$1" > "$BATS_TEST_TMPDIR/schema.json"
   printf '%s' "$2" > "$BATS_TEST_TMPDIR/doc.json"
-  jsonschema validate "$BATS_TEST_TMPDIR/schema.json" "$BATS_TEST_TMPDIR/doc.json"
+  json-schema-eval \
+    --add-schema "$root/contracts/defs.schema.json" \
+    --schema "$root/contracts/$1" \
+    --data "$BATS_TEST_TMPDIR/doc.json"
 }
 
 @test "what secret-get emits when it finds the secret matches its contract" {
@@ -38,9 +36,24 @@ validates() {
 }
 
 @test "a response claiming to be found without a value is refused" {
-  run -2 validates secret-get-response.schema.json '{"found":true,"version":1}'
+  run -1 validates secret-get-response.schema.json '{"found":true,"version":1}'
 }
 
 @test "a response claiming not to be found while carrying a value is refused" {
-  run -2 validates secret-get-response.schema.json '{"found":false,"version":1,"value":"leaked"}'
+  run -1 validates secret-get-response.schema.json '{"found":false,"version":1,"value":"leaked"}'
+}
+
+@test "a request whose signature is ordinary text is accepted" {
+  signed=host-privileged
+  validates request.schema.json "$(jq -nc --arg signed "$signed" '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:$signed}')"
+}
+
+@test "a request whose signature carries a control character is refused" {
+  signed="host$(printf '\001')privileged"
+  run -1 validates request.schema.json "$(jq -nc --arg signed "$signed" '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:$signed}')"
+}
+
+@test "a request whose signature carries a delete character is refused" {
+  signed="host$(printf '\177')privileged"
+  run -1 validates request.schema.json "$(jq -nc --arg signed "$signed" '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:$signed}')"
 }
