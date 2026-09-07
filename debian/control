@@ -64,7 +64,8 @@ Description: token broker for AI agents - super-token store
 Package: gettoken-contract
 Architecture: all
 Depends: ${misc:Depends},
-         libjson-schema-modern-perl
+         libjson-schema-modern-perl,
+         libgetopt-long-descriptive-perl
 Description: token broker for AI agents - wire contracts
  Every hop between components carries a document, and every document is
  checked against the contract that governs it. A schema no code path consults

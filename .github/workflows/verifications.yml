@@ -22,5 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - if: matrix.brew
-        run: brew install jq bats-core cpanminus && cpanm --notest JSON::Schema::Modern
+        run: |
+          brew install jq bats-core perl cpanminus
+          "$(brew --prefix perl)/bin/perl" "$(brew --prefix cpanminus)/bin/cpanm" \
+            --notest --local-lib "$HOME/perl5" JSON::Schema::Modern Getopt::Long::Descriptive
+          echo "$HOME/perl5/bin" >> "$GITHUB_PATH"
+          echo "PERL5LIB=$HOME/perl5/lib/perl5" >> "$GITHUB_ENV"
       - run: make ${{ matrix.target }}

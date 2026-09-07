@@ -6,7 +6,7 @@ root=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
 capability=integrationtest/ci/run
 integration=integration-test-tool
 drawn_in="gettoken gettoken-token-service gettoken-entitlements gettoken-secret-manager gettoken-contract"
-runtime="jq libjson-schema-modern-perl"
+runtime="jq libjson-schema-modern-perl libgetopt-long-descriptive-perl"
 super_token=integrationtest-supertoken
 narrow_token=integrationtest-ci-run-allowed
 store=/var/lib/gettoken/secrets
