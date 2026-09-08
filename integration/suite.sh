@@ -4,7 +4,7 @@ set -eu
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 bin="$root/build/bin"
 
-grep -rl '^#!/bin/sh' --exclude-dir=.git --exclude-dir=build "$root" | xargs shellcheck -s sh -x
+sh "$root/integration/lint.sh" "$root"
 
 sh "$root/components/contract/build.sh" "$bin"
 
