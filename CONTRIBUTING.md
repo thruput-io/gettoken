@@ -20,6 +20,17 @@ Growing it needs no permission.
 considered and turned down. How the repository is laid out, what the words mean,
 and what the system always does are in [`README.md`](README.md), not there.
 
+## Where a test lives
+
+A unit test lives with what it covers: a component's own contracts are asserted
+by that component's unit tests, because the document is the component's to
+honour. Nothing central asserts a document some component owns. What is left for
+a central test is what belongs to no component.
+
+A test that puts a second component under test belongs in `integration/`, which
+is the only place allowed to span them. `exploratory/` answers a question rather
+than guarding the product, and `make check` does not run it.
+
 ## Running the suite
 
 `make check` runs the suite where you invoke it. `make debian-stable` and
@@ -40,3 +51,16 @@ directory it puts on `PATH`. To run one `bats` file on its own, build them first
 and put them on `PATH` yourself.
 
 Nothing is skipped when a tool is missing. A test that cannot run fails.
+
+## What a green run means
+
+The chain runs end to end on the `integrationtest/ci/run` capability: the
+super-token goes into the store, the capability is listed, a request is built,
+the exchanger trades the super-token for a narrow one, `gettoken` emits that
+token and nothing else, and `integration-test-tool` runs on it. The same tool
+refuses the super-token, so a run that succeeds is a downgrade that happened.
+This is the invariant: keep it green.
+
+`make debian-packages` builds the packages in a base carrying nothing they run
+on, has `lintian` read them, installs the one, runs the chain against what `apt`
+drew in, and then purges it and fails if anything is left behind.
