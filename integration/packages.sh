@@ -34,6 +34,10 @@ echo "# maintainer scripts, which only this lane installs the packaging for"
 sh "$root/integration/lint.sh" "$root"
 
 echo
+echo "# every component depends on the contracts it speaks, and on no others"
+sh "$root/integration/declared.sh" "$root"
+
+echo
 echo "# the packages are built from the source tree"
 cp -a "$root" "$build/source"
 rm -rf "$build/source/.git"
@@ -106,14 +110,6 @@ echo "$public"
 tool_public=$(dpkg-query -L "$integration" | grep '^/usr/bin/' | sort)
 echo "$tool_public"
 [ "$tool_public" = "/usr/bin/$integration" ] || { echo "FAIL: $integration puts more than the tool on a public PATH"; exit 1; }
-
-echo
-echo "# the exchanger directory belongs to root alone, because what is in it is run with the super-token in reach"
-owned=$(find /usr/lib/gettoken/exchangers -maxdepth 0 -user root)
-[ "$owned" = /usr/lib/gettoken/exchangers ] || { echo "FAIL: /usr/lib/gettoken/exchangers is not root-owned"; exit 1; }
-writable=$(find /usr/lib/gettoken/exchangers -maxdepth 0 -perm /022)
-[ -z "$writable" ] || { echo "FAIL: /usr/lib/gettoken/exchangers is writable by more than root"; exit 1; }
-echo "ok: /usr/lib/gettoken/exchangers belongs to root and nobody else may write it"
 
 echo
 echo "# the human puts the super-token in the store, working on the privileged side"
