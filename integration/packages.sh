@@ -13,7 +13,7 @@ root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 
 capability=integrationtest/ci/run
 integration='integration-test-tool'
-drawn_in="gettoken gettoken-token-service gettoken-entitlements gettoken-secret-manager gettoken-contract"
+drawn_in="gettoken gettoken-token-service gettoken-entitlements gettoken-secret-manager gettoken-parse gettoken-format gettoken-contract-defs gettoken-contract-agent-capability-request gettoken-contract-agent-list-request gettoken-contract-entitlements-request gettoken-contract-entitlements-response gettoken-contract-exchange-request gettoken-contract-secret-get-request gettoken-contract-secret-get-request-version gettoken-contract-secret-get-response gettoken-contract-secret-put-request gettoken-contract-secret-put-response gettoken-contract-token-request gettoken-contract-token-response"
 super_token=integrationtest-supertoken
 narrow_token=integrationtest-ci-run-allowed
 store=/var/lib/gettoken/secrets
