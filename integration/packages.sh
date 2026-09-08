@@ -24,10 +24,16 @@ trap 'rm -rf "$build" "$source_list"' EXIT
 
 states=$(mktemp)
 installed() {
-  dpkg-query -W -f='${binary:Package} ${db:Status-Status}\n' > "$states"
+  dpkg-query -W -f='${binary:Package} ${db:Status-Status}\n' > "$states" \
+    || { echo "FAIL: dpkg-query could not list package states, so nothing below can be believed"; exit 1; }
   grep -qx "$1 installed" "$states"
 }
 
+echo "# every shell file this tree carries passes the lint gate, including the"
+echo "# maintainer scripts, which only this lane installs the packaging for"
+sh "$root/integration/lint.sh" "$root"
+
+echo
 echo "# the packages are built from the source tree"
 cp -a "$root" "$build/source"
 rm -rf "$build/source/.git"
@@ -38,7 +44,7 @@ echo
 echo "# lintian passes on the source and on every package, and a warning is"
 echo "# enough to fail: at its defaults only an error is, so a warning about a"
 echo "# permission or an owner this run asserts by hand would pass unnoticed"
-lintian --fail-on error,warning --display-level '>=pedantic' "$build"/*.changes
+lintian --fail-on error,warning,info,pedantic,experimental --display-level '>=pedantic' "$build"/*.changes
 
 echo
 echo "# the packages are put where apt can reach them by name, so nothing has to be"
@@ -133,6 +139,21 @@ for path in /usr/bin/gettoken /usr/lib/gettoken /usr/share/gettoken /var/lib/get
   [ ! -e "$path" ] || { echo "FAIL: purging left $path behind"; exit 1; }
 done
 echo "ok: nothing is left behind, down to what the one package drew in"
+
+echo
+echo "# a purge that finds something under /var/lib/gettoken this package does not"
+echo "# own says so and still succeeds: dpkg reporting a failed post-removal script"
+echo "# would leave the package unpurged for an admin to repair by hand"
+mkdir -p /var/lib/gettoken/other
+purge_err=$(mktemp)
+sh "$build/source/debian/gettoken-secret-manager.postrm" purge 2>"$purge_err"
+cat "$purge_err"
+grep -q '^gettoken-secret-manager: /var/lib/gettoken holds something' "$purge_err" \
+  || { echo "FAIL: the purge did not say what it left behind"; exit 1; }
+[ -d /var/lib/gettoken/other ] || { echo "FAIL: the purge took a directory this package does not own"; exit 1; }
+rm -f "$purge_err"
+rm -rf /var/lib/gettoken
+echo "ok: a purge reports what it cannot remove rather than failing"
 
 echo
 echo "PASS: the packages carry the chain"
