@@ -4,4 +4,19 @@ set -eu
 PATH="/usr/lib/gettoken:/usr/bin:/bin:$PATH"
 export PATH
 
-exec token-requester "$@"
+if [ $# -ne 1 ]; then
+  echo "gettoken: usage: gettoken --list | gettoken <capability>" >&2
+  exit 1
+fi
+
+if [ "$1" = --list ]; then
+  query=list
+  export query
+  ask=$(format agent-list-request.schema.json query)
+  printf '%s' "$ask" | token-requester --list
+else
+  wants=$1
+  export wants
+  ask=$(format agent-capability-request.schema.json wants)
+  printf '%s' "$ask" | token-requester
+fi

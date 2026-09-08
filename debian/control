@@ -2,7 +2,8 @@ Source: gettoken
 Section: admin
 Priority: optional
 Maintainer: Johan Granlund <johan.granlund@thruput.se>
-Build-Depends: debhelper-compat (= 13)
+Build-Depends: debhelper-compat (= 13),
+               golang-any
 Standards-Version: 4.7.2
 Rules-Requires-Root: no
 Homepage: https://github.com/thruput-io/gettoken
@@ -12,7 +13,7 @@ Vcs-Browser: https://github.com/thruput-io/gettoken
 Package: gettoken
 Architecture: all
 Depends: ${misc:Depends},
-         jq,
+         gettoken-contract,
          gettoken-entitlements,
          gettoken-token-service
 Description: token broker for AI agents
@@ -40,7 +41,8 @@ Description: token broker for AI agents - exchange dispatcher
 
 Package: gettoken-entitlements
 Architecture: all
-Depends: ${misc:Depends}
+Depends: ${misc:Depends},
+         gettoken-contract
 Description: token broker for AI agents - capability inventory
  entitlements answers what an agent has to work with. It is what
  "gettoken --list" shows, and it is also the control: a request for a
@@ -49,7 +51,6 @@ Description: token broker for AI agents - capability inventory
 Package: gettoken-secret-manager
 Architecture: all
 Depends: ${misc:Depends},
-         jq,
          gettoken-contract
 Description: token broker for AI agents - super-token store
  The store holds the super-tokens a human placed on the privileged side,
@@ -62,27 +63,26 @@ Description: token broker for AI agents - super-token store
  this package takes the store with it.
 
 Package: gettoken-contract
-Architecture: all
+Architecture: any
 Depends: ${misc:Depends},
-         jq,
-         libjson-schema-modern-perl,
-         libgetopt-long-descriptive-perl
+         ${shlibs:Depends}
 Description: token broker for AI agents - wire contracts
  Every hop between components carries a document, and every document is
  checked against the contract that governs it. A schema no code path consults
  describes a document rather than governing it.
  .
- This package holds the contracts and the program that checks a document
- against one. The contracts are installed as they are written, and the
- validator reads them that way: there is no bundling step between what is
- committed and what governs a document.
+ This package holds the contracts and the two programs that carry a document
+ through one: parse reads a document and hands back its fields, format takes
+ fields and writes the document. The contracts are installed as they are
+ written and read that way: there is no bundling step between what is committed
+ and what governs a document.
 
 Package: integration-test-tool
 Architecture: all
 Depends: ${misc:Depends},
-         jq,
          gettoken,
-         gettoken-secret-manager
+         gettoken-secret-manager,
+         gettoken-contract
 Description: token broker for AI agents - tool that verifies the chain
  The tool the verification suite integrates, standing in for a real one so the
  chain can be exercised without reaching a service. It runs on the token that

@@ -1,29 +1,37 @@
 #!/bin/sh
 set -eu
 
-if [ $# -eq 0 ]; then
-  echo "gettoken: usage: gettoken --list | gettoken <capability>" >&2
-  exit 1
+if [ "${1:-}" = "--list" ]; then
+  parse agent-list-request.schema.json > /dev/null
+
+  who=$(id -un)
+  doing=$(hostname)
+  signed=host-privileged
+  export who doing signed
+
+  request=$(format entitlements-request.schema.json who doing signed)
+
+  entitled=$(printf '%s' "$request" | entitlements)
+  printf '%s' "$entitled" | parse entitlements-response.schema.json
+  printf '%s\n' "$entitled"
+  exit 0
 fi
 
-if [ "$1" = --list ]; then
-  exec entitlements
-fi
+fields=$(parse agent-capability-request.schema.json wants)
+wants=''
+eval "$fields"
 
-request=$(jq -nc \
-  --arg who "$(id -un)" \
-  --arg doing "$(hostname)" \
-  --arg wants "$1" \
-  --arg signed host-privileged \
-  '{who: $who, doing: $doing, wants: $wants, signed: $signed}')
+who=$(id -un)
+doing=$(hostname)
+signed=host-privileged
+export who doing signed wants
+
+request=$(format token-request.schema.json who doing wants signed)
 
 response=$(printf '%s' "$request" | token-service)
 
-access_token=$(printf '%s' "$response" | jq -r '.access_token // empty')
-
-if [ -z "$access_token" ]; then
-  echo "gettoken: no token in response" >&2
-  exit 1
-fi
+fields=$(printf '%s' "$response" | parse token-response.schema.json access_token)
+access_token=''
+eval "$fields"
 
 printf '%s\n' "$access_token"

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thruput.io/gettoken/exchange-request.schema.json",
+  "title": "what token-service asks an exchanger to trade for",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["who", "wants"],
+  "properties": {
+    "who": { "$ref": "defs.schema.json#/$defs/Agent" },
+    "wants": { "$ref": "defs.schema.json#/$defs/Capability" }
+  }
+}

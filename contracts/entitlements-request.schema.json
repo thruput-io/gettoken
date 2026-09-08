@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thruput.io/gettoken/entitlements-request.schema.json",
+  "title": "gettoken entitlements request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["who", "doing", "signed"],
+  "properties": {
+    "who": { "$ref": "defs.schema.json#/$defs/Agent" },
+    "doing": { "$ref": "defs.schema.json#/$defs/Activity" },
+    "signed": { "$ref": "defs.schema.json#/$defs/Signature" }
+  }
+}

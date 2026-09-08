@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thruput.io/gettoken/ask.schema.json",
+  "title": "what an agent asks gettoken for",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "const": "list"
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "query"
+      ]
+    }
+  ]
+}
