@@ -11,16 +11,22 @@ candidates=$(mktemp)
 selected=$(mktemp)
 trap 'rm -f "$candidates" "$selected"' EXIT
 
-find "$root" -type f -not -path '*/.git/*' -not -path "$root/build/*" > "$candidates" \
-  || { echo "lint.sh: could not walk $root, so the gate checked nothing" >&2; exit 1; }
+# What the repository carries, not what happens to be lying in the tree: a file
+# nobody committed is nobody's to keep green.
+if ! git -C "$root" ls-files > "$candidates"; then
+  echo "lint.sh: could not list what $root carries, so the gate checked nothing" >&2
+  exit 1
+fi
 
 while IFS= read -r file; do
-  case $(head -n 1 "$file") in
-    '#!/bin/sh'|'# shellcheck shell=sh') printf '%s\n' "$file" ;;
+  case $(head -n 1 "$root/$file") in
+    '#!/bin/sh'|'# shellcheck shell=sh') printf '%s\n' "$root/$file" ;;
   esac
 done < "$candidates" > "$selected"
 
-[ -s "$selected" ] \
-  || { echo "lint.sh: found no shell files under $root, so the gate checked nothing" >&2; exit 1; }
+if [ ! -s "$selected" ]; then
+  echo "lint.sh: found no shell files under $root, so the gate checked nothing" >&2
+  exit 1
+fi
 
 xargs shellcheck -s sh -x < "$selected"

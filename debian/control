@@ -1,12 +1,10 @@
 Source: gettoken
 Section: admin
-Priority: optional
 Maintainer: Johan Granlund <johan.granlund@thruput.se>
-Build-Depends: debhelper-compat (= 13),
+Build-Depends: debhelper-compat (= 14),
                golang-any
-Standards-Version: 4.7.2
+Standards-Version: 4.7.4
 XS-Go-Import-Path: github.com/thruput-io/gettoken/components/contract
-Rules-Requires-Root: no
 Homepage: https://github.com/thruput-io/gettoken
 Vcs-Git: https://github.com/thruput-io/gettoken.git
 Vcs-Browser: https://github.com/thruput-io/gettoken

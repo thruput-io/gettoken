@@ -1,4 +1,0 @@
-# format is a position-independent executable, not a shared library. It lives under
-# /usr/lib/gettoken because it is not a public name an agent may run, and an ELF
-# object placed there is read as a library by this check.
-gettoken-format: shared-library-lacks-prerequisites [usr/lib/gettoken/format]
