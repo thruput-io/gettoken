@@ -1,9 +1,9 @@
-ARG DEBIAN_TAG=stable-slim
+ARG DEBIAN_TAG=testing-slim
 FROM debian:${DEBIAN_TAG}
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      build-essential dpkg-dev debhelper lintian shellcheck golang-any \
+      git build-essential dpkg-dev debhelper lintian shellcheck golang-any \
  && rm -rf /var/lib/apt/lists/*
 
 ENV GETTOKEN_DISPOSABLE_BASE=yes
