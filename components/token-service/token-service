@@ -16,7 +16,11 @@ fi
 
 export who wants
 exchange=$(format exchange-request.schema.json who wants)
-response=$(printf '%s' "$exchange" | "$exchanger")
+response=$(printf '%s' "$exchange" | "$exchanger") || {
+  failed=$?
+  echo "token-service: the exchanger serving $wants failed" >&2
+  exit "$failed"
+}
 
 printf '%s' "$response" | parse token-response.schema.json
 
