@@ -30,11 +30,8 @@ echo "$held"
 echo
 echo "# gettoken with no arguments refuses cleanly"
 noargs_err=$(mktemp)
-noargs_out=$(gettoken 2>"$noargs_err") && noargs_status=0 || noargs_status=$?
-echo "exit $noargs_status"
+refused_with 1 gettoken gettoken 2>"$noargs_err"
 cat "$noargs_err"
-[ "$noargs_status" -eq 1 ] || { echo "FAIL: no arguments exited $noargs_status, not 1"; exit 1; }
-[ -z "$noargs_out" ] || { echo "FAIL: no arguments put \"$noargs_out\" on stdout"; exit 1; }
 grep -q '^gettoken:' "$noargs_err" || { echo "FAIL: stderr does not name the tool the agent invoked, so this is a crash rather than a refusal"; exit 1; }
 rm -f "$noargs_err"
 
@@ -119,7 +116,7 @@ echo "# a program the agent puts earlier on PATH cannot stand in for one the"
 echo "# privileged half runs, because gettoken puts the system directories ahead"
 echo "# of whatever it inherited"
 sabotage=$(mktemp -d)
-for shadowed in sed id hostname ls sort tail cat; do
+for shadowed in sed id hostname sort tail cat find grep mkdir; do
   cat > "$sabotage/$shadowed" <<'SABOTAGE'
 #!/bin/sh
 echo "sabotage: a program the agent placed on PATH ran" >&2

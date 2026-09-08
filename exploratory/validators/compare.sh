@@ -30,6 +30,7 @@ bin_for() {
   case $1 in
     jv) echo jv ;; perl) echo json-schema-eval ;;
     php) echo validate-json ;; python) echo jsonschema ;;
+    *) echo "compare.sh: no binary is named for candidate $1" >&2; exit 1 ;;
   esac
 }
 
@@ -37,6 +38,7 @@ package_for() {
   case $1 in
     jv) echo jsonschema-jv ;; perl) echo libjson-schema-modern-perl ;;
     php) echo php-json-schema ;; python) echo python3-jsonschema ;;
+    *) echo "compare.sh: no package is named for candidate $1" >&2; exit 1 ;;
   esac
 }
 
