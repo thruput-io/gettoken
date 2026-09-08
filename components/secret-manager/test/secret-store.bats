@@ -120,3 +120,11 @@ getting() {
   run -0 --separate-stderr find "$SECRET_DIR" -type f -perm 600
   [ "$output" = "$SECRET_DIR/johans-laptop/github/0" ]
 }
+
+@test "an entry that is not a file is not a version the store can hand back" {
+  putting johans-laptop/github super-1
+  mkdir "$SECRET_DIR/johans-laptop/github/1"
+  run -0 --separate-stderr getting johans-laptop/github
+  [ "$(printf '%s' "$output" | jq -r '.version')" = "0" ]
+  [ "$(printf '%s' "$output" | jq -r '.value')" = "super-1" ]
+}
