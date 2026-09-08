@@ -91,8 +91,9 @@ asking() { dispatch "$(wanting "$1")"; }
   [[ "$stderr" == *"not JSON"* ]]
 }
 
-@test "an exchanger that fails takes the request down with it" {
+@test "an exchanger that fails takes the request down with it, and says so" {
   register integrationtest 'exit 1'
   run -1 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "" ]
+  [ "$stderr" = "token-service: the exchanger serving integrationtest/ci/run failed" ]
 }

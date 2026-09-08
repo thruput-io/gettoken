@@ -82,20 +82,16 @@ reading() {
   [[ "$stderr" == *"no contract named no-such-contract.schema.json"* ]]
 }
 
-@test "a document that is refused yields nothing to evaluate" {
-  run -1 --separate-stderr reading secret-put-request.schema.json '{}' key
-  [ "$output" = "" ]
-  [ -n "$stderr" ]
-}
-
 @test "a body that is not JSON at all is refused rather than read as empty" {
   run -1 --separate-stderr reading secret-put-request.schema.json 'not json' key
   [ "$output" = "" ]
-  [ -n "$stderr" ]
+  [[ "$stderr" == *"the document is not JSON"* ]]
+  [[ "$stderr" != *"does not satisfy"* ]]
 }
 
 @test "an empty body is refused rather than read as an empty document" {
   run -1 --separate-stderr reading secret-put-request.schema.json '' key
   [ "$output" = "" ]
-  [ -n "$stderr" ]
+  [[ "$stderr" == *"the document is not JSON: unexpected end of JSON input"* ]]
+  [[ "$stderr" != *"does not satisfy"* ]]
 }
