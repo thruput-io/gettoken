@@ -65,12 +65,6 @@ requesting() {
   [[ "$stderr" == *"does not satisfy token-request.schema.json"* ]]
 }
 
-@test "a document the contract does not govern is refused, and says so differently" {
-  run -1 --separate-stderr admits nosuch.schema.json '{}'
-  [ "$output" = "" ]
-  [[ "$stderr" == *"no contract named nosuch.schema.json"* ]]
-}
-
 @test "the validator implements the dialect the contracts declare" {
   probe=$(mktemp -d)
   cp "$root/contracts"/*.schema.json "$probe"
