@@ -155,19 +155,6 @@ its output and the lifetime in seconds from the second. It is looked up in that
 one directory rather than on `PATH`, because it is run with the super-token in
 reach.
 
-## Run it
-
-```sh
-make check
-```
-
-The chain runs end to end on the `integrationtest/ci/run` capability: the
-super-token goes into the store, the capability is listed, a request is built,
-the exchanger trades the super-token for a narrow one, `gettoken` emits that
-token and nothing else, and `integration-test-tool` runs on it. The same tool
-refuses the super-token, so a run that succeeds is a downgrade that happened.
-This is the invariant: keep it green.
-
 ## Install it
 
 Distribution is `apt`. The components and the tools are one binary package each,
@@ -180,7 +167,7 @@ built from this tree:
 | `gettoken-entitlements` | what an agent may equip |
 | `gettoken-secret-manager` | the store, at `/var/lib/gettoken/secrets` |
 | `gettoken-contract` | the contracts, and the two programs that carry a document through one |
-| `integration-test-tool` | the tool the suite integrates, and its exchanger |
+| `integration-test-tool` | the worked example of an integration, and its exchanger |
 
 `/usr/bin` carries the agent's entry point and nothing else. Everything on the
 privileged side lives in `/usr/lib/gettoken`, which `gettoken` puts on `PATH`
@@ -194,14 +181,6 @@ as `integration-test-tool` is, it is the one package.
 
 Installing it is the whole installation: the components arrive because it says it
 needs them, and purging it takes them with it.
-
-```sh
-make debian-packages
-```
-
-builds the packages in a base carrying nothing they run on, has `lintian` read
-them, installs the one, runs the chain against what `apt` drew in, and then
-purges it and fails if anything is left behind.
 
 ## Vision
 
@@ -234,11 +213,9 @@ flowchart LR
 `components/` holds machinery more than one tool shares; a component nothing
 implements yet carries a `SEAT.md` saying what it is for, so the list stays whole.
 A tool lives under `tools/` and owns its own privileged half, so the boundary sits
-inside the tool rather than across the top of the tree. Unit tests live with what
-they cover, and so do man pages; a test that puts a second component under test
-belongs in `integration/`, which is the only place allowed to span them;
-`exploratory/` answers a question rather than guarding the product, and
-`make check` does not run it. `debian/` says which of these goes into which
+inside the tool rather than across the top of the tree. Man pages live with what
+they document. `exploratory/` answers a question rather than guarding the
+product. `debian/` says which of these goes into which
 package, and it is one directory because Debian builds many packages from one
 source tree.
 
