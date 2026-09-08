@@ -30,7 +30,8 @@ Description: token broker for AI agents
 Package: gettoken-token-service
 Architecture: all
 Depends: ${misc:Depends},
-         gettoken-contract
+         gettoken-contract,
+         gettoken-secret-manager
 Description: token broker for AI agents - exchange dispatcher
  token-service authenticates a request, resolves what it asks for, and hands
  the capability to the exchanger registered for the service named by the
@@ -81,9 +82,7 @@ Description: token broker for AI agents - wire contracts
 Package: integration-test-tool
 Architecture: all
 Depends: ${misc:Depends},
-         gettoken,
-         gettoken-secret-manager,
-         gettoken-contract
+         gettoken
 Description: token broker for AI agents - tool that verifies the chain
  The tool the verification suite integrates, standing in for a real one so the
  chain can be exercised without reaching a service. It runs on the token that
