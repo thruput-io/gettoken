@@ -26,19 +26,17 @@ and what the system always does are in [`README.md`](README.md), not there.
 `make debian-latest` run the same suite inside a named base. `make debian-packages`
 builds the packages inside a named base and runs the chain against them once they
 are installed, which is the only verification that reaches the paths a package
-puts things at. The host needs `jq`, `bats`, `shellcheck` and the validator named in
-[record 16](docs/adrs/0016-a-validator-apt-can-install.md). On Debian that is one
-package; on macOS the validator comes from CPAN, which is how Perl distributes.
-It needs a Perl newer than the one macOS ships, and it needs
-`Getopt::Long::Descriptive`, which neither Debian testing nor CPAN counts as
-required — Debian stable still lists it under Depends:
+puts things at. The host needs `jq`, `bats`, `shellcheck` and a Go toolchain,
+which builds the contract component named in
+[record 17](docs/adrs/0017-a-validator-brew-and-apt-can-carry.md):
 
 ```sh
-apt install jq bats shellcheck libjson-schema-modern-perl libgetopt-long-descriptive-perl
-brew install jq bats-core shellcheck perl cpanminus
-"$(brew --prefix perl)/bin/perl" "$(brew --prefix cpanminus)/bin/cpanm" \
-  --local-lib ~/perl5 JSON::Schema::Modern Getopt::Long::Descriptive
-export PATH="$HOME/perl5/bin:$PATH" PERL5LIB="$HOME/perl5/lib/perl5"
+apt install jq bats shellcheck golang-go
+brew install jq bats-core shellcheck go
 ```
+
+`make check` builds `parse` and `format` before it runs anything, into a
+directory it puts on `PATH`. To run one `bats` file on its own, build them first
+and put them on `PATH` yourself.
 
 Nothing is skipped when a tool is missing. A test that cannot run fails.

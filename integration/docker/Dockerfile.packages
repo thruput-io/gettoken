@@ -3,7 +3,7 @@ FROM debian:${DEBIAN_TAG}
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      build-essential dpkg-dev debhelper lintian shellcheck \
+      build-essential dpkg-dev debhelper lintian shellcheck golang-any \
  && rm -rf /var/lib/apt/lists/*
 
 ENV GETTOKEN_DISPOSABLE_BASE=yes

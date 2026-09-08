@@ -1,19 +1,30 @@
 #!/bin/sh
 set -eu
 
-capability=$1
+fields=$(parse exchange-request.schema.json wants)
+wants=''
+eval "$fields"
 
-case "$capability" in
+case "$wants" in
   integrationtest/ci/run) ;;
-  *) echo "integrationtest: nothing is registered for $capability" >&2; exit 1 ;;
+  *) echo "integrationtest: nothing is registered for $wants" >&2; exit 1 ;;
 esac
 
-secret=$(secret-get '{"holder":"host-privileged","service":"integrationtest"}')
-super_token=$(printf '%s' "$secret" | jq -r '.value // empty')
+key=host-privileged/integrationtest
+export key
+asked=$(format secret-get-request.schema.json key)
 
-if [ "$super_token" != integrationtest-supertoken ]; then
+fields=$(printf '%s' "$asked" | secret-get --with-key | parse secret-get-response.schema.json value)
+value=''
+eval "$fields"
+
+if [ "$value" != integrationtest-supertoken ]; then
   echo "integrationtest: the stored super-token is not one this exchanger can trade" >&2
   exit 1
 fi
 
-printf 'integrationtest-ci-run-allowed\n120\n'
+access_token=integrationtest-ci-run-allowed
+expires_in=120
+export access_token expires_in
+
+format token-response.schema.json access_token expires_in

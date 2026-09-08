@@ -3,8 +3,8 @@ set -eu
 
 exchangers=${EXCHANGER_DIR:-/usr/lib/gettoken/exchangers}
 
-fields=$(parse request.schema.json wants)
-wants=''
+fields=$(parse token-request.schema.json who wants)
+who='' wants=''
 eval "$fields"
 
 exchanger="$exchangers/${wants%%/*}"
@@ -14,13 +14,10 @@ if [ ! -f "$exchanger" ] || [ ! -x "$exchanger" ]; then
   exit 1
 fi
 
-exchange=$("$exchanger" "$wants")
-access_token=$(printf '%s\n' "$exchange" | sed -n 1p)
-expires_in=$(printf '%s\n' "$exchange" | sed -n 2p)
+export who wants
+exchange=$(format exchange-request.schema.json who wants)
+response=$(printf '%s' "$exchange" | "$exchanger")
 
-if [ -z "$access_token" ] || [ -z "$expires_in" ]; then
-  echo "token-service: $exchanger returned no token" >&2
-  exit 1
-fi
+printf '%s' "$response" | parse token-response.schema.json
 
-printf '{"access_token":"%s","expires_in":%s}\n' "$access_token" "$expires_in"
+printf '%s\n' "$response"

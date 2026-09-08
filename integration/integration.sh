@@ -3,7 +3,7 @@ set -eu
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 . "$root/integration/chain.sh"
-export PATH="$root/components/token-service:$root/components/entitlements:$root/tools/gettoken/bin:$root/tools/gettoken/privileged:$root/components/secret-manager:$root/components/contract:$root/tools/integration-test-tool/bin:$PATH"
+export PATH="$root/components/token-service:$root/components/entitlements:$root/tools/gettoken/bin:$root/tools/gettoken/privileged:$root/components/secret-manager:$root/build/bin:$root/tools/integration-test-tool/bin:$PATH"
 SECRET_DIR=$(mktemp -d)
 CONTRACTS_DIR="$root/contracts"
 EXCHANGER_DIR="$root/tools/integration-test-tool/privileged/exchangers"
@@ -13,12 +13,15 @@ capability=integrationtest/ci/run
 super_token=integrationtest-supertoken
 narrow_token=integrationtest-ci-run-allowed
 
-expected_request="{\"who\":\"$(id -un)\",\"doing\":\"$(hostname)\",\"wants\":\"$capability\",\"signed\":\"host-privileged\"}"
+expected_request="{\"doing\":\"$(hostname)\",\"signed\":\"host-privileged\",\"wants\":\"$capability\",\"who\":\"$(id -un)\"}"
 expected_response="{\"access_token\":\"$narrow_token\",\"expires_in\":120}"
 
 echo "# the human puts the super-token in the store"
-printf '%s' "$super_token" | secret-put '{"holder":"host-privileged","service":"integrationtest","version":1}'
-stored=$(secret-get '{"holder":"host-privileged","service":"integrationtest"}')
+key=host-privileged/integrationtest
+value=$super_token
+export key value
+format secret-put-request.schema.json key value | secret-put
+stored=$(format secret-get-request.schema.json key | secret-get --with-key)
 printf '%s' "$stored" | parse secret-get-response.schema.json
 held=$(printf '%s' "$stored" | jq -r '.value')
 echo "$held"
@@ -36,6 +39,14 @@ grep -q '^gettoken:' "$noargs_err" || { echo "FAIL: stderr does not name the too
 rm -f "$noargs_err"
 
 echo
+echo "# the ask gettoken hands the privileged half"
+asked=$(mktemp)
+wants=$capability
+export wants
+format agent-capability-request.schema.json wants > "$asked"
+cat "$asked"
+
+echo
 echo "# the request token-requester builds, captured by a stubbed token-service"
 stub_dir=$(mktemp -d)
 REQUEST_FILE="$stub_dir/request.json"
@@ -43,10 +54,10 @@ export REQUEST_FILE
 cat > "$stub_dir/token-service" <<'STUB'
 #!/bin/sh
 cat > "$REQUEST_FILE"
-printf '{"access_token":"stub-token","expires_in":1,"wants":"stub/capability"}\n'
+printf '{"access_token":"stub-token","expires_in":60}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
-stub_out=$(PATH="$stub_dir:$PATH" token-requester "$capability")
+stub_out=$(PATH="$stub_dir:$PATH" token-requester < "$asked")
 request=$(cat "$REQUEST_FILE")
 echo "$request"
 [ "$request" = "$expected_request" ] || { echo "FAIL: request is not $expected_request"; exit 1; }
@@ -54,14 +65,14 @@ echo "$request"
 
 echo
 echo "# the agent cannot dictate who it is by setting USER"
-USER=impostor PATH="$stub_dir:$PATH" token-requester "$capability" > /dev/null
+USER=impostor PATH="$stub_dir:$PATH" token-requester < "$asked" > /dev/null
 spoofed=$(cat "$REQUEST_FILE")
 echo "$spoofed"
 [ "$spoofed" = "$expected_request" ] || { echo "FAIL: USER=impostor changed the request; who must come from the kernel, not the environment"; exit 1; }
 rm -rf "$stub_dir"
 
 echo
-echo "# an agent-supplied capability cannot forge fields in the request"
+echo "# a capability the contract does not admit never reaches token-service"
 injection='a","signed":"forged-by-agent'
 stub_dir=$(mktemp -d)
 REQUEST_FILE="$stub_dir/request.json"
@@ -69,20 +80,15 @@ export REQUEST_FILE
 cat > "$stub_dir/token-service" <<'STUB'
 #!/bin/sh
 cat > "$REQUEST_FILE"
-printf '{"access_token":"stub-token","expires_in":1,"wants":"stub/capability"}\n'
+printf '{"access_token":"stub-token","expires_in":60}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
-PATH="$stub_dir:$PATH" token-requester "$injection" > /dev/null
-forged=$(cat "$REQUEST_FILE")
-echo "$forged"
-if ! printf '%s' "$forged" | jq -e . > /dev/null; then
-  echo "FAIL: the request token-requester built is not valid JSON"
-  exit 1
-fi
-carried=$(printf '%s' "$forged" | jq -r '.wants')
-[ "$carried" = "$injection" ] || { echo "FAIL: wants carried \"$carried\", not the capability it was handed"; exit 1; }
-carried_signed=$(printf '%s' "$forged" | jq -r '.signed')
-[ "$carried_signed" = host-privileged ] || { echo "FAIL: signed is \"$carried_signed\", so the agent forged it"; exit 1; }
+forged=$(mktemp)
+printf '{"wants":"%s"}' "$injection" > "$forged"
+refused_with 1 "a capability carrying quotes" \
+  env PATH="$stub_dir:$PATH" token-requester < "$forged"
+rm -f "$forged"
+[ ! -f "$REQUEST_FILE" ] || { echo "FAIL: a refused capability still reached token-service"; exit 1; }
 rm -rf "$stub_dir"
 
 echo
@@ -91,13 +97,11 @@ stub_dir=$(mktemp -d)
 cat > "$stub_dir/token-service" <<'STUB'
 #!/bin/sh
 cat > /dev/null
-printf '{"expires_in":120,"wants":"integrationtest/ci/run"}\n'
+printf '{"expires_in":120}\n'
 STUB
 chmod 755 "$stub_dir/token-service"
-tokenless_out=$(PATH="$stub_dir:$PATH" token-requester "$capability") && tokenless_status=0 || tokenless_status=$?
-echo "exit $tokenless_status"
-[ "$tokenless_status" -eq 1 ] || { echo "FAIL: a tokenless response exited $tokenless_status, not 1"; exit 1; }
-[ -z "$tokenless_out" ] || { echo "FAIL: a tokenless response put \"$tokenless_out\" on stdout"; exit 1; }
+refused_with 1 "a tokenless response" \
+  env PATH="$stub_dir:$PATH" token-requester < "$asked"
 rm -rf "$stub_dir"
 
 echo
@@ -105,6 +109,8 @@ echo "# the response token-service returns"
 response=$(printf '%s' "$expected_request" | token-service)
 echo "$response"
 [ "$response" = "$expected_response" ] || { echo "FAIL: response is not $expected_response"; exit 1; }
+
+rm -f "$asked"
 
 chain_runs "$capability" "$super_token" "$narrow_token"
 

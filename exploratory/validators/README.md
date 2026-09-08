@@ -1,9 +1,12 @@
 # Choosing a validator
 
-Evidence behind [ADR 16](../../docs/adrs/0016-a-validator-apt-can-install.md), and
-before it [ADR 13](../../docs/adrs/0013-validating-the-wire.md). It runs the
+Evidence behind [ADR 16](../../docs/adrs/0016-a-validator-brew-and-apt-can-carry.md),
+and before it [ADR 13](../../docs/adrs/0013-validating-the-wire.md). It runs the
 candidates against this repository's own contracts, on both Debian bases, and
 reports what each one did.
+
+It answers what `apt` offers, which was the question at the time. Record 16 asks
+a second one, what `brew` offers as well, and no candidate here answers both.
 
 The criterion that reopened it is installability. Packaging the components meant
 declaring what each one needs, and the validator record 13 chose is not in the

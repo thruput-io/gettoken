@@ -1,2 +1,12 @@
 #!/bin/sh
-echo integrationtest/ci/run
+set -eu
+
+parse entitlements-request.schema.json
+
+entitlements=$(cat <<'ENTITLEMENTS'
+[{"capability":"integrationtest/ci/run","description":"Run the integration test suite on CI.","variables":[]}]
+ENTITLEMENTS
+)
+export entitlements
+
+format entitlements-response.schema.json entitlements
