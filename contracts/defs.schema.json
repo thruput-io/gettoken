@@ -4,18 +4,15 @@
   "$defs": {
     "Agent": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9._-]+$",
-      "not": { "pattern": "[^A-Za-z0-9._-]" }
+      "pattern": "^[A-Za-z0-9._-]+$"
     },
     "Activity": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$",
-      "not": { "pattern": "[^A-Za-z0-9._/-]" }
+      "pattern": "^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$"
     },
     "Capability": {
       "type": "string",
-      "pattern": "^[a-z0-9-]+(/[a-z0-9._-]+)+$",
-      "not": { "pattern": "[^a-z0-9._/-]" }
+      "pattern": "^[a-z0-9-]+(/[a-z0-9._-]+)+$"
     },
     "Signature": {
       "type": "string",
@@ -27,13 +24,11 @@
     "ExpiresIn": { "type": "integer", "minimum": 60, "maximum": 86400 },
     "CapabilityPattern": {
       "type": "string",
-      "pattern": "^[a-z0-9-]+(/([a-z0-9._-]+|\\{[a-z][a-z0-9_]*\\}))+$",
-      "not": { "pattern": "[^a-z0-9._/{}-]" }
+      "pattern": "^[a-z0-9-]+(/([a-z0-9._-]+|\\{[a-z][a-z0-9_]*\\}))+$"
     },
     "VariableName": {
       "type": "string",
-      "pattern": "^[a-z][a-z0-9_]*$",
-      "not": { "pattern": "[^a-z0-9_]" }
+      "pattern": "^[a-z][a-z0-9_]*$"
     },
     "Description": {
       "type": "string",
@@ -43,8 +38,7 @@
     },
     "Key": {
       "type": "string",
-      "pattern": "^[a-z0-9-]+(/[a-z0-9-]+)*$",
-      "not": { "pattern": "[^a-z0-9/-]" }
+      "pattern": "^[a-z0-9-]+(/[a-z0-9-]+)*$"
     },
     "Secret": {
       "type": "string",
