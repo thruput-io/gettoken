@@ -49,4 +49,23 @@ chain_runs() {
   echo
   echo "# a capability no exchanger serves is refused, and hands over nothing"
   refused_with 1 gettoken gettoken nosuch/capability
+
+  echo
+  echo "# a program the agent puts earlier on PATH cannot stand in for one the"
+  echo "# privileged half runs, because gettoken puts the system directories ahead"
+  echo "# of whatever it inherited"
+  sabotage=$(mktemp -d)
+  for shadowed in sed id hostname sort tail cat find grep mkdir; do
+    cat > "$sabotage/$shadowed" <<'SABOTAGE'
+#!/bin/sh
+echo "sabotage: a program the agent placed on PATH ran" >&2
+exit 1
+SABOTAGE
+    chmod 755 "$sabotage/$shadowed"
+  done
+  shadowed_out=$(PATH="$sabotage:$PATH" gettoken "$capability")
+  echo "$shadowed_out"
+  [ "$shadowed_out" = "$narrow_token" ] \
+    || { echo "FAIL: a program placed earlier on PATH stood in for one the privileged half runs"; exit 1; }
+  rm -rf "$sabotage"
 }
