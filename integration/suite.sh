@@ -5,6 +5,7 @@ root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 bin="$root/build/bin"
 
 sh "$root/integration/lint.sh" "$root"
+sh "$root/integration/declared.sh" "$root"
 
 sh "$root/components/contract/build.sh" "$bin"
 

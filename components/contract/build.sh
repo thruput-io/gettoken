@@ -20,5 +20,9 @@ fi
 go vet -mod=vendor ./...
 go test -mod=vendor ./...
 
-go build -mod=vendor -trimpath -o "$into/parse" ./cmd/parse
-go build -mod=vendor -trimpath -o "$into/format" ./cmd/format
+# -buildmode=pie so the binary is position-independent, which is what the
+# archive expects of anything it ships and what dh_auto_build would have
+# arranged had the build gone through it. GOFLAGS carries whatever the
+# packaging adds on top.
+go build -mod=vendor -trimpath -buildmode=pie -o "$into/parse" ./cmd/parse
+go build -mod=vendor -trimpath -buildmode=pie -o "$into/format" ./cmd/format
