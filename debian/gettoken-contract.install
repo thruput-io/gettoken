@@ -1,3 +1,0 @@
-build/bin/parse usr/lib/gettoken
-build/bin/format usr/lib/gettoken
-contracts/*.schema.json usr/share/gettoken/contracts

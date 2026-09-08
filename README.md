@@ -166,8 +166,21 @@ built from this tree:
 | `gettoken-token-service` | the dispatch onto an exchanger |
 | `gettoken-entitlements` | what an agent may equip |
 | `gettoken-secret-manager` | the store, at `/var/lib/gettoken/secrets` |
-| `gettoken-contract` | the contracts, and the two programs that carry a document through one |
+| `gettoken-parse` | reads a document through its contract |
+| `gettoken-format` | writes a document through its contract |
+| `gettoken-contract-*` | one contract each, and `-defs` for the shapes they are built from |
 | `integration-test-tool` | the worked example of an integration, and its exchanger |
+
+A contract is an interface, so it is a package, and a component depends on the
+contracts it speaks. That dependency is the statement of what may reach what:
+`gettoken-secret-manager` depends on the five documents the store reads and
+writes and on nothing else, and an exchanger that has no business seeing a
+signature does not depend on the contract carrying one. Asking `apt` what a
+package depends on is asking what it is allowed to say and be told.
+
+`parse` and `format` are separate packages, and neither carries a contract.
+They are the two directions a document is carried through one, and a component
+that only ever reads is not made to install the program that writes.
 
 `/usr/bin` carries the agent's entry point and nothing else. Everything on the
 privileged side lives in `/usr/lib/gettoken`, which `gettoken` puts on `PATH`
