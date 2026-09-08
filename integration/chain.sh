@@ -1,3 +1,5 @@
+# shellcheck shell=sh
+
 refusals=$(mktemp)
 
 refused_with() {
