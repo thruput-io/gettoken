@@ -327,7 +327,6 @@ scripts/
   packaging-check.sh
   packaging.sh
   readme.sh
-  suite.sh
   targets/
   test/
 
