@@ -326,6 +326,7 @@ integration/
   mermaid.sh
   packages.sh
   packaging.sh
+  readme.sh
   suite.sh
   targets/
 
