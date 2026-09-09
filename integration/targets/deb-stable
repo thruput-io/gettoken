@@ -1,0 +1,12 @@
+# Debian stable. What this release's archive carries, stated rather than sniffed:
+# a build that finds something different is a build that should say so.
+DEBIAN_TAG=stable-slim
+DEBHELPER_COMPAT=13
+GO_VERSION=1.24
+STANDARDS_VERSION=4.7.2
+
+# Policy 4.7.2 still recommends Priority in the source stanza, and this
+# lintian still wants Rules-Requires-Root spelled out.
+PRIORITY=optional
+RULES_REQUIRES_ROOT=no
+

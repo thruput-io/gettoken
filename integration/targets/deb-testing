@@ -1,0 +1,11 @@
+# Debian testing, the release being developed against.
+DEBIAN_TAG=testing-slim
+DEBHELPER_COMPAT=14
+GO_VERSION=1.26
+STANDARDS_VERSION=4.7.4
+
+# Policy 4.7.3 stopped recommending Priority in the source stanza, and
+# Rules-Requires-Root defaults to no, so naming either is noise.
+PRIORITY=
+RULES_REQUIRES_ROOT=
+

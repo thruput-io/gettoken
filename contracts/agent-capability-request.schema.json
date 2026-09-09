@@ -2,10 +2,15 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://thruput.io/gettoken/ask-capability.schema.json",
   "title": "what an agent asks gettoken for a capability",
+  "description": "What an agent says when it asks for a capability. It carries the capability wanted and nothing else: an agent cannot say who it is or what it is doing, because the privileged half decides that.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["wants"],
+  "required": [
+    "wants"
+  ],
   "properties": {
-    "wants": { "$ref": "defs.schema.json#/$defs/Capability" }
+    "wants": {
+      "$ref": "defs.schema.json#/$defs/Capability"
+    }
   }
 }

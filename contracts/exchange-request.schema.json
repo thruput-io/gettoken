@@ -2,11 +2,19 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://thruput.io/gettoken/exchange-request.schema.json",
   "title": "what token-service asks an exchanger to trade for",
+  "description": "What token-service hands an exchanger. It carries who is asking and what for, and neither the signature the request was signed with nor what the agent was doing: an exchanger is told the least that lets it trade.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["who", "wants"],
+  "required": [
+    "who",
+    "wants"
+  ],
   "properties": {
-    "who": { "$ref": "defs.schema.json#/$defs/Agent" },
-    "wants": { "$ref": "defs.schema.json#/$defs/Capability" }
+    "who": {
+      "$ref": "defs.schema.json#/$defs/Agent"
+    },
+    "wants": {
+      "$ref": "defs.schema.json#/$defs/Capability"
+    }
   }
 }

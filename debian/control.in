@@ -1,0 +1,124 @@
+Source: gettoken
+Section: admin
+@PRIORITY@Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Build-Depends: debhelper-compat (= @COMPAT@),
+               golang-any
+@STANDARDS@XS-Go-Import-Path: github.com/thruput-io/gettoken/components/contract
+@RULES_REQUIRES_ROOT@Homepage: https://github.com/thruput-io/gettoken
+Vcs-Git: https://github.com/thruput-io/gettoken.git
+Vcs-Browser: https://github.com/thruput-io/gettoken
+
+Package: gettoken-parse
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends}@CONTRACTS@:gettoken-parse
+Description: token broker for AI agents - reads a document through its contract
+ parse reads one document on standard input, checks it against the contract
+ named on its command line, and hands back the fields asked for as assignments
+ a shell can evaluate. A document that does not satisfy its contract yields
+ nothing to evaluate.
+ .
+ It carries no contract of its own. What may cross a boundary is stated by the
+ contract package the component reading that boundary depends on.
+
+Package: gettoken-format
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends}@CONTRACTS@:gettoken-format
+Description: token broker for AI agents - writes a document through its contract
+ format takes the fields named on its command line from the environment, writes
+ the document they make, and checks that document against the contract before
+ handing it over. A component cannot emit something its contract does not admit.
+ .
+ It carries no contract of its own, for the same reason parse does not.
+
+Package: gettoken
+Architecture: all
+Depends: ${misc:Depends},
+         gettoken-token-requester@CONTRACTS@:gettoken
+Description: token broker for AI agents
+ An agent that holds a long-lived credential holds whatever authority that
+ credential carries, and an agent can be talked into things by whatever it
+ reads. gettoken hands an agent a token narrow enough for the job in front of
+ it and nothing more, drawn from a super-token a human already holds.
+ .
+ This package contains the entry point the agent invokes and the privileged
+ half that builds the request on its behalf. The agent never holds the
+ super-token: it says what it wants, and gets back a token for that job.
+
+Package: gettoken-token-requester
+Architecture: all
+Depends: ${misc:Depends},
+         gettoken-entitlements,
+         gettoken-token-service@CONTRACTS@:gettoken-token-requester
+Description: token broker for AI agents - the privileged half
+ token-requester is what runs once the agent's ask has crossed over. It says who
+ is asking and what they are doing from the kernel rather than from anything the
+ agent can set, signs the request, and hands it to token-service.
+ .
+ It is not a name on a public PATH. An agent reaches it by invoking gettoken,
+ which is the only public name the components claim, and never by naming this.
+
+Package: gettoken-token-service
+Architecture: all
+Depends: ${misc:Depends},
+         gettoken-secret-manager@CONTRACTS@:gettoken-token-service
+Description: token broker for AI agents - exchange dispatcher
+ token-service authenticates a request, resolves what it asks for, and hands
+ the capability to the exchanger registered for the service named by the
+ capability's first segment.
+ .
+ It ships no exchanger. Each integrated tool installs its own into
+ /usr/lib/gettoken/exchangers, so adding the hundredth tool costs what the
+ first one did.
+
+Package: gettoken-entitlements
+Architecture: all
+Depends: ${misc:Depends}@CONTRACTS@:gettoken-entitlements
+Description: token broker for AI agents - capability inventory
+ entitlements answers what an agent has to work with. It is what
+ "gettoken --list" shows, and it is also the control: a request for a
+ capability it does not list is refused.
+
+Package: gettoken-secret-manager
+Architecture: all
+Depends: ${misc:Depends}@CONTRACTS@:gettoken-secret-manager
+Description: token broker for AI agents - super-token store
+ The store holds the super-tokens a human placed on the privileged side,
+ keyed by who holds them and which service they are for, and keeps every
+ version that was put in.
+ .
+ The store is /var/lib/gettoken/secrets, and no account but the privileged one
+ can read it. Nothing an agent runs reaches it; only an exchanger does, and
+ only for as long as it takes to trade a super-token for a narrow one. Purging
+ this package takes the store with it.
+
+Package: integration-test-tool
+Architecture: all
+Depends: ${misc:Depends},
+         gettoken,
+         integration-test-tool-exchanger@CONTRACTS@:integration-test-tool
+Description: token broker for AI agents - tool that verifies the chain
+ The tool the verification suite integrates, standing in for a real one so the
+ chain can be exercised without reaching a service. It runs on the token that
+ integrationtest/ci/run downgrades to and refuses the super-token that token
+ was traded for, so a run that succeeds is proof that a downgrade happened.
+ .
+ It is also the worked example of an integration: it depends on gettoken and
+ carries one exchanger, which knows one service and nothing about any other.
+ What that exchanger may say and be told is the contracts it depends on, and
+ nothing else. Installing it is what brings the chain onto a machine.
+
+Package: integration-test-tool-exchanger
+Architecture: all
+Depends: ${misc:Depends},
+         gettoken-secret-manager@CONTRACTS@:integration-test-tool-exchanger
+Description: token broker for AI agents - the exchanger the tool integrates
+ The exchanger integrationtest/ci/run is served by. It is told who is asking and
+ what for, trades the super-token the store holds for a narrow one, and answers
+ with that.
+ .
+ It is a separate package from the tool because it is on the other side of the
+ boundary: the tool is a public name an agent runs, and this is run by
+ token-service with the super-token in reach. What each may be told is what each
+ depends on, and they are not the same.
