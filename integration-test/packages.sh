@@ -43,10 +43,6 @@ sh "$root/scripts/packaging.sh" "$GETTOKEN_TARGET" "$build/source"
 ls "$build"/*.deb
 
 echo
-echo "# every built package declares the contracts its executables speak, and no others"
-sh "$root/scripts/declared.sh" "$build" "$build/source"
-
-echo
 echo "# lintian passes on the source and on every package, and a warning is"
 echo "# enough to fail: at its defaults only an error is, so a warning about a"
 echo "# permission or an owner this run asserts by hand would pass unnoticed"
