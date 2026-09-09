@@ -318,7 +318,6 @@ debian/
   source/lintian-overrides
 
 scripts/
-  declared.sh
   deliver.sh
   docker/
   fixtures/

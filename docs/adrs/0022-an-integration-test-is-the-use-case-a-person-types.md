@@ -47,7 +47,6 @@ system is the rightmost rung there is:
 |---|---|
 | the lint gate, the unit runner | `scripts/`, behind `make lint` and `make test` |
 | every shell file passes the lint gate | the lint gate already; the packaged run asserted it twice |
-| a package declares exactly the contracts it speaks | a test of the generator that writes the declaration |
 | `/usr/bin` carries the entry point and the tool alone | a test reading what the packaging installs |
 | installing one package draws in the chain and nothing else | a test of what the generator declares; that apt honours it is apt's |
 | `gettoken --list`; a capability nothing serves is refused | the components' own tests |
@@ -56,7 +55,17 @@ system is the rightmost rung there is:
 | lintian on the source and on every package | stays with the build, because it reads built packages |
 | a purge meeting something it does not own says so, and still succeeds | stays on a disposable machine, because it removes real paths |
 
-None of the first eight needs a package installed to be true. Asserting them
+One check is dropped rather than moved. Reading back off a built package that
+it declares exactly the contracts its executables speak asserts that the
+generator and dpkg did what they say, not that the declaration is right. A
+component that declares too little already fails: apt refuses to resolve a
+dependency that is not there, and a chain missing a document it speaks stops
+when it speaks it, both of which the use-case above walks into. What goes with
+the check is the other direction — a component that depends on a contract it
+never speaks, and so may be told more than it needs, is no longer caught. That
+is the cost, and record 21 is the reasoning it weakens.
+
+None of the remaining seven needs a package installed to be true. Asserting them
 against twenty-one installed packages was proving a fact about the tree by
 building the tree, which is the slowest and least certain way to learn it.
 
