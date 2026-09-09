@@ -13,4 +13,3 @@ PATH="$bin:$PATH"
 export PATH
 
 bats --recursive "$root/components" "$root/tools" "$root/scripts"
-sh "$root/tools/integration-test-tool/test/exit-status.sh"

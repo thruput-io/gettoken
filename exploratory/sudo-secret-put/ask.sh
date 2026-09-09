@@ -17,18 +17,18 @@ apt-get install -y --no-install-recommends sudo 2>&1 | sed -n 's/^\(0 upgraded.*
 
 echo
 echo "# sudo secret-put, with the default sudoers and no PATH help"
-printf '%s' '{"key":"host-privileged/integrationtest","value":"integrationtest-supertoken"}' \
+printf '%s' '{"key":"host-privileged/integrationtest","value":"super-4f2a9c"}' \
   | sudo /usr/lib/gettoken/secret-put > /dev/null 2>&1 \
   && echo "worked" || echo "failed, exit $?"
 
 echo
 echo "# why: sudo resets the environment, so secret-put cannot find parse"
-printf '%s' '{"key":"host-privileged/integrationtest","value":"integrationtest-supertoken"}' \
+printf '%s' '{"key":"host-privileged/integrationtest","value":"super-4f2a9c"}' \
   | sudo /usr/lib/gettoken/secret-put 2>&1 >/dev/null | head -2
 
 echo
 echo "# with PATH carried across explicitly"
-printf '%s' '{"key":"host-privileged/integrationtest","value":"integrationtest-supertoken"}' \
+printf '%s' '{"key":"host-privileged/integrationtest","value":"super-4f2a9c"}' \
   | sudo PATH=/usr/lib/gettoken:/usr/bin:/bin /usr/lib/gettoken/secret-put > /dev/null 2>&1 \
   && echo "worked" || echo "failed, exit $?"
 
