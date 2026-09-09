@@ -18,7 +18,7 @@ trap 'rm -f "$listing"' EXIT
 
 {
   echo 'contracts/'
-  git ls-files 'contracts/*.schema.json' | sed 's|contracts/|  |'
+  git -c safe.directory='*' ls-files 'contracts/*.schema.json' | sed 's|contracts/|  |'
   echo
   echo 'components/'
   for d in components/*/; do
@@ -32,14 +32,14 @@ trap 'rm -f "$listing"' EXIT
   echo 'tools/'
   for d in tools/*/; do
     echo "  $(basename "$d")/"
-    git ls-files "$d" | sed "s|$d||" | awk -F/ '{ print ($2 == "" ? $1 : $1 "/") }' | sort -u | sed 's/^/    /'
+    git -c safe.directory='*' ls-files "$d" | sed "s|$d||" | awk -F/ '{ print ($2 == "" ? $1 : $1 "/") }' | sort -u | sed 's/^/    /'
   done
   echo
   echo 'debian/'
-  git ls-files 'debian/*' | sed 's|debian/||' | sed 's/^/  /'
+  git -c safe.directory='*' ls-files 'debian/*' | sed 's|debian/||' | sed 's/^/  /'
   echo
   echo 'integration/'
-  git ls-files 'integration/*' | sed 's|integration/||' | awk -F/ '{ print ($2 == "" ? $1 : $1 "/") }' | sort -u | sed 's/^/  /'
+  git -c safe.directory='*' ls-files 'integration/*' | sed 's|integration/||' | awk -F/ '{ print ($2 == "" ? $1 : $1 "/") }' | sort -u | sed 's/^/  /'
   echo
   echo 'exploratory/'
 } > "$listing"

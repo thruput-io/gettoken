@@ -13,7 +13,12 @@ trap 'rm -f "$candidates" "$selected"' EXIT
 
 # What the repository carries, not what happens to be lying in the tree: a file
 # nobody committed is nobody's to keep green.
-if ! git -C "$root" ls-files > "$candidates"; then
+#
+# safe.directory is set for this call alone because the tree is read from inside
+# a container: the checkout belongs to whoever made it and the process is root,
+# and git refuses a repository it did not expect to be handed. Nothing is written
+# here, so there is nothing for that check to protect.
+if ! git -c safe.directory='*' -C "$root" ls-files > "$candidates"; then
   echo "lint.sh: could not list what $root carries, so the gate checked nothing" >&2
   exit 1
 fi
