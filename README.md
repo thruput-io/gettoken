@@ -257,36 +257,78 @@ product. `debian/` says which of these goes into which
 package, and it is one directory because Debian builds many packages from one
 source tree.
 
+<!-- layout -->
 ```
 contracts/
-  agent-capability-request.schema.json  agent-list-request.schema.json
-  defs.schema.json  entitlements-request.schema.json  entitlements-response.schema.json
-  exchange-request.schema.json  secret-request-version.schema.json
-  secret-request.schema.json  secret-response.schema.json
-  token-request.schema.json  token-response.schema.json
+  agent-capability-request.schema.json
+  agent-list-request.schema.json
+  defs.schema.json
+  entitlements-request.schema.json
+  entitlements-response.schema.json
+  exchange-request.schema.json
+  secret-get-request-version.schema.json
+  secret-get-request.schema.json
+  secret-get-response.schema.json
+  secret-put-request.schema.json
+  secret-put-response.schema.json
+  token-request.schema.json
+  token-response.schema.json
 
 components/
-  token-service/
+  agent-identity-authority/   SEAT.md
+  auth-canvas/                SEAT.md
+  contract/                   parse and format, in Go
   entitlements/
+  notifier/                   SEAT.md
   secret-manager/
-  contract/                    parse and format, in Go
-  notifier/                    SEAT.md
-  auth-canvas/                 SEAT.md
-  agent-identity-authority/    SEAT.md
+  token-service/
 
 tools/
   gettoken/
-    bin/gettoken
-    privileged/token-requester
-    man/gettoken.1
+    bin/
+    man/
+    privileged/
+    test/
   integration-test-tool/
-    bin/  privileged/exchangers/  test/  man/
+    bin/
+    man/
+    privileged/
+    test/
 
 debian/
-  control  changelog  rules  copyright  *.install
+  changelog
+  control.in
+  copyright
+  gettoken-entitlements.install
+  gettoken-format.install
+  gettoken-parse.install
+  gettoken-secret-manager.install
+  gettoken-secret-manager.postrm
+  gettoken-token-requester.install
+  gettoken-token-service.install
+  gettoken.docs
+  gettoken.install
+  gettoken.manpages
+  integration-test-tool-exchanger.install
+  integration-test-tool.install
+  integration-test-tool.manpages
+  rules
+  source/format
+  source/lintian-overrides
 
 integration/
-  suite.sh  integration.sh  packages.sh  mermaid.sh  docker/
+  chain.sh
+  declared.sh
+  deliver.sh
+  docker/
+  fixtures/
+  lint.sh
+  mermaid.sh
+  packages.sh
+  packaging.sh
+  suite.sh
+  targets/
 
 exploratory/
 ```
+<!-- end layout -->
