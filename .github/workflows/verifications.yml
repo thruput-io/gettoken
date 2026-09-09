@@ -13,9 +13,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: macOS 15,     os: macos-15,      target: test,        brew: true }
+          - { name: macOS stable, os: macos-15,      target: test,        brew: true }
           - { name: macOS latest, os: macos-latest,  target: test,        brew: true }
-          - { name: deb-stable,   os: ubuntu-latest, target: deb-stable,  brew: false }
+          - { name: Debian stable, os: ubuntu-latest, target: deb-stable,  brew: false }
           - { name: deb-testing,  os: ubuntu-latest, target: deb-testing, brew: false }
     steps:
       - uses: actions/checkout@v4
