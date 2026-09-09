@@ -50,7 +50,7 @@ Fixed faces (name + concern). The implementation of each evolves left to right.
 | 3 | `token-service` | authenticate, resolve, hand the capability to an exchanger | transitive trust, as-is | verify `signed` → off-the-shelf OAuth2 STS |
 | 4 | `notifier` | summon a human to renew | beep + shell | 2FA/phone → mostly automated |
 | 5 | `auth-canvas` | surface the human acts on | prepped shell (`gh auth login`) | mobile/web |
-| 6 | `secret-manager` | holds super-tokens on the privileged side, keyed by (who, doing, wants) | privileged folder | secrets manager |
+| 6 | `secret-manager` | holds super-tokens on the privileged side, keyed by who holds them and which service they are for | privileged folder | secrets manager |
 | 7 | `entitlements` | what an agent may equip | script entry | operator-managed |
 | 8 | `agent-identity-authority` | proves who the agent is | local OS user | gh app signed → GCP service principal |
 | 9 | `exchanger` | turns a super-token into a narrow one for one service | one per capability segment, found in `/usr/lib/gettoken/exchangers` | its own package, beside the tool it integrates |
@@ -148,12 +148,13 @@ segment of **`doing`**, and the deployment is where that key is put.
 }
 ```
 
-An exchanger is not on the wire, so no schema fixes it. `token-service` finds it
-in `/usr/lib/gettoken/exchangers`, named for the first segment of the capability,
-runs it with the capability, and reads the access token from the first line of
-its output and the lifetime in seconds from the second. It is looked up in that
-one directory rather than on `PATH`, because it is run with the super-token in
-reach.
+An exchanger is a component like any other, so contracts govern both ends of it.
+`token-service` finds it in `/usr/lib/gettoken/exchangers`, named for the first
+segment of the capability, hands it an `exchange-request` on standard input and
+reads a `token-response` back. It is told who is asking and what for, and neither
+the signature the request was signed with nor what the agent was doing, because
+those are not an exchanger's to see. It is looked up in that one directory rather
+than on `PATH`, because it is run with the super-token in reach.
 
 ## Install it
 
