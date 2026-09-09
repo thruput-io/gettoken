@@ -323,6 +323,7 @@ scripts/
   fixtures/
   lint.sh
   mermaid.sh
+  packaging-check.sh
   packaging.sh
   readme.sh
   suite.sh
@@ -330,8 +331,7 @@ scripts/
   test/
 
 integration-test/
-  chain.sh
-  packages.sh
+  test.sh
 
 exploratory/
 ```
