@@ -166,11 +166,12 @@ would be from any other archive:
 make packages
 ```
 
-That writes `build/packages/`, holding every `.deb` and a `Packages` index. Point
-apt at it and ask for the one tool:
+That writes `build/packages/deb-stable/` and `build/packages/deb-testing/`, each
+holding every `.deb` for that release and a `Packages` index. Point apt at the one
+for the release you are on and ask for the one tool:
 
 ```sh
-echo "deb [trusted=yes] file:/path/to/build/packages ./" | sudo tee /etc/apt/sources.list.d/gettoken.list
+echo "deb [trusted=yes] file:/path/to/build/packages/deb-stable ./" | sudo tee /etc/apt/sources.list.d/gettoken.list
 sudo apt-get update
 sudo apt-get install integration-test-tool
 ```
@@ -181,13 +182,13 @@ a document through a contract, and one package per contract. Nothing else is
 named, and nothing else arrives. Purging it takes them all with it, and the store
 with them.
 
-`make packages` builds for Debian testing. `make packages TARGET=deb-stable`
-builds for stable instead; the two say different things about themselves because
-the releases carry different debhelper, lintian and Go, and what each target is
-is written in `scripts/targets/`.
+`make packages` builds for both Debian stable and Debian testing, leaving each
+in its own directory under `build/packages/`. The two say different things about
+themselves because the releases carry different debhelper, lintian and Go, and
+what each target is is written in `scripts/targets/`.
 
-To install onto a machine that is not the one that built them, copy
-`build/packages/` across and point apt at it there. It is a plain apt repository:
+To install onto a machine that is not the one that built them, copy that
+release's directory across and point apt at it there. It is a plain apt repository:
 nothing in it depends on having been built locally.
 
 ### What arrives, and why that is the interesting part

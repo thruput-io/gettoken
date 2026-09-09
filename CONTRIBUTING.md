@@ -1,8 +1,8 @@
 # Contributing
 
-## make check does not shrink
+## make test does not shrink
 
-`make check` is the entry point. Every verification runs it, on the machine it
+`make test` is the entry point. Every verification runs it, on the machine it
 is invoked on or inside a named base.
 
 Its scope does not decrease. Not directly, by removing or weakening what it
@@ -29,15 +29,15 @@ a central test is what belongs to no component.
 
 A test that puts a second component under test belongs in `integration-test/`, which
 is the only place allowed to span them. `exploratory/` answers a question rather
-than guarding the product, and `make check` does not run it.
+than guarding the product, and `make test` does not run it.
 
 ## Running the suite
 
-`make check` runs the suite where you invoke it. `make debian-stable` and
-`make debian-latest` run the same suite inside a named base. `make debian-packages`
-builds the packages inside a named base and runs the chain against them once they
-are installed, which is the only verification that reaches the paths a package
-puts things at. The host needs `jq`, `bats`, `shellcheck` and a Go toolchain,
+`make test` runs the suite where you invoke it. `make deb-stable` and
+`make deb-testing` run that same suite inside the base that release is built in,
+then build the packages there, then install and use them on the official image
+for that release. Only those two reach the paths a package puts things at. The
+host needs `jq`, `bats`, `shellcheck` and a Go toolchain,
 which builds the contract component named in
 [record 17](docs/adrs/0017-a-validator-brew-and-apt-can-carry.md):
 
@@ -46,7 +46,7 @@ apt install jq bats shellcheck golang-go
 brew install jq bats-core shellcheck go
 ```
 
-`make check` builds `parse` and `format` before it runs anything, into a
+`make test` builds `parse` and `format` before it runs anything, into a
 directory it puts on `PATH`. To run one `bats` file on its own, build them first
 and put them on `PATH` yourself.
 
@@ -54,13 +54,14 @@ Nothing is skipped when a tool is missing. A test that cannot run fails.
 
 ## What a green run means
 
-The chain runs end to end on the `integrationtest/ci/run` capability: the
-super-token goes into the store, the capability is listed, a request is built,
-the exchanger trades the super-token for a narrow one, `gettoken` emits that
-token and nothing else, and `integration-test-tool` runs on it. The same tool
-refuses the super-token, so a run that succeeds is a downgrade that happened.
-This is the invariant: keep it green.
+The use-case runs on the `integrationtest/ci/run` capability, on the official
+image for the release and nothing put onto it first: the one tool package is
+installed, the super-token goes into the store, `gettoken` is asked for the
+capability, and `integration-test-tool` runs on what comes back. The same tool
+refuses the super-token, asserted by the tool's own tests, so a run that
+succeeds is a downgrade that happened. This is the invariant: keep it green.
 
-`make debian-packages` builds the packages in a base carrying nothing they run
-on, has `lintian` read them, installs the one, runs the chain against what `apt`
-drew in, and then purges it and fails if anything is left behind.
+Beside it, `scripts/packaging-check.sh` installs that one package on the same
+untouched image and asserts what `apt` drew in, that nothing else came, and that
+a purge leaves nothing behind. `scripts/deliver.sh` has `lintian` read the source
+and every package as it builds them.
