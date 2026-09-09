@@ -15,7 +15,7 @@ trap 'rm -rf "$build"' EXIT
 
 cp -a "$root" "$build/source"
 rm -rf "$build/source/.git" "$build/source/build"
-sh "$root/integration/packaging.sh" "$name" "$build/source"
+sh "$root/scripts/packaging.sh" "$name" "$build/source"
 
 (cd "$build/source" && dpkg-buildpackage -us -uc)
 

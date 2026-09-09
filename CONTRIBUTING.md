@@ -27,7 +27,7 @@ by that component's unit tests, because the document is the component's to
 honour. Nothing central asserts a document some component owns. What is left for
 a central test is what belongs to no component.
 
-A test that puts a second component under test belongs in `integration/`, which
+A test that puts a second component under test belongs in `integration-test/`, which
 is the only place allowed to span them. `exploratory/` answers a question rather
 than guarding the product, and `make check` does not run it.
 
