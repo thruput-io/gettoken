@@ -2,13 +2,27 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://thruput.io/gettoken/request.schema.json",
   "title": "gettoken request",
+  "description": "What the privileged half asks token-service. It carries who is asking, what they are doing, what they want, and the signature the privileged half vouches with.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["who", "doing", "wants", "signed"],
+  "required": [
+    "who",
+    "doing",
+    "wants",
+    "signed"
+  ],
   "properties": {
-    "who": { "$ref": "defs.schema.json#/$defs/Agent" },
-    "doing": { "$ref": "defs.schema.json#/$defs/Activity" },
-    "wants": { "$ref": "defs.schema.json#/$defs/Capability" },
-    "signed": { "$ref": "defs.schema.json#/$defs/Signature" }
+    "who": {
+      "$ref": "defs.schema.json#/$defs/Agent"
+    },
+    "doing": {
+      "$ref": "defs.schema.json#/$defs/Activity"
+    },
+    "wants": {
+      "$ref": "defs.schema.json#/$defs/Capability"
+    },
+    "signed": {
+      "$ref": "defs.schema.json#/$defs/Signature"
+    }
   }
 }

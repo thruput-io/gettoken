@@ -2,11 +2,19 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://thruput.io/gettoken/response.schema.json",
   "title": "gettoken response",
+  "description": "What token-service answers with a token: the token and how long it lasts. A lifetime is bounded at both ends, so neither a token that expires before it is used nor one that outlives the job is admitted.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["access_token", "expires_in"],
+  "required": [
+    "access_token",
+    "expires_in"
+  ],
   "properties": {
-    "access_token": { "$ref": "defs.schema.json#/$defs/AccessToken" },
-    "expires_in": { "$ref": "defs.schema.json#/$defs/ExpiresIn" }
+    "access_token": {
+      "$ref": "defs.schema.json#/$defs/AccessToken"
+    },
+    "expires_in": {
+      "$ref": "defs.schema.json#/$defs/ExpiresIn"
+    }
   }
 }

@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://thruput.io/gettoken/ask.schema.json",
   "title": "what an agent asks gettoken for",
+  "description": "What an agent says when it asks what it may equip. It carries the word list and nothing else, so asking what is available is not a way to ask for anything.",
   "type": "object",
   "additionalProperties": false,
   "properties": {

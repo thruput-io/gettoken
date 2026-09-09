@@ -13,7 +13,7 @@ root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 
 capability=integrationtest/ci/run
 integration='integration-test-tool'
-drawn_in="gettoken gettoken-token-service gettoken-entitlements gettoken-secret-manager gettoken-parse gettoken-format gettoken-contract-defs gettoken-contract-agent-capability-request gettoken-contract-agent-list-request gettoken-contract-entitlements-request gettoken-contract-entitlements-response gettoken-contract-exchange-request gettoken-contract-secret-get-request gettoken-contract-secret-get-request-version gettoken-contract-secret-get-response gettoken-contract-secret-put-request gettoken-contract-secret-put-response gettoken-contract-token-request gettoken-contract-token-response"
+drawn_in="gettoken integration-test-tool-exchanger gettoken-token-requester gettoken-token-service gettoken-entitlements gettoken-secret-manager gettoken-parse gettoken-format gettoken-contract-defs gettoken-contract-agent-capability-request gettoken-contract-agent-list-request gettoken-contract-entitlements-request gettoken-contract-entitlements-response gettoken-contract-exchange-request gettoken-contract-secret-get-request gettoken-contract-secret-get-request-version gettoken-contract-secret-get-response gettoken-contract-secret-put-request gettoken-contract-secret-put-response gettoken-contract-token-request gettoken-contract-token-response"
 super_token=integrationtest-supertoken
 narrow_token=integrationtest-ci-run-allowed
 store=/var/lib/gettoken/secrets
@@ -33,16 +33,18 @@ echo "# every shell file this tree carries passes the lint gate, including the"
 echo "# maintainer scripts, which only this lane installs the packaging for"
 sh "$root/integration/lint.sh" "$root"
 
-echo
-echo "# every component depends on the contracts it speaks, and on no others"
-sh "$root/integration/declared.sh" "$root"
 
 echo
-echo "# the packages are built from the source tree"
+echo "# the packages are built from the source tree, as the target says this release wants them"
 cp -a "$root" "$build/source"
 rm -rf "$build/source/.git"
+sh "$root/integration/packaging.sh" "$GETTOKEN_TARGET" "$build/source"
 (cd "$build/source" && dpkg-buildpackage -us -uc)
 ls "$build"/*.deb
+
+echo
+echo "# every built package declares the contracts its executables speak, and no others"
+sh "$root/integration/declared.sh" "$build" "$build/source"
 
 echo
 echo "# lintian passes on the source and on every package, and a warning is"

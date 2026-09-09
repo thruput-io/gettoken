@@ -1,12 +1,13 @@
 #!/bin/sh
 set -eu
 
-# A contract is a package, and a component depends on the contracts it speaks.
-# That is only true if it stays true, so it is read back out of the source: the
-# schemas each executable names, the package that ships it, and what that
-# package declares. No package is built and nothing is installed to know this.
-root=$1
-control="$root/debian/control"
+# What a built package declares it may be told, against what its executables
+# actually say. The packaging is generated from the second, so this cannot
+# disagree unless the generation or the build lost something on the way — which
+# is the only reason to read it back off the artefact rather than off the
+# source it came from.
+built=$1
+source=$2
 
 spoken=$(mktemp)
 declared=$(mktemp)
@@ -14,35 +15,38 @@ trap 'rm -f "$spoken" "$declared"' EXIT
 
 wrong=0
 
-for install in "$root"/debian/*.install; do
-  pkg=$(basename "$install" .install)
-  case $pkg in
-    gettoken-contract-*|gettoken-parse|gettoken-format) continue ;;
+for deb in "$built"/*.deb; do
+  package=$(dpkg-deb -f "$deb" Package)
+  case $package in
+    gettoken-contract-*|gettoken-parse|gettoken-format|*-dbgsym) continue ;;
   esac
 
+  install="$source/debian/$package.install"
+  if [ ! -f "$install" ]; then continue; fi
+
   while read -r src _; do
-    [ -f "$root/$src" ] || continue
-    grep -ohE '(parse|format) [a-z-]+\.schema\.json' "$root/$src" || true
+    if [ -f "$source/$src" ]; then
+      grep -ohE '(parse|format) [a-z-]+\.schema\.json' "$source/$src" || true
+    fi
   done < "$install" | awk '{print $2}' | sed 's/\.schema\.json$//' | sort -u > "$spoken"
 
-  awk -v p="Package: $pkg" '
-    $0 == p { inpkg = 1; next }
-    /^Package: / { inpkg = 0 }
-    inpkg && /gettoken-contract-/ { gsub(/[ ,]/, ""); print }
-  ' "$control" | sed 's/^gettoken-contract-//' | sort -u > "$declared"
+  dpkg-deb -f "$deb" Depends | tr ',' '\n' | sed 's/^ *//' \
+    | sed -n 's/^gettoken-contract-//p' | sort -u > "$declared"
 
   missing=$(comm -23 "$spoken" "$declared" | tr '\n' ' ' | sed 's/ *$//')
   spare=$(comm -13 "$spoken" "$declared" | tr '\n' ' ' | sed 's/ *$//')
 
   if [ -n "$missing" ]; then
-    echo "FAIL: $pkg speaks $missing but does not depend on the contract for it"
+    echo "FAIL: $package speaks $missing but the built package does not depend on the contract for it"
     wrong=1
   fi
   if [ -n "$spare" ]; then
-    echo "FAIL: $pkg depends on $spare but never speaks it, so it may be told more than it needs"
+    echo "FAIL: $package depends on $spare but never speaks it, so it may be told more than it needs"
     wrong=1
   fi
-  [ -n "$missing$spare" ] || echo "ok: $pkg speaks exactly what it depends on"
+  if [ -z "$missing$spare" ]; then
+    echo "ok: $package speaks exactly what it depends on"
+  fi
 done
 
-[ "$wrong" -eq 0 ] || exit 1
+if [ "$wrong" -ne 0 ]; then exit 1; fi

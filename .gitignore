@@ -9,3 +9,7 @@ debian/gettoken/
 debian/gettoken-*/
 debian/integration-test-tool/
 build/
+
+# built by integration/packaging.sh, not kept
+debian/control
+debian/gettoken-contract-*.install

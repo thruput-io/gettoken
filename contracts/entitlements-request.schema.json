@@ -2,12 +2,23 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://thruput.io/gettoken/entitlements-request.schema.json",
   "title": "gettoken entitlements request",
+  "description": "What the privileged half asks entitlements. It carries who is asking and what they are doing, signed by the privileged half, and names no capability because none is being asked for.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["who", "doing", "signed"],
+  "required": [
+    "who",
+    "doing",
+    "signed"
+  ],
   "properties": {
-    "who": { "$ref": "defs.schema.json#/$defs/Agent" },
-    "doing": { "$ref": "defs.schema.json#/$defs/Activity" },
-    "signed": { "$ref": "defs.schema.json#/$defs/Signature" }
+    "who": {
+      "$ref": "defs.schema.json#/$defs/Agent"
+    },
+    "doing": {
+      "$ref": "defs.schema.json#/$defs/Activity"
+    },
+    "signed": {
+      "$ref": "defs.schema.json#/$defs/Signature"
+    }
   }
 }
