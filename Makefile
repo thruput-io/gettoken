@@ -1,4 +1,4 @@
-.PHONY: check deb-stable deb-testing packages images diagrams
+.PHONY: check readme deb-stable deb-testing packages images diagrams
 
 IMAGE = gettoken-test
 TARGET = deb-testing
@@ -21,6 +21,10 @@ deb-stable: images
 deb-testing: images
 	docker run --rm -v "$(CURDIR)":/work -e GETTOKEN_TARGET=deb-testing $(IMAGE):deb-testing integration/suite.sh
 	docker run --rm -v "$(CURDIR)":/work -e GETTOKEN_TARGET=deb-testing $(IMAGE):deb-testing integration/packages.sh
+
+# README says what the tree holds, so the tree writes that part of it.
+readme:
+	sh integration/readme.sh "$(CURDIR)" --write
 
 # The packages themselves, left where apt can install them from.
 packages: images

@@ -25,4 +25,4 @@ cp "$build"/*.deb "$into"
 (cd "$into" && dpkg-scanpackages -m . > Packages && gzip -kf Packages)
 
 echo
-echo "$(ls "$into"/*.deb | wc -l) packages in $into, indexed for apt"
+echo "$(find "$into" -name '*.deb' | wc -l) packages in $into, indexed for apt"
