@@ -2,13 +2,29 @@ IMAGE   = gettoken-test
 TARGET  = deb-testing
 TAG     = $(shell sed -n 's/^DEBIAN_TAG=//p' scripts/targets/$(TARGET))
 ARCHIVE = build/packages/$(TARGET)
+BIN     = $(CURDIR)/build/bin
 
 RUN      = docker run --rm -v "$(CURDIR)":/work
 BUILDER  = $(RUN) -e GETTOKEN_TARGET=$(TARGET) $(IMAGE):$(TARGET)
 OFFICIAL = $(RUN) -w /work debian:$(TAG)
 
-.PHONY: verify setup unit build integration-test packaging-check \
-        deb-stable deb-testing lint test packages readme diagrams clean
+.PHONY: test lint check-readme contract unit \
+        verify setup test-base build integration-test packaging-check \
+        deb-stable deb-testing packages readme diagrams clean
+
+test: lint check-readme unit
+
+lint:
+	sh scripts/lint.sh "$(CURDIR)"
+
+check-readme:
+	sh scripts/readme.sh "$(CURDIR)"
+
+contract:
+	sh components/contract/build.sh "$(BIN)"
+
+unit: contract
+	PATH="$(BIN):$$PATH" bats --recursive components tools scripts
 
 verify: integration-test packaging-check
 
@@ -16,10 +32,10 @@ setup:
 	docker build -t $(IMAGE):$(TARGET) --build-arg DEBIAN_TAG=$(TAG) \
 	  -f scripts/docker/Dockerfile scripts/docker
 
-unit: setup
-	$(BUILDER) scripts/suite.sh
+test-base: setup
+	$(BUILDER) -c 'make test'
 
-build: unit
+build: test-base
 	$(BUILDER) scripts/deliver.sh $(TARGET) /work/$(ARCHIVE)
 
 integration-test: build
@@ -37,12 +53,6 @@ deb-testing:
 packages:
 	$(MAKE) build TARGET=deb-stable
 	$(MAKE) build TARGET=deb-testing
-
-lint:
-	sh scripts/lint.sh "$(CURDIR)"
-
-test:
-	sh scripts/suite.sh
 
 readme:
 	sh scripts/readme.sh "$(CURDIR)" --write
