@@ -184,7 +184,7 @@ with them.
 `make packages` builds for Debian testing. `make packages TARGET=deb-stable`
 builds for stable instead; the two say different things about themselves because
 the releases carry different debhelper, lintian and Go, and what each target is
-is written in `integration/targets/`.
+is written in `scripts/targets/`.
 
 To install onto a machine that is not the one that built them, copy
 `build/packages/` across and point apt at it there. It is a plain apt repository:
@@ -317,19 +317,21 @@ debian/
   source/format
   source/lintian-overrides
 
-integration/
-  chain.sh
+scripts/
   declared.sh
   deliver.sh
   docker/
   fixtures/
   lint.sh
   mermaid.sh
-  packages.sh
   packaging.sh
   readme.sh
   suite.sh
   targets/
+
+integration-test/
+  chain.sh
+  packages.sh
 
 exploratory/
 ```

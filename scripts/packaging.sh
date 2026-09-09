@@ -17,7 +17,7 @@ root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 # The target is named on the command line, so its file cannot be followed from
 # here. What it may set is the handful of values read just below.
 # shellcheck source=/dev/null
-. "$root/integration/targets/$name"
+. "$root/scripts/targets/$name"
 
 carried_compat=$(dpkg-query -W -f='${Version}' debhelper | sed 's/[.~].*//')
 if [ "$carried_compat" != "$DEBHELPER_COMPAT" ]; then

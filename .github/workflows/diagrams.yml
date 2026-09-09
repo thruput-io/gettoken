@@ -4,15 +4,15 @@ on:
   pull_request:
     paths:
       - README.md
-      - integration/mermaid.sh
-      - integration/fixtures/**
+      - scripts/mermaid.sh
+      - scripts/fixtures/**
       - .github/workflows/diagrams.yml
   push:
     branches: [main]
     paths:
       - README.md
-      - integration/mermaid.sh
-      - integration/fixtures/**
+      - scripts/mermaid.sh
+      - scripts/fixtures/**
       - .github/workflows/diagrams.yml
 
 jobs:

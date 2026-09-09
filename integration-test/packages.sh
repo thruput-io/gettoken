@@ -2,7 +2,7 @@
 set -eu
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
-. "$root/integration/chain.sh"
+. "$root/integration-test/chain.sh"
 
 [ "${GETTOKEN_DISPOSABLE_BASE:-}" = yes ] || {
   echo "packages.sh: this run installs and purges packages and deletes the secret"
@@ -31,20 +31,20 @@ installed() {
 
 echo "# every shell file this tree carries passes the lint gate, including the"
 echo "# maintainer scripts, which only this lane installs the packaging for"
-sh "$root/integration/lint.sh" "$root"
+sh "$root/scripts/lint.sh" "$root"
 
 
 echo
 echo "# the packages are built from the source tree, as the target says this release wants them"
 cp -a "$root" "$build/source"
 rm -rf "$build/source/.git"
-sh "$root/integration/packaging.sh" "$GETTOKEN_TARGET" "$build/source"
+sh "$root/scripts/packaging.sh" "$GETTOKEN_TARGET" "$build/source"
 (cd "$build/source" && dpkg-buildpackage -us -uc)
 ls "$build"/*.deb
 
 echo
 echo "# every built package declares the contracts its executables speak, and no others"
-sh "$root/integration/declared.sh" "$build" "$build/source"
+sh "$root/scripts/declared.sh" "$build" "$build/source"
 
 echo
 echo "# lintian passes on the source and on every package, and a warning is"

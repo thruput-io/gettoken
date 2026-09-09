@@ -46,8 +46,11 @@ entries() {
   echo 'debian/'
   find debian -mindepth 1 -maxdepth 2 -type f | sed 's|debian/||' | sort | sed 's/^/  /'
   echo
-  echo 'integration/'
-  entries integration | sed 's/^/  /'
+  echo 'scripts/'
+  entries scripts | sed 's/^/  /'
+  echo
+  echo 'integration-test/'
+  entries integration-test | sed 's/^/  /'
   echo
   echo 'exploratory/'
 } > "$listing"
