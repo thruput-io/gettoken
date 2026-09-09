@@ -3,8 +3,7 @@ set -eu
 
 # Writes the parts of README.md that the tree already knows, between the markers
 # that name them. What a directory holds is not something to keep in step by
-# hand: it is read from what the repository carries, and the gate fails when the
-# two have drifted.
+# hand: it is read off the tree, and the gate fails when the two have drifted.
 #
 # With no second argument this prints what README.md should say. With --write it
 # says it.
@@ -16,9 +15,18 @@ cd "$root"
 listing=$(mktemp)
 trap 'rm -f "$listing"' EXIT
 
+# What one directory holds, a directory told apart from a file by the slash it
+# keeps. find rather than ls, and no -printf, because this runs on macOS too.
+entries() {
+  {
+    find "$1" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sed 's|$|/|'
+    find "$1" -mindepth 1 -maxdepth 1 ! -type d -exec basename {} \;
+  } | sort
+}
+
 {
   echo 'contracts/'
-  git -c safe.directory='*' ls-files 'contracts/*.schema.json' | sed 's|contracts/|  |'
+  find contracts -maxdepth 1 -name '*.schema.json' -exec basename {} \; | sort | sed 's/^/  /'
   echo
   echo 'components/'
   for d in components/*/; do
@@ -32,14 +40,14 @@ trap 'rm -f "$listing"' EXIT
   echo 'tools/'
   for d in tools/*/; do
     echo "  $(basename "$d")/"
-    git -c safe.directory='*' ls-files "$d" | sed "s|$d||" | awk -F/ '{ print ($2 == "" ? $1 : $1 "/") }' | sort -u | sed 's/^/    /'
+    entries "$d" | sed 's/^/    /'
   done
   echo
   echo 'debian/'
-  git -c safe.directory='*' ls-files 'debian/*' | sed 's|debian/||' | sed 's/^/  /'
+  find debian -mindepth 1 -maxdepth 2 -type f | sed 's|debian/||' | sort | sed 's/^/  /'
   echo
   echo 'integration/'
-  git -c safe.directory='*' ls-files 'integration/*' | sed 's|integration/||' | awk -F/ '{ print ($2 == "" ? $1 : $1 "/") }' | sort -u | sed 's/^/  /'
+  entries integration | sed 's/^/  /'
   echo
   echo 'exploratory/'
 } > "$listing"
