@@ -14,6 +14,9 @@ name=$1
 source=$2
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
+# The target is named on the command line, so its file cannot be followed from
+# here. What it may set is the handful of values read just below.
+# shellcheck source=/dev/null
 . "$root/integration/targets/$name"
 
 carried_compat=$(dpkg-query -W -f='${Version}' debhelper | sed 's/[.~].*//')
@@ -58,6 +61,9 @@ for schema in contracts/*.schema.json; do
 
   {
     printf '\nPackage: %s\nArchitecture: all\n' "$package"
+    # ${misc:Depends} is dpkg's substitution variable, written into the control
+    # file for dpkg-gencontrol to expand. It is not this shell's to expand.
+    # shellcheck disable=SC2016
     printf 'Depends: ${misc:Depends}%b\n' "$needs_defs"
     printf 'Description: token broker for AI agents - the %s contract\n' "$contract"
     jq -r '.description' "$schema" | fold -s -w 78 | sed 's/^/ /; s/[[:space:]]*$//'
