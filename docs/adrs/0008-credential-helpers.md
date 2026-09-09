@@ -2,16 +2,15 @@
 
 ## Context
 
-Some tools take a credential from the environment. `gh` reads `GH_TOKEN`. Others
-offer only a credential helper hook.
+Some toolsoffera credential helper hook.
 
 ## Decision
 
-A package may ship a credential helper. That is the tool's own extension point,
-and using it supplies what the tool needs rather than replacing the tool.
+We encourage using get-token as a credential-helper. That is the tool's own extension point.
+Installing get-token as a credential-helper is the responsibility of this project’s users.
+We do not pre-install get-token as a credential-helper in our packages.
 
-It may not prime the tool. A credential left behind in a config file or a
-keyring is available to every later command, not only to the one that asked for
-it.
+## Motivation
 
-`gettoken` returns a token. It does not return a status message in place of one.
+We have exactly one token interface with the agent; the agent's entry point, being transparent and explicit about it is future-proof and compliant with this project's principles. 
+Pre-installation of credential-helper can be perceived as magic, hide exchanger variables, create confusion and ultimately increasing the risk of unintended misuse.
