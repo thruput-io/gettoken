@@ -1,6 +1,7 @@
-.PHONY: check deb-stable deb-testing images diagrams
+.PHONY: check deb-stable deb-testing packages images diagrams
 
 IMAGE = gettoken-test
+TARGET = deb-testing
 
 # What each target is built as lives in integration/targets/.
 STABLE_TAG  = $(shell sed -n 's/^DEBIAN_TAG=//p' integration/targets/deb-stable)
@@ -20,6 +21,10 @@ deb-stable: images
 deb-testing: images
 	docker run --rm -v "$(CURDIR)":/work -e GETTOKEN_TARGET=deb-testing $(IMAGE):deb-testing integration/suite.sh
 	docker run --rm -v "$(CURDIR)":/work -e GETTOKEN_TARGET=deb-testing $(IMAGE):deb-testing integration/packages.sh
+
+# The packages themselves, left where apt can install them from.
+packages: images
+	docker run --rm -v "$(CURDIR)":/work $(IMAGE):$(TARGET) integration/deliver.sh $(TARGET) /work/build/packages
 
 diagrams:
 	sh integration/mermaid.sh
