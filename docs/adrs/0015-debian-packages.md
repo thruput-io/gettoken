@@ -3,13 +3,20 @@
 ## Context
 
 Record 7 decided that distribution is `apt` and that a tool is integrated by
-publishing a package. It did not say what is packaged, or where the packages put
-what they carry. Until that is settled there is nothing to install, and the
+publishing a package, but it did not say what is packaged, or where the packages
+put what they carry. Until that is settled there is nothing to install, and the
 chain can only be run from a checkout.
 
 ## Decision
 
 One source package, and one binary package per component and per tool.
+
+`/usr/bin` carries the agent's entry point and nothing else, the rest goes to
+`/usr/lib/gettoken`, the contracts are installed data at
+`/usr/share/gettoken/contracts`, and the super-token store moves from `/secret`
+to `/var/lib/gettoken/secrets`.
+
+## What follows from that
 
 A component is replaceable one piece at a time, and a package is the unit that
 gets replaced. Splitting the source as well would put a release process between
@@ -20,21 +27,14 @@ Per tool means one, not two. Record 7 shows `gh-gettoken` beside `gh` because
 `gh` is upstream's package and not ours to change. A tool we ship ourselves has
 no such package to stand beside, so the tool and its exchanger go together.
 
-`/usr/bin` carries the agent's entry point and nothing else. The rest goes to
-`/usr/lib/gettoken`, which `gettoken` puts on `PATH` before it crosses into the
-privileged half. Names like `parse`, `entitlements` and `token-service` are
-not ours to claim on a public `PATH`, and an agent must not be able to shadow
-what runs on the privileged side by placing a file of its own earlier on `PATH`.
+Names like `parse`, `entitlements` and `token-service` are not ours to claim on
+a public `PATH`, and an agent must not be able to shadow what runs on the
+privileged side by placing a file of its own earlier on `PATH`. `token-service`
+reads exchangers out of `/usr/lib/gettoken/exchangers` by the first segment of
+the capability rather than searching `PATH`: what runs there is run with the
+super-token in reach.
 
-The contracts are installed data, at `/usr/share/gettoken/contracts`.
-`token-service` reads exchangers out of `/usr/lib/gettoken/exchangers` by the
-first segment of the capability, which is the directory record 7 named. It no
-longer searches `PATH` for them: what runs there is run with the super-token in
-reach, so where it comes from is fixed by the filesystem rather than by whatever
-`PATH` happened to hold.
-
-The super-token store moves from `/secret` to `/var/lib/gettoken/secrets`. A
-package may not own a directory at the root of the filesystem, and a store is
+A package may not own a directory at the root of the filesystem, and a store is
 state, which is what `/var/lib` is for. Purging the package that owns it takes
 the store with it, because a super-token left behind on a machine that no longer
 runs any of this is the failure the whole design exists to avoid.

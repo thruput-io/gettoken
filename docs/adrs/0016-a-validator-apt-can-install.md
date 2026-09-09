@@ -2,25 +2,25 @@
 
 ## Context
 
-Record 13 chose `sourcemeta/jsonschema`. Record 15 packaged the components, and
+Record 13 chose `sourcemeta/jsonschema`, record 15 packaged the components, and
 a package says what it needs. That validator is not in the Debian archive, so
-`gettoken-contract` could not name it: the thing every document on every hop is
-checked against would have had to arrive by some other route, on every machine,
-forever, with nothing to notice when it had not.
-
-A dependency a package cannot declare is a dependency nobody is holding.
+`gettoken-contract` could not name it, and the thing every document on every hop
+is checked against would have had to arrive by some other route, on every
+machine, forever, with nothing to notice when it had not. A dependency a package
+cannot declare is a dependency nobody is holding.
 
 ## Decision
 
 The validator is `json-schema-eval`, from `libjson-schema-modern-perl`.
 
-It is in Debian stable and in testing, so both bases can install it and
-`gettoken-contract` can depend on it. It implements 2020-12, which is the dialect
-our contracts declare. It reads the document from standard input, so a request or
-a stored secret is never written to a file to be checked. It answers "this
-document is invalid" and "I could not read this" with different exit statuses. It
-reaches the network for nothing: a reference it has not been given is an error,
-not a fetch.
+It is in Debian stable and in testing so both bases can install it and
+`gettoken-contract` can depend on it, it implements the 2020-12 dialect our
+contracts declare, it reads the document from standard input so a request or a
+stored secret is never written to a file to be checked, it answers "this
+document is invalid" and "I could not read this" with different exit statuses,
+and it reaches the network for nothing.
+
+## What else apt offers
 
 The comparison behind this choice is in `exploratory/validators/`, rewritten
 around installability and re-run on both bases. Of the candidates `apt` offers,
