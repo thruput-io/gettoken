@@ -102,7 +102,9 @@ Description: token broker for AI agents - tool that verifies the chain
  The tool the verification suite integrates, standing in for a real one so the
  chain can be exercised without reaching a service. It runs on the token that
  integrationtest/ci/run downgrades to and refuses the super-token that token
- was traded for, so a run that succeeds is proof that a downgrade happened.
+ was traded for, so a run that succeeds is proof that a downgrade happened. It
+ writes back what the narrow token carries, so what the store was given can be
+ followed all the way to the tool.
  .
  It is also the worked example of an integration: it depends on gettoken and
  carries one exchanger, which knows one service and nothing about any other.

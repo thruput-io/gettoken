@@ -18,12 +18,12 @@ fields=$(printf '%s' "$asked" | secret-get --with-key | parse secret-get-respons
 value=''
 eval "$fields"
 
-if [ "$value" != integrationtest-supertoken ]; then
-  echo "integrationtest: the stored super-token is not one this exchanger can trade" >&2
-  exit 1
-fi
+case "$value" in
+  super-?*) ;;
+  *) echo "integrationtest: the stored super-token is not one this exchanger can trade" >&2; exit 1 ;;
+esac
 
-access_token=integrationtest-ci-run-allowed
+access_token="${value#super-}-ci-run-allowed"
 expires_in=120
 export access_token expires_in
 
