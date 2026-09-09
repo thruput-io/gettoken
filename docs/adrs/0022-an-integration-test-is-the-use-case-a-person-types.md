@@ -39,18 +39,26 @@ This reduces what the verification asserts, which
 [CONTRIBUTING.md](../../CONTRIBUTING.md) permits only through a record written
 for that purpose. This is that record.
 
-Most of what went is not lost, it is placed where it belongs:
+Most of what went is not lost, and most of it moves left rather than sideways.
+A safeguard belongs on the leftmost rung that can catch it, and an installed
+system is the rightmost rung there is:
 
 | What | Where it goes |
 |---|---|
-| the lint gate, the unit runner | `scripts/`, run by `make lint` and `make test` |
-| the tool refuses the super-token | the tool's own tests |
+| the lint gate, the unit runner | `scripts/`, behind `make lint` and `make test` |
+| every shell file passes the lint gate | the lint gate already; the packaged run asserted it twice |
+| a package declares exactly the contracts it speaks | a test of the generator that writes the declaration |
+| `/usr/bin` carries the entry point and the tool alone | a test reading what the packaging installs |
+| installing one package draws in the chain and nothing else | a test of what the generator declares; that apt honours it is apt's |
 | `gettoken --list`; a capability nothing serves is refused | the components' own tests |
-| lintian on the source and every package | the packaging check |
-| a package declares exactly the contracts it speaks | the packaging check |
-| `/usr/bin` carries the entry point and the tool alone | the packaging check |
-| installing one package draws in the chain and nothing else | the packaging check |
-| purging takes the packages and the store with them | the packaging check |
+| the tool refuses the super-token | the tool's own tests |
+| the store's path and its mode | the store's own tests |
+| lintian on the source and on every package | stays with the build, because it reads built packages |
+| a purge meeting something it does not own says so, and still succeeds | stays on a disposable machine, because it removes real paths |
+
+None of the first eight needs a package installed to be true. Asserting them
+against twenty-one installed packages was proving a fact about the tree by
+building the tree, which is the slowest and least certain way to learn it.
 
 One check leaves the tree rather than moving. A program the agent places
 earlier on `PATH` cannot stand in for one the privileged half runs: asserting it
