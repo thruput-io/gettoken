@@ -35,3 +35,8 @@ running() {
   run -1 --separate-stderr running -ci-run-allowed
   [ "$output" = "" ]
 }
+
+@test "a token that is nearly the right one is refused, because it is not it" {
+  run -1 --separate-stderr running 4f2a9c-ci-run-allowed-too
+  [ "$output" = "" ]
+}

@@ -6,7 +6,7 @@ RUN = docker run --rm -v "$(CURDIR)":/work
 STABLE_TAG  = $(shell sed -n 's/^DEBIAN_TAG=//p' scripts/targets/deb-stable)
 TESTING_TAG = $(shell sed -n 's/^DEBIAN_TAG=//p' scripts/targets/deb-testing)
 
-.PHONY: lint test images packages $(BASES) readme diagrams
+.PHONY: lint test images packages $(BASES) readme diagrams clean
 
 lint:
 	sh scripts/lint.sh "$(CURDIR)"
@@ -39,3 +39,6 @@ readme:
 
 diagrams:
 	sh scripts/mermaid.sh
+
+clean:
+	$(RUN) -w /work debian:$(STABLE_TAG) rm -rf /work/build
