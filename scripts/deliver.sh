@@ -19,6 +19,9 @@ sh "$root/scripts/packaging.sh" "$name" "$build/source"
 
 (cd "$build/source" && dpkg-buildpackage -us -uc)
 
+lintian --fail-on error,warning,info,pedantic,experimental --display-level '>=pedantic' "$build"/*.changes
+echo "ok: lintian passes on the source and on every package, down to pedantic"
+
 mkdir -p "$into"
 rm -f "$into"/*.deb "$into"/Packages "$into"/Packages.gz
 cp "$build"/*.deb "$into"

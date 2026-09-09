@@ -48,7 +48,7 @@ system is the rightmost rung there is:
 | the lint gate, the unit runner | `scripts/`, behind `make lint` and `make test` |
 | every shell file passes the lint gate | the lint gate already; the packaged run asserted it twice |
 | `/usr/bin` carries the entry point and the tool alone | a test reading what the packaging installs |
-| installing one package draws in the chain and nothing else | a test of what the generator declares; that apt honours it is apt's |
+| installing one package draws in the chain and nothing else | the packaging check, because only an install shows what apt resolved |
 | `gettoken --list`; a capability nothing serves is refused | the components' own tests |
 | the tool refuses the super-token | the tool's own tests |
 | the store's path and its mode | the store's own tests |
@@ -65,7 +65,7 @@ the check is the other direction — a component that depends on a contract it
 never speaks, and so may be told more than it needs, is no longer caught. That
 is the cost, and record 21 is the reasoning it weakens.
 
-None of the remaining seven needs a package installed to be true. Asserting them
+None of the remaining six needs a package installed to be true. Asserting them
 against twenty-one installed packages was proving a fact about the tree by
 building the tree, which is the slowest and least certain way to learn it.
 
