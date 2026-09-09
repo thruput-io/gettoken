@@ -157,30 +157,57 @@ reach.
 
 ## Install it
 
-Distribution is `apt`. The components and the tools are one binary package each,
-built from this tree:
+Distribution is `apt`, and the packages are built from this tree rather than kept
+in it. Building them leaves an apt repository behind, so installing is what it
+would be from any other archive:
 
-| Package | Carries |
-|---------|---------|
-| `gettoken` | `/usr/bin/gettoken`, and `token-requester` behind it |
-| `gettoken-token-service` | the dispatch onto an exchanger |
-| `gettoken-entitlements` | what an agent may equip |
-| `gettoken-secret-manager` | the store, at `/var/lib/gettoken/secrets` |
-| `gettoken-parse` | reads a document through its contract |
-| `gettoken-format` | writes a document through its contract |
-| `gettoken-contract-*` | one contract each, and `-defs` for the shapes they are built from |
-| `integration-test-tool` | the worked example of an integration, and its exchanger |
+```sh
+make packages
+```
+
+That writes `build/packages/`, holding every `.deb` and a `Packages` index. Point
+apt at it and ask for the one tool:
+
+```sh
+echo "deb [trusted=yes] file:/path/to/build/packages ./" | sudo tee /etc/apt/sources.list.d/gettoken.list
+sudo apt-get update
+sudo apt-get install integration-test-tool
+```
+
+Asking for that one package installs twenty-two: the tool, `gettoken`, the
+privileged half behind it, the store, the dispatcher, the two programs that carry
+a document through a contract, and one package per contract. Nothing else is
+named, and nothing else arrives. Purging it takes them all with it, and the store
+with them.
+
+`make packages` builds for Debian testing. `make packages TARGET=deb-stable`
+builds for stable instead; the two say different things about themselves because
+the releases carry different debhelper, lintian and Go, and what each target is
+is written in `integration/targets/`.
+
+To install onto a machine that is not the one that built them, copy
+`build/packages/` across and point apt at it there. It is a plain apt repository:
+nothing in it depends on having been built locally.
+
+### What arrives, and why that is the interesting part
 
 A contract is an interface, so it is a package, and a component depends on the
-contracts it speaks. That dependency is the statement of what may reach what:
-`gettoken-secret-manager` depends on the five documents the store reads and
-writes and on nothing else, and an exchanger that has no business seeing a
-signature does not depend on the contract carrying one. Asking `apt` what a
-package depends on is asking what it is allowed to say and be told.
+contracts it speaks. That dependency is the statement of what may reach what, and
+`apt` answers it:
 
-`parse` and `format` are separate packages, and neither carries a contract.
-They are the two directions a document is carried through one, and a component
-that only ever reads is not made to install the program that writes.
+```sh
+apt-cache depends gettoken-secret-manager | grep contract
+```
+
+The store depends on the five documents it reads and writes and on nothing else.
+`gettoken`, which is what an agent invokes, depends on the two asks it builds and
+on neither the token nor the entitlements contracts, because those belong to the
+privileged half it hands the ask to. An exchanger that has no business seeing a
+signature does not depend on the contract carrying one.
+
+`parse` and `format` are separate packages carrying no contract of their own, so a
+component that only ever reads a document does not install the program that writes
+one — `gettoken` depends on `gettoken-format` alone.
 
 `/usr/bin` carries the agent's entry point and nothing else. Everything on the
 privileged side lives in `/usr/lib/gettoken`, which `gettoken` puts on `PATH`
@@ -189,11 +216,9 @@ before it crosses over; a human working on that side puts it on their own.
 Integrating a tool means publishing a package that depends on `gettoken` and
 installs one exchanger into `/usr/lib/gettoken/exchangers`. Where the tool is one
 someone else already packages, that is a second package alongside theirs, because
-theirs is not ours to change — `gh-gettoken` next to `gh`. Where the tool is ours,
-as `integration-test-tool` is, it is the one package.
-
-Installing it is the whole installation: the components arrive because it says it
-needs them, and purging it takes them with it.
+theirs is not ours to change — `gh-gettoken` next to `gh`. `integration-test-tool`
+stands in for that: the tool and the exchanger beside it are two packages, because
+the tool is not ours to speak for and the exchanger is.
 
 ## Vision
 
