@@ -1,38 +1,48 @@
-IMAGE = gettoken-test
-BASES = deb-stable deb-testing
+IMAGE   = gettoken-test
+TARGET  = deb-testing
+TAG     = $(shell sed -n 's/^DEBIAN_TAG=//p' scripts/targets/$(TARGET))
+ARCHIVE = build/packages/$(TARGET)
 
-RUN = docker run --rm -v "$(CURDIR)":/work
+RUN      = docker run --rm -v "$(CURDIR)":/work
+BUILDER  = $(RUN) -e GETTOKEN_TARGET=$(TARGET) $(IMAGE):$(TARGET)
+OFFICIAL = $(RUN) -w /work debian:$(TAG)
 
-STABLE_TAG  = $(shell sed -n 's/^DEBIAN_TAG=//p' scripts/targets/deb-stable)
-TESTING_TAG = $(shell sed -n 's/^DEBIAN_TAG=//p' scripts/targets/deb-testing)
+.PHONY: verify setup unit build integration-test packaging-check \
+        deb-stable deb-testing lint test packages readme diagrams clean
 
-.PHONY: lint test images packages $(BASES) readme diagrams clean
+verify: integration-test packaging-check
+
+setup:
+	docker build -t $(IMAGE):$(TARGET) --build-arg DEBIAN_TAG=$(TAG) \
+	  -f scripts/docker/Dockerfile scripts/docker
+
+unit: setup
+	$(BUILDER) scripts/suite.sh
+
+build: unit
+	$(BUILDER) scripts/deliver.sh $(TARGET) /work/$(ARCHIVE)
+
+integration-test: build
+	$(OFFICIAL) sh integration-test/test.sh /work/$(ARCHIVE)
+
+packaging-check: build
+	$(OFFICIAL) sh scripts/packaging-check.sh /work/$(ARCHIVE)
+
+deb-stable:
+	$(MAKE) verify TARGET=deb-stable
+
+deb-testing:
+	$(MAKE) verify TARGET=deb-testing
+
+packages:
+	$(MAKE) build TARGET=deb-stable
+	$(MAKE) build TARGET=deb-testing
 
 lint:
 	sh scripts/lint.sh "$(CURDIR)"
 
 test:
 	sh scripts/suite.sh
-
-images:
-	docker build -t $(IMAGE):deb-stable  --build-arg DEBIAN_TAG=$(STABLE_TAG)  -f scripts/docker/Dockerfile scripts/docker
-	docker build -t $(IMAGE):deb-testing --build-arg DEBIAN_TAG=$(TESTING_TAG) -f scripts/docker/Dockerfile scripts/docker
-
-packages: images
-	$(RUN) $(IMAGE):deb-stable  scripts/deliver.sh deb-stable  /work/build/packages/deb-stable
-	$(RUN) $(IMAGE):deb-testing scripts/deliver.sh deb-testing /work/build/packages/deb-testing
-
-deb-stable: images
-	$(RUN) -e GETTOKEN_TARGET=deb-stable $(IMAGE):deb-stable scripts/suite.sh
-	$(RUN) $(IMAGE):deb-stable scripts/deliver.sh deb-stable /work/build/packages/deb-stable
-	$(RUN) -w /work debian:$(STABLE_TAG) sh integration-test/test.sh /work/build/packages/deb-stable
-	$(RUN) -w /work debian:$(STABLE_TAG) sh scripts/packaging-check.sh /work/build/packages/deb-stable
-
-deb-testing: images
-	$(RUN) -e GETTOKEN_TARGET=deb-testing $(IMAGE):deb-testing scripts/suite.sh
-	$(RUN) $(IMAGE):deb-testing scripts/deliver.sh deb-testing /work/build/packages/deb-testing
-	$(RUN) -w /work debian:$(TESTING_TAG) sh integration-test/test.sh /work/build/packages/deb-testing
-	$(RUN) -w /work debian:$(TESTING_TAG) sh scripts/packaging-check.sh /work/build/packages/deb-testing
 
 readme:
 	sh scripts/readme.sh "$(CURDIR)" --write
@@ -41,4 +51,4 @@ diagrams:
 	sh scripts/mermaid.sh
 
 clean:
-	$(RUN) -w /work debian:$(STABLE_TAG) rm -rf /work/build
+	$(RUN) -w /work debian:$(TAG) rm -rf /work/build
