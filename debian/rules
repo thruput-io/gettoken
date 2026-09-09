@@ -3,6 +3,12 @@
 %:
 	dh $@
 
+# What the archive expects of anything it ships: position-independent, and
+# built without the build directory baked into it. dh_auto_build would have
+# arranged this had the build gone through it.
+GOFLAGS = -trimpath -buildmode=pie -ldflags=-linkmode=external
+export GOFLAGS
+
 override_dh_auto_build:
 	sh components/contract/build.sh build/bin
 
