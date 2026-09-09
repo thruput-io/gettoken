@@ -328,6 +328,7 @@ scripts/
   readme.sh
   suite.sh
   targets/
+  test/
 
 integration-test/
   chain.sh

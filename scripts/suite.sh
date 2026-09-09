@@ -12,5 +12,5 @@ sh "$root/components/contract/build.sh" "$bin"
 PATH="$bin:$PATH"
 export PATH
 
-bats --recursive "$root/components" "$root/tools"
+bats --recursive "$root/components" "$root/tools" "$root/scripts"
 sh "$root/tools/integration-test-tool/test/exit-status.sh"
