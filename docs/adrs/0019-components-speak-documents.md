@@ -3,30 +3,30 @@
 ## Context
 
 Record 13 put a contract on the wire and record 17 made the validator ours, but
-neither said what a component is or how one reaches another. The tree had drifted
-into three answers at once. `gettoken` handed `token-requester` a capability as an
-argument. `token-service` handed an exchanger a capability as an argument and got
-two bare lines back. `secret-get` and `secret-put` took a document as an argument
-and a secret on standard input. Four of the boundaries had contracts and three did
-not, and the three without were the ones where something crossed from outside.
-
-A boundary with no document has nothing to hold a contract to, so the guarantee
-stops there and starts again on the far side.
+neither said what a component is or how one reaches another. The tree had
+drifted into three answers at once: `gettoken` handed `token-requester` a
+capability as an argument, `token-service` handed an exchanger a capability as
+an argument and got two bare lines back, and `secret-get` and `secret-put` took
+a document as an argument and a secret on standard input. A boundary with no
+document has nothing to hold a contract to, so the guarantee stops there and
+starts again on the far side.
 
 ## Decision
 
 A component reads one document from standard input and writes one document to
-standard output. It takes no arguments.
-
-`gettoken` is the exception, and the only one: it is where the agent types, so it
-takes what the agent typed. It turns that into a document and hands it on.
+standard output, and takes no arguments; `gettoken` is the only exception,
+because it is where the agent types.
 
 Every boundary has a contract in `contracts/`, and every contract is
-`additionalProperties: false`, so what may cross a boundary is stated rather than
-conventional. Each hop carries strictly less than the one before it: an agent says
-what it wants, the privileged half adds who is asking and what only it can vouch
-for, and an exchanger is told who and what for and nothing else. A signature is
-addressed to the component it is sent to and travels no further.
+`additionalProperties: false`, so what may cross a boundary is stated rather
+than conventional.
+
+## Each hop carries less than the one before it
+
+An agent says what it wants, the privileged half adds who is asking and what
+only it can vouch for, and an exchanger is told who and what for and nothing
+else. A signature is addressed to the component it is sent to and travels no
+further.
 
 ## Values reach format through the environment
 

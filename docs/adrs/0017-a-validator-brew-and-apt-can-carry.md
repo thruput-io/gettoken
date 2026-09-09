@@ -2,40 +2,34 @@
 
 ## Context
 
-Record 13 chose `sourcemeta/jsonschema`, which no `apt` carries. Record 15
-packaged the components, and a package says what it needs, so record 16 replaced
-it with `json-schema-eval` from `libjson-schema-modern-perl`, which no `brew`
-carries. Each record held one half of the same requirement and dropped the other,
-and the second choice cost macOS a Homebrew Perl, forty CPAN distributions and a
-dependency upstream does not count as required.
-
-A validator has to meet two conditions and no others: it reads JSON Schema, and
-both `brew` and `apt` can distribute it.
-
-Nothing meets both. The conditions are narrower than they sound, so they are
-worth stating in full: a command-line program, reading the 2020-12 dialect the
-contracts declare, in homebrew-core and in Debian stable.
-
-`check-jsonschema` is the only formula in homebrew-core that meets the first two,
-and Debian carries it in testing alone. `valijson` is also in homebrew-core and in
-Debian as `libvalijson-dev`, so it clears the distribution condition both ways,
-but it is a C++ library with no command-line program and it reads draft 7, so a
-component could not run it and the contracts would have to be rewritten to a
-dialect they do not declare. `jsonschema-jv`, `php-json-schema`,
-`python3-jsonschema` and `libjson-schema-modern-perl` are in both Debian bases and
-in no formula. `sourcemeta/jsonschema` is a tap and is AGPL, which is its own
-question.
+Record 13 chose a validator no `apt` carries, and record 16 replaced it with one
+no `brew` carries, each holding one half of the same requirement and dropping
+the other. A validator has to meet two conditions and no others: it reads the
+2020-12 dialect the contracts declare, and both `brew` and `apt` can distribute
+it. Nothing meets both.
 
 ## Decision
 
-The validator is ours, built from source on both sides.
+The validator is ours, built from source on both sides: `components/contract`,
+a Go program against `github.com/google/jsonschema-go`, which is MIT, requires
+nothing else at runtime, and is vendored so the build reaches the network on no
+base.
 
-`components/contract` is a Go program against `github.com/google/jsonschema-go`,
-which is MIT and requires nothing else at runtime. The dependency is vendored, so
-the build reaches the network on no base. `brew` and `debian/rules` both build it
-from that source. Both conditions are met by construction rather than granted
-by an archive, and what a distribution happens to carry stops being a constraint
-on this repository.
+Both conditions are met by construction rather than granted by an archive, and
+what a distribution happens to carry stops being a constraint on this
+repository.
+
+## What the archives offer
+
+`check-jsonschema` is the only formula in homebrew-core that reads 2020-12 from
+a command line, and Debian carries it in testing alone. `valijson` is in
+homebrew-core and in Debian as `libvalijson-dev`, so it clears the distribution
+condition both ways, but it is a C++ library with no command-line program and it
+reads draft 7. `jsonschema-jv`, `php-json-schema`, `python3-jsonschema` and
+`libjson-schema-modern-perl` are in both Debian bases and in no formula.
+`sourcemeta/jsonschema` is a tap and is AGPL, which is its own question.
+
+## How it is built
 
 `gofmt`, `go vet` and `go test` come with the toolchain, and
 `components/contract/build.sh` runs all three before it links anything. The
