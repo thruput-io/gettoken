@@ -18,8 +18,9 @@ INTEGRATIONTEST_TOKEN=$(gettoken integrationtest/ci/run)
 export INTEGRATIONTEST_TOKEN
 ran_on=$(integration-test-tool)
 
-if [ "$ran_on" != "$carried" ]; then
-  echo "the tool ran on $ran_on, which is not what the super-token carried" >&2
-  exit 1
+if [ "$ran_on" = "$carried" ]; then
+  echo "ok: $carried went in as a super-token and came back out of the tool"
+  exit 0
 fi
-echo "ok: $carried went in as a super-token and came back out of the tool"
+echo "the tool ran on $ran_on, which is not what the super-token carried" >&2
+exit 1
