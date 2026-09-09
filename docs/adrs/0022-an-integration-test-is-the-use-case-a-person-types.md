@@ -2,46 +2,28 @@
 
 ## Context
 
-Record 20 put the chain on installed packages and left `integration/packages.sh`
-as the one run spanning components. It grew to assert the packaging, lintian, how
-`apt` resolves what a package declares, which names reach `/usr/bin`, the chain,
-and what a purge leaves behind — one file, one order, the chain in the middle. A
-run whose coverage cannot be read off it is a run nobody can say executed.
-
-It ran in the base that built the packages, which carries `build-essential`,
-`debhelper`, `lintian` and a Go toolchain. What it showed about what `apt` drew
-in, it showed on a machine already holding most of it.
-
-And `integration/` held the lint gate and every unit test beside it, in a file
-called `suite.sh`. A directory named for one kind of test held mostly another.
+`integration/packages.sh` was one run asserting the packaging, lintian, how apt
+resolves what a package declares, which names reach `/usr/bin`, the chain, and
+what a purge leaves behind, and what it covered could not be read off it. It ran
+in the base that built the packages, which carries `build-essential`,
+`debhelper`, `lintian` and a Go toolchain, so what it showed about what apt drew
+in it showed on a machine already holding most of it. `integration/` held the
+lint gate and every unit test beside it, in a file called `suite.sh`.
 
 ## Decision
 
-An integration test is a use-case, and a use-case is what a person types. There
-are three, and they are the three [README.md](../../README.md) already gives:
-
-```sh
-apt-get install -y --no-install-recommends integration-test-tool
-INTEGRATIONTEST_TOKEN=$(gettoken integrationtest/ci/run); export INTEGRATIONTEST_TOKEN
-integration-test-tool
-```
-
-Install the one package. Ask for the capability. Run the tool on what comes
-back. It runs on an official image pulled as published, with nothing installed
-onto it beforehand, because a base that already carries the chain cannot show
-that installing one package brought it.
-
-`integration-test/` holds this and nothing else.
+An integration test is a use-case, a use-case is what a person types, and there
+are three: install the one tool package, ask for the capability, and run the
+tool on what comes back, on an official image with nothing installed onto it
+first. `integration-test/` holds that and nothing else.
 
 ## What this costs
 
 This reduces what the verification asserts, which
 [CONTRIBUTING.md](../../CONTRIBUTING.md) permits only through a record written
-for that purpose. This is that record.
-
-Most of what went is not lost, and most of it moves left rather than sideways.
-A safeguard belongs on the leftmost rung that can catch it, and an installed
-system is the rightmost rung there is:
+for that purpose. This is that record. Most of what goes moves left rather than
+sideways, because a safeguard belongs on the leftmost rung that can catch it and
+an installed system is the rightmost there is:
 
 | What | Where it goes |
 |---|---|
@@ -54,31 +36,18 @@ system is the rightmost rung there is:
 | lintian on the source and on every package | stays with the build, because it reads built packages |
 | a purge meeting something it does not own says so, and still succeeds | stays on a disposable machine, because it removes real paths |
 
-Two checks are dropped rather than moved.
-
-What a package declares it draws in was asserted by installing it and comparing
-what was there before against what was there after. What may reach what is
-settled in the packaging before anything is installed, so an install is the last
-place to learn it, and the only place where the check can pass by failing
-quietly. It is dropped rather than asserted at the wrong rung.
-
-Reading back off a built package that it declares exactly the contracts its
-executables speak asserts that the generator and dpkg did what they say, not
-that the declaration is right. A component that declares too little already
-fails: apt refuses to resolve a dependency that is not there, and a chain
-missing a document it speaks stops when it speaks it, both of which the use-case
-above walks into. What goes with both checks is the other direction — a
-component that depends on a contract it never speaks, and so may be told more
-than it needs, is no longer caught. That is the cost, and record 21 is the
+Two checks are dropped. What a package draws in was asserted by installing it
+and diffing what was there before against after, which is the last place to
+learn a fact the packaging settles first and the only place the check can pass
+by failing quietly. Reading back off a built package that it declares exactly
+the contracts its executables speak asserts that the generator and dpkg did what
+they say, not that the declaration is right. Declaring too little still fails on
+its own, because apt will not resolve a dependency that is not there; declaring
+too much is now caught by nothing, which is the cost, and record 21 is the
 reasoning it weakens.
 
-None of the remaining five needs a package installed to be true. Asserting them
-against twenty-one installed packages was proving a fact about the tree by
-building the tree, which is the slowest and least certain way to learn it.
-
-One check leaves the tree rather than moving. A program the agent places earlier
-on `PATH` cannot stand in for one the privileged half runs: asserting it needs
-`/usr/lib/gettoken` to exist, and while both halves run as one account what it
-shows is that `gettoken` orders `PATH` carefully, not that a boundary held. It
-waits on the boundary itself being decided, and is worth reinstating with that
-change rather than before it.
+One check leaves the tree rather than moving. Asserting that a program the agent
+places earlier on `PATH` cannot stand in for one the privileged half runs needs
+`/usr/lib/gettoken` to exist, and while both halves run as one account it shows
+that `gettoken` orders `PATH` carefully rather than that a boundary held. It
+waits on the boundary itself being decided.
