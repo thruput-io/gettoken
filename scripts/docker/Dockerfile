@@ -1,8 +1,11 @@
 ARG DEBIAN_TAG=testing-slim
 FROM debian:${DEBIAN_TAG}
 
-# Everything both runs need: the suite reads the tree and runs the unit tests,
-# the packages run builds the packages and has lintian read them.
+# The builder: what it takes to lint the tree, run the unit tests, compile the
+# contract component and build the packages. Nothing is verified against an
+# installation here, because a base already holding a Go toolchain, debhelper and
+# lintian cannot show what installing a package brought. That runs on the official
+# image instead, which is a base nobody built.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       git jq bats shellcheck \
