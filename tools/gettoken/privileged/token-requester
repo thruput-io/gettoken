@@ -1,5 +1,5 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+set -euo pipefail
 
 if [ "${1:-}" = "--list" ]; then
   parse agent-list-request.schema.json > /dev/null

@@ -1,5 +1,5 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+set -euo pipefail
 
 root=$(CDPATH='' cd "$(dirname "$0")/../.." && pwd)
 contracts="$root/contracts"

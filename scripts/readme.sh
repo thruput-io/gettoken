@@ -1,12 +1,6 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+set -euo pipefail
 
-# Writes the parts of README.md that the tree already knows, between the markers
-# that name them. What a directory holds is not something to keep in step by
-# hand: it is read off the tree, and the gate fails when the two have drifted.
-#
-# With no second argument this prints what README.md should say. With --write it
-# says it.
 root=$1
 mode=${2:-}
 
@@ -15,8 +9,6 @@ cd "$root"
 listing=$(mktemp)
 trap 'rm -f "$listing"' EXIT
 
-# What one directory holds, a directory told apart from a file by the slash it
-# keeps. find rather than ls, and no -printf, because this runs on macOS too.
 entries() {
   {
     find "$1" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sed 's|$|/|'

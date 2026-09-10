@@ -1,10 +1,6 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+set -euo pipefail
 
-# Every shell file this tree carries, checked by the one gate. A file that is
-# sourced rather than run carries no shebang, so it says which shell it is
-# written for with a directive instead. Both are read from the first line only:
-# a shebang inside a heredoc is a file being written, not the file being read.
 root=$1
 
 candidates=$(mktemp)
@@ -16,10 +12,15 @@ if ! find "$root" -type f -not -path '*/.git/*' -not -path "$root/build/*" > "$c
   exit 1
 fi
 
-while IFS= read -r file; do
-  case $(head -n 1 "$file") in
-    '#!/bin/sh'|'# shellcheck shell=sh') printf '%s\n' "$file" ;;
+declares_bash_on_its_first_line() {
+  case $(head -n 1 "$1") in
+    '#!/bin/bash'|'# shellcheck shell=bash') return 0 ;;
   esac
+  return 1
+}
+
+while IFS= read -r file; do
+  if declares_bash_on_its_first_line "$file"; then printf '%s\n' "$file"; fi
 done < "$candidates" > "$selected"
 
 if [ ! -s "$selected" ]; then
@@ -27,4 +28,4 @@ if [ ! -s "$selected" ]; then
   exit 1
 fi
 
-xargs shellcheck -s sh -x < "$selected"
+xargs shellcheck -s bash -x < "$selected"

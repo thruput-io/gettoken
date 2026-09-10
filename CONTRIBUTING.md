@@ -50,6 +50,11 @@ brew install jq bats-core shellcheck go
 directory it puts on `PATH`. To run one `bats` file on its own, build them first
 and put them on `PATH` yourself.
 
+The gate reads every file's first line: a script says which shell it is written
+for with a shebang, and a file that is sourced rather than run says it with a
+`shellcheck` directive instead. It also reads what the tree holds off the tree
+and fails when `README.md` has drifted from it; `make readme` writes it back.
+
 Nothing is skipped when a tool is missing. A test that cannot run fails.
 
 ## What a green run means
@@ -60,6 +65,11 @@ installed, the super-token goes into the store, `gettoken` is asked for the
 capability, and `integration-test-tool` runs on what comes back. The same tool
 refuses the super-token, asserted by the tool's own tests, so a run that
 succeeds is a downgrade that happened. This is the invariant: keep it green.
+
+The builder base verifies nothing against an installation, because a base already
+holding a Go toolchain, debhelper and lintian cannot show what installing a
+package brought. That is why the official image, which nobody built, is where the
+use-case runs.
 
 Beside it, `scripts/packaging-check.sh` installs that one package on the same
 untouched image and asserts what `apt` drew in, that nothing else came, and that

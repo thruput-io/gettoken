@@ -21,8 +21,6 @@ import (
 	"github.com/thruput-io/gettoken/components/contract"
 )
 
-// written takes a value as the JSON it already is, or as the string it can only
-// be if it is not JSON.
 func written(value string) any {
 	var already any
 	if err := json.Unmarshal([]byte(value), &already); err != nil {
