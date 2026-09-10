@@ -10,4 +10,3 @@ RUN apt-get update \
 ENV GETTOKEN_DISPOSABLE_BASE=yes
 
 WORKDIR /work
-ENTRYPOINT ["sh"]

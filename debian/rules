@@ -7,7 +7,7 @@ GOFLAGS = -trimpath -buildmode=pie -ldflags=-linkmode=external
 export GOFLAGS
 
 override_dh_auto_build:
-	sh components/contract/build.sh build/bin
+	./components/contract/build.sh build/bin
 
 override_dh_auto_clean:
 	rm -rf build

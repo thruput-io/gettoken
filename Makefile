@@ -5,7 +5,7 @@ ARCHIVE = build/packages/$(TARGET)
 BIN     = $(CURDIR)/build/bin
 
 RUN      = docker run --rm -v "$(CURDIR)":/work
-BUILDER  = $(RUN) -e GETTOKEN_TARGET=$(TARGET) $(IMAGE):$(TARGET)
+BUILDER  = $(RUN) -w /work -e GETTOKEN_TARGET=$(TARGET) $(IMAGE):$(TARGET)
 OFFICIAL = $(RUN) -w /work debian:$(TAG)
 
 .PHONY: test lint check-readme contract unit \
@@ -15,13 +15,13 @@ OFFICIAL = $(RUN) -w /work debian:$(TAG)
 test: lint check-readme unit
 
 lint:
-	sh scripts/lint.sh "$(CURDIR)"
+	./scripts/lint.sh "$(CURDIR)"
 
 check-readme:
-	sh scripts/readme.sh "$(CURDIR)"
+	./scripts/readme.sh "$(CURDIR)"
 
 contract:
-	sh components/contract/build.sh "$(BIN)"
+	./components/contract/build.sh "$(BIN)"
 
 unit: contract
 	PATH="$(BIN):$$PATH" bats --recursive components tools scripts
@@ -33,16 +33,16 @@ setup:
 	  -f scripts/docker/Dockerfile scripts/docker
 
 test-base: setup
-	$(BUILDER) -c 'make test'
+	$(BUILDER) make test
 
 build: test-base
-	$(BUILDER) scripts/deliver.sh $(TARGET) /work/$(ARCHIVE)
+	$(BUILDER) ./scripts/deliver.sh $(TARGET) /work/$(ARCHIVE)
 
 integration-test: build
-	$(OFFICIAL) sh integration-test/test.sh /work/$(ARCHIVE)
+	$(OFFICIAL) ./integration-test/test.sh /work/$(ARCHIVE)
 
 packaging-check: build
-	$(OFFICIAL) sh scripts/packaging-check.sh /work/$(ARCHIVE)
+	$(OFFICIAL) ./scripts/packaging-check.sh /work/$(ARCHIVE)
 
 deb-stable:
 	$(MAKE) verify TARGET=deb-stable
@@ -55,10 +55,10 @@ packages:
 	$(MAKE) build TARGET=deb-testing
 
 readme:
-	sh scripts/readme.sh "$(CURDIR)" --write
+	./scripts/readme.sh "$(CURDIR)" --write
 
 diagrams:
-	sh scripts/mermaid.sh
+	./scripts/mermaid.sh
 
 clean:
 	$(RUN) -w /work debian:$(TAG) rm -rf /work/build
