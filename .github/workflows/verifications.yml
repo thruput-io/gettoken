@@ -21,5 +21,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - if: matrix.brew
-        run: brew install jq bats-core sourcemeta/apps/jsonschema
+        run: brew install jq bats-core
+      - if: matrix.brew
+        env:
+          SOURCEMETA_VERSION: 16.9.0
+        run: |
+          set -euo pipefail
+
+          curl -fsSL -o "$RUNNER_TEMP/sm.zip" \
+            "https://github.com/sourcemeta/jsonschema/releases/download/v${SOURCEMETA_VERSION}/jsonschema-${SOURCEMETA_VERSION}-darwin-$(uname -m).zip"
+          unzip -q -o -d "$RUNNER_TEMP/sm" "$RUNNER_TEMP/sm.zip"
+
+          mkdir -p "$HOME/.local/bin"
+          install -m 755 "$(find "$RUNNER_TEMP/sm" -type f -name jsonschema -perm -111 | head -1)" "$HOME/.local/bin/jsonschema"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - run: make ${{ matrix.target }}

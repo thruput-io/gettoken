@@ -27,7 +27,17 @@ and what the system always does are in [`README.md`](README.md), not there.
 and the validator named in [record 13](docs/adrs/0013-validating-the-wire.md):
 
 ```sh
-brew install jq bats-core sourcemeta/apps/jsonschema
+brew install jq bats-core
+
+version=16.9.0
+curl -fsSL -o /tmp/sm.zip \
+  "https://github.com/sourcemeta/jsonschema/releases/download/v${version}/jsonschema-${version}-darwin-$(uname -m).zip"
+unzip -q -o -d /tmp/sm /tmp/sm.zip
+install -m 755 "$(find /tmp/sm -type f -name jsonschema -perm -111 | head -1)" /usr/local/bin/jsonschema
 ```
+
+The validator comes from its release rather than a Homebrew cask, at the version
+[`integration/docker/Dockerfile`](integration/docker/Dockerfile) pins, so the host
+and the container run the same one.
 
 Nothing is skipped when a tool is missing. A test that cannot run fails.
