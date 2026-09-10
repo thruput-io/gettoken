@@ -167,7 +167,9 @@ make packages
 ```
 
 That writes `build/packages/deb-stable/` and `build/packages/deb-testing/`, each
-holding every `.deb` for that release and a `Packages` index. Point apt at the one
+holding every `.deb` for that release, a `Packages` index, and a `Release` that
+names the index files that exist, so `apt` fetches what is there rather than
+probing for compressions the archive does not carry. Point apt at the one
 for the release you are on and ask for the one tool:
 
 ```sh
@@ -329,6 +331,7 @@ debian/
   source/lintian-overrides
 
 scripts/
+  archive.sh
   deliver.sh
   docker/
   fixtures/
