@@ -19,13 +19,13 @@ putting() {
 getting() {
   key=$1
   export key
-  if [ $# -eq 2 ]; then
-    version=$2
-    export version
-    format secret-get-request-version.schema.json key version | secret-get
-  else
-    format secret-get-request.schema.json key | secret-get --with-key
-  fi
+  format secret-get-request.schema.json key | secret-get --with-key
+}
+
+getting_version() {
+  key=$1 version=$2
+  export key version
+  format secret-get-request-version.schema.json key version | secret-get
 }
 
 @test "storing a secret answers with version and value" {
@@ -52,13 +52,13 @@ getting() {
 @test "storing a secret again never replaces the one already there" {
   putting johans-laptop/github super-1
   putting johans-laptop/github super-2
-  run -0 --separate-stderr getting johans-laptop/github 0
+  run -0 --separate-stderr getting_version johans-laptop/github 0
   [ "$(printf '%s' "$output" | jq -r '.value')" = "super-1" ]
 }
 
 @test "asking for a version that is not there hands over nothing and says so" {
   putting johans-laptop/github super-1
-  run -1 --separate-stderr getting johans-laptop/github 1
+  run -1 --separate-stderr getting_version johans-laptop/github 1
   [ "$output" = "" ]
   [[ "$stderr" == *"johans-laptop/github has no version 1"* ]]
 }

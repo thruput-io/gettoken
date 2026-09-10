@@ -1,5 +1,5 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+set -euo pipefail
 
 packages=$1
 
@@ -18,9 +18,6 @@ INTEGRATIONTEST_TOKEN=$(gettoken integrationtest/ci/run)
 export INTEGRATIONTEST_TOKEN
 ran_on=$(integration-test-tool)
 
-if [ "$ran_on" = "$carried" ]; then
-  echo "ok: $carried went in as a super-token and came back out of the tool"
-  exit 0
-fi
-echo "the tool ran on $ran_on, which is not what the super-token carried" >&2
-exit 1
+echo "the tool ran on $ran_on, and the super-token carried $carried"
+test "$ran_on" = "$carried"
+echo "ok: $carried went in as a super-token and came back out of the tool"

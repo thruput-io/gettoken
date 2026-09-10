@@ -11,7 +11,6 @@ setup() {
 
 teardown() { rm -rf "$stub"; }
 
-# token-requester stands in, so the ask gettoken builds can be read back.
 capturing() {
   cat > "$stub/token-requester" <<'STUB'
 #!/bin/sh

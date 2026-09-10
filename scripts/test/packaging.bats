@@ -13,19 +13,17 @@ destinations() {
   awk '{ print $2 }' "$root"/debian/*.install | sort -u
 }
 
+destinations_reachable_without_gettoken_on_path() {
+  destinations | grep -vxE 'usr/bin|usr/lib/gettoken(/.*)?|usr/share/gettoken(/.*)?'
+}
+
 @test "the agent's entry point and the tool are the only names on a public PATH" {
   [ "$(installed_into usr/bin)" = "$(printf 'gettoken\nintegration-test-tool')" ]
 }
 
 @test "everything else the packaging installs is off a public PATH" {
-  run -0 destinations
-  for where in $output; do
-    case $where in
-      usr/bin) ;;
-      usr/lib/gettoken|usr/lib/gettoken/*|usr/share/gettoken|usr/share/gettoken/*) ;;
-      *) printf 'the packaging installs into %s, which is neither the public entry point nor under gettoken\n' "$where" >&2; return 1 ;;
-    esac
-  done
+  run -1 destinations_reachable_without_gettoken_on_path
+  [ "$output" = "" ]
 }
 
 @test "the exchanger is not something an agent can run" {
