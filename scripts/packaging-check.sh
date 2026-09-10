@@ -13,6 +13,23 @@ apt-get install -y --no-install-recommends "$tool"
 apt-get purge -y "$tool"
 apt-get autoremove --purge -y
 
+dpkg_recorded() {
+  awk -v action="$1" '$3 == action { print $4 }' /var/log/dpkg.log | sort -u
+}
+
+left_installed=$(comm -23 <(dpkg_recorded install) <(dpkg_recorded remove))
+still_registered=$(dpkg-query -W -f='${Package} ${Status}\n' \
+  | awk '/^gettoken|^integration-test-tool/ { print }')
+
+echo "# what dpkg itself recorded"
+dpkg_recorded install | sed 's/^/  dpkg installed /'
+printf '%s' "$left_installed" | sed 's/^/  dpkg installed and never removed: /'
+printf '%s' "$still_registered" | sed 's/^/  dpkg still registers: /'
+
+test -z "$left_installed"
+test -z "$still_registered"
+echo "ok: dpkg removed every package it installed, and registers none of them now"
+
 for path in /usr/bin/gettoken /usr/lib/gettoken /usr/share/gettoken /var/lib/gettoken; do
   [ ! -e "$path" ] || { echo "packaging-check: purging left $path behind" >&2; exit 1; }
 done

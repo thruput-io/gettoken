@@ -73,5 +73,8 @@ use-case runs.
 
 Beside it, `scripts/packaging-check.sh` installs that one package on the same
 untouched image and asserts what `apt` drew in, that nothing else came, and that
-a purge leaves nothing behind. `scripts/deliver.sh` has `lintian` read the source
+a purge leaves nothing behind — both on disk and in `/var/log/dpkg.log`, which is
+dpkg's own record of what it installed and what it removed. The two are not the
+same check: a package whose files are gone while dpkg still registers it passes
+the first and fails the second. `scripts/deliver.sh` has `lintian` read the source
 and every package as it builds them.
