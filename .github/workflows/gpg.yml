@@ -36,7 +36,5 @@ jobs:
           gpg --batch --quiet --armor --export-secret-keys "$key" > "$GNUPGHOME/secret.asc"
           test -s "$GNUPGHOME/secret.asc"
 
-          gh api -X PUT "repos/$GITHUB_REPOSITORY/environments/gh-pages" --jq .name
-
-          gh secret set ARCHIVE_SIGNING_KEY --env gh-pages --repo "$GITHUB_REPOSITORY" < "$GNUPGHOME/secret.asc"
-          gh secret list --env gh-pages --repo "$GITHUB_REPOSITORY" | grep -q '^ARCHIVE_SIGNING_KEY[[:space:]]'
+          gh secret set ARCHIVE_SIGNING_KEY --repo "$GITHUB_REPOSITORY" < "$GNUPGHOME/secret.asc"
+          gh secret list --repo "$GITHUB_REPOSITORY" | grep -q '^ARCHIVE_SIGNING_KEY[[:space:]]'
