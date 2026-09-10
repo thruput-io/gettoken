@@ -11,7 +11,6 @@ setup() {
 
 teardown() { rm -rf "$stub"; }
 
-# token-service stands in, so what token-requester hands it can be read back.
 answering() {
   cat > "$stub/token-service" <<STUB
 #!/bin/sh
