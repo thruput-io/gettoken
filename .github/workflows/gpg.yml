@@ -2,8 +2,6 @@ name: gpg
 
 on:
   workflow_dispatch:
-  push:
-    branches: [gpg]
 
 jobs:
   key:
