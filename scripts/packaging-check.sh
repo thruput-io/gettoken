@@ -4,8 +4,10 @@ set -euo pipefail
 packages=$1
 tool=integration-test-tool
 
-echo "deb [trusted=yes] file:$packages ./" > /etc/apt/sources.list.d/gettoken.list
-apt-get update
+# shellcheck source=scripts/archive.sh
+. "$(CDPATH='' cd "$(dirname "$0")/.." && pwd)/scripts/archive.sh"
+
+apt_takes_the_archive_or_stops "$packages"
 apt-get install -y --no-install-recommends "$tool"
 
 apt-get purge -y "$tool"
