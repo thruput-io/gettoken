@@ -20,7 +20,7 @@ echo "ok: purging the one package took the chain and the store with it"
 
 mkdir -p /var/lib/gettoken/other
 said=$(mktemp)
-sh /work/debian/gettoken-secret-manager.postrm purge 2>"$said"
+/work/debian/gettoken-secret-manager.postrm purge 2>"$said"
 cat "$said"
 grep -q '^gettoken-secret-manager: /var/lib/gettoken holds something' "$said" \
   || { echo "packaging-check: the purge did not say what it left behind" >&2; exit 1; }
