@@ -1,0 +1,22 @@
+- name: Generate App Token
+  id: generate_token
+  uses: actions/create-github-app-token@v1
+  with:
+    app-id: ${{ secrets.HEMMING_APP_ID }}
+    private-key: ${{ secrets.HEMMING_PRIVATE_KEY }}
+
+- name: Generate and store GPG secret
+  env:
+    GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+  run: |
+    gpg --batch --pinentry-mode loopback --passphrase '' \
+    --quick-generate-key 'gettoken archive <johan.granlund@thruput.se>' default default never
+    
+    # Extract the key ID
+    KEY_ID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec/ {print $5}')
+    
+    # Export and write to repository secrets
+    gpg --armor --export-secret-keys "$KEY_ID" | gh secret set ARCHIVE_SIGNING_KEY --repo ${{ github.repository }}
+
+    # Verification: check if the secret key exists in the repository secret list
+    gh secret list --repo ${{ github.repository }} | grep ARCHIVE_SIGNING_KEY
