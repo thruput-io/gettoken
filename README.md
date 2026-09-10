@@ -1,4 +1,4 @@
-A text-based, POSIX-native token broker for AI agents.
+A text-based, shell-native token broker for AI agents.
 
 ## The problem
 
@@ -185,7 +185,17 @@ with them.
 `make packages` builds for both Debian stable and Debian testing, leaving each
 in its own directory under `build/packages/`. The two say different things about
 themselves because the releases carry different debhelper, lintian and Go, and
-what each target is is written in `scripts/targets/`.
+what each target is is written in `scripts/targets/`: what that release's archive
+carries and what its Policy wants said, stated rather than sniffed, so a build
+that finds something different says so. `lintian` at pedantic is what proves the
+statement, on the source and on every package.
+
+Nothing under `debian/` that can be derived is kept. `debian/control` and one
+`.install` per contract are written by `scripts/packaging.sh` from the contracts,
+the components and the target, before `dpkg` reads anything, because `dpkg`
+resolves build dependencies out of `debian/control` before any rule could act.
+`debian/control.in` carries only what none of those know, which is prose about
+the components themselves.
 
 To install onto a machine that is not the one that built them, copy that
 release's directory across and point apt at it there. It is a plain apt repository:

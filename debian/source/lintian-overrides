@@ -1,4 +1,1 @@
-# The contract component is built from the dependency tree vendored into this
-# source package, so nothing it statically links comes from another Debian
-# source package. Static-Built-Using names those, and there are none to name.
 gettoken source: missing-static-built-using-field-for-golang-package

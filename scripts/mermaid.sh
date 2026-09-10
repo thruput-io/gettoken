@@ -1,5 +1,5 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+set -euo pipefail
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 mermaid_cli="@mermaid-js/mermaid-cli@11.17.0"

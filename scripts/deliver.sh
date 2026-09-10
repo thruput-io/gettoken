@@ -1,10 +1,6 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+set -euo pipefail
 
-# Builds the packages for a target and leaves them where they can be installed
-# from, as an apt repository rather than a pile of files: apt resolves what a
-# package depends on out of the index beside it, so installing the one tool
-# draws in the rest exactly as it would from any other archive.
 name=$1
 into=$2
 

@@ -1,5 +1,5 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+set -euo pipefail
 
 exchangers=${EXCHANGER_DIR:-/usr/lib/gettoken/exchangers}
 

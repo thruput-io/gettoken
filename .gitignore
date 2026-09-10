@@ -5,11 +5,9 @@ debian/debhelper-build-stamp
 debian/files
 debian/*.debhelper.log
 debian/*.substvars
+debian/control
 debian/gettoken/
 debian/gettoken-*/
+debian/gettoken-contract-*.install
 debian/integration-test-tool/
 build/
-
-# built by integration/packaging.sh, not kept
-debian/control
-debian/gettoken-contract-*.install

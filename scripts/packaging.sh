@@ -1,21 +1,10 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+set -euo pipefail
 
-# Builds the packaging. Nothing under debian/ that can be derived is kept: the
-# contracts say which packages exist and what each one is, the components say
-# which contracts they speak, and the target says what the release being built
-# for wants said. debian/control.in carries only what none of those know, which
-# is prose about the components themselves.
-#
-# It runs before dpkg does, on the copy about to be built, because dpkg reads
-# debian/control to resolve build dependencies before any rule could act and
-# dpkg-source snapshots it before that.
 name=$1
 source=$2
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
-# The target is named on the command line, so its file cannot be followed from
-# here. What it may set is the handful of values read just below.
 # shellcheck source=/dev/null
 . "$root/scripts/targets/$name"
 
@@ -35,7 +24,6 @@ cd "$source"
 
 sed -i "s/^go [0-9]*\.[0-9]*$/go $GO_VERSION/" components/contract/go.mod
 
-# The source stanza, as this release wants it stated.
 priority_line=""
 if [ -n "$PRIORITY" ]; then priority_line="Priority: $PRIORITY\n"; fi
 rrr_line=""
@@ -47,7 +35,8 @@ sed -e "s/@COMPAT@/$DEBHELPER_COMPAT/" \
     -e "s|@RULES_REQUIRES_ROOT@|$rrr_line|" \
     debian/control.in > debian/control
 
-# One package per contract, said by the contract itself.
+dpkg_expands_this_one_not_the_shell='$'
+
 for schema in contracts/*.schema.json; do
   contract=$(basename "$schema" .schema.json)
   package="gettoken-contract-$contract"
@@ -61,31 +50,34 @@ for schema in contracts/*.schema.json; do
 
   {
     printf '\nPackage: %s\nArchitecture: all\n' "$package"
-    # ${misc:Depends} is dpkg's substitution variable, written into the control
-    # file for dpkg-gencontrol to expand. It is not this shell's to expand.
-    # shellcheck disable=SC2016
-    printf 'Depends: ${misc:Depends}%b\n' "$needs_defs"
+    printf 'Depends: %s{misc:Depends}%b\n' "$dpkg_expands_this_one_not_the_shell" "$needs_defs"
     printf 'Description: token broker for AI agents - the %s contract\n' "$contract"
     jq -r '.description' "$schema" | fold -s -w 78 | sed 's/^/ /; s/[[:space:]]*$//'
   } >> debian/control
 done
 
-# What each component speaks, read from what it says. A package that speaks
-# none, because it carries no component, gets nothing rather than an empty list.
 speaks=$(mktemp)
 trap 'rm -f "$speaks"' EXIT
 : > "$speaks"
+
+every_contract_named_on_a_line() {
+  awk '{
+    rest = $0
+    while (match(rest, /(parse|format) [a-z-]+\.schema\.json/)) {
+      print substr(rest, RSTART, RLENGTH)
+      rest = substr(rest, RSTART + RLENGTH)
+    }
+  }' "$1"
+}
 
 for install in debian/*.install; do
   package=$(basename "$install" .install)
   case $package in gettoken-contract-*) continue ;; esac
 
-  # Which direction a document is carried is a package too: a component that
-  # only ever reads one does not install the program that writes one.
   uses=$(
     while read -r src _; do
       if [ -f "$src" ]; then
-        grep -ohE '(parse|format) [a-z-]+\.schema\.json' "$src" || true
+        every_contract_named_on_a_line "$src"
       fi
     done < "$install"
   )

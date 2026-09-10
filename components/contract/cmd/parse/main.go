@@ -12,8 +12,6 @@ import (
 	"github.com/thruput-io/gettoken/components/contract"
 )
 
-// assignable quotes value so that a shell reading the assignment gets the value
-// back whole, whatever it carries.
 func assignable(value any) (string, error) {
 	text, spelled := value.(string)
 	if !spelled {
