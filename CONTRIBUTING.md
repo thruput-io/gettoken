@@ -35,11 +35,10 @@ than guarding the product, and `make test` does not run it.
 
 `make test` runs the suite where you invoke it. `make deb-stable` and
 `make deb-testing` run that same suite inside the base that release is built in,
-then build the packages there, then install and use them on the official image
-for that release. Only those two reach the paths a package puts things at. The
-host needs `jq`, `bats`, `shellcheck` and a Go toolchain,
-which builds the contract component named in
-[record 17](docs/adrs/0017-a-validator-brew-and-apt-can-carry.md):
+build the packages there, sign them into an archive, and install and use them
+from that archive on the official image for that release. Only those two reach
+the paths a package puts things at. The host needs `jq`, `bats`, `shellcheck`
+and a Go toolchain, which builds the contract component:
 
 ```sh
 apt install jq bats shellcheck golang-go
@@ -60,9 +59,10 @@ Nothing is skipped when a tool is missing. A test that cannot run fails.
 ## What a green run means
 
 The use-case runs on the `integrationtest/ci/run` capability, on the official
-image for the release and nothing put onto it first: the one tool package is
-installed, the super-token goes into the store, `gettoken` is asked for the
-capability, and `integration-test-tool` runs on what comes back. The same tool
+image for the release and nothing put onto it first: the archive is asked where
+it is and what signs it, the one tool package is installed from it, the
+super-token goes into the store, `gettoken` is asked for the capability, and
+`integration-test-tool` runs on what comes back. The same tool
 refuses the super-token, asserted by the tool's own tests, so a run that
 succeeds is a downgrade that happened. This is the invariant: keep it green.
 

@@ -1,10 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
-packages=$1
-tag=$2
+archive=$1
+suite=$2
+tag=$3
 
-echo "deb [trusted=yes] file:$packages ./" > /etc/apt/sources.list.d/gettoken.list
+apt-get update -qq
+apt-get install -y --no-install-recommends ca-certificates curl > /dev/null
+curl --fail --silent --show-error --location \
+  "$archive/dists/$suite/gettoken.sources" \
+  --output /etc/apt/sources.list.d/gettoken.sources
 apt-get update -qq
 apt-get install -y --no-install-recommends integration-test-tool > /dev/null
 

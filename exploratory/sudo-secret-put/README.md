@@ -5,11 +5,12 @@ use-case in `integration-test/test.sh` has a step where the human puts the
 super-token in the store, and writing it as `sudo secret-put < document` would
 say that out loud. `ask.sh` asks whether it can be written that way today.
 
-Run it against a built archive on the official image for a release:
+Run it against the published archive on the official image for a release:
 
 ```sh
 docker run --rm -v "$PWD":/work -w /work debian:testing-slim \
-  sh exploratory/sudo-secret-put/ask.sh /work/build/packages/deb-testing testing-slim
+  sh exploratory/sudo-secret-put/ask.sh \
+  https://thruput-io.github.io/gettoken main/deb-testing testing-slim
 ```
 
 ## What it answers
