@@ -1,5 +1,5 @@
-#!/bin/bash
-set -euo pipefail
+#!/bin/sh
+set -eu
 
 name=$1
 into=$2
@@ -11,7 +11,7 @@ trap 'rm -rf "$build"' EXIT
 
 cp -a "$root" "$build/source"
 rm -rf "$build/source/.git" "$build/source/build"
-"$root/scripts/packaging.sh" "$name" "$build/source"
+sh "$root/scripts/packaging.sh" "$name" "$build/source"
 
 (cd "$build/source" && dpkg-buildpackage -us -uc)
 
@@ -19,11 +19,8 @@ lintian --fail-on error,warning,info,pedantic,experimental --display-level '>=pe
 echo "ok: lintian passes on the source and on every package, down to pedantic"
 
 mkdir -p "$into"
-rm -f "$into"/*.deb "$into"/Packages "$into"/Packages.gz "$into"/Release
+rm -f "$into"/*.deb
 cp "$build"/*.deb "$into"
-(cd "$into" && dpkg-scanpackages -m . > Packages && gzip -kf Packages)
-(cd "$into" && apt-ftparchive release .) > "$build/Release"
-mv "$build/Release" "$into/Release"
 
 echo
-echo "$(find "$into" -name '*.deb' | wc -l) packages in $into, indexed for apt"
+echo "$(find "$into" -name '*.deb' | wc -l) packages built for $name in $into"

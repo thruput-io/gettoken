@@ -1,12 +1,20 @@
 #!/bin/bash
 set -euo pipefail
 
-packages=$1
+archive=$1
+suite=$2
 
-# shellcheck source=scripts/archive.sh
-. "$(CDPATH='' cd "$(dirname "$0")/.." && pwd)/scripts/archive.sh"
+# shellcheck source=scripts/apt.sh
+. "$(CDPATH='' cd "$(dirname "$0")/.." && pwd)/scripts/apt.sh"
 
-apt_takes_the_archive_or_stops "$packages"
+apt-get update
+apt-get install -y --no-install-recommends ca-certificates curl
+
+curl --fail --silent --show-error --location \
+  "$archive/dists/$suite/gettoken.sources" \
+  --output /etc/apt/sources.list.d/gettoken.sources
+
+apt_takes_the_archive_or_stops "$archive"
 
 apt-get install -y --no-install-recommends integration-test-tool
 
@@ -20,6 +28,9 @@ INTEGRATIONTEST_TOKEN=$(gettoken integrationtest/ci/run)
 export INTEGRATIONTEST_TOKEN
 ran_on=$(integration-test-tool)
 
-echo "the tool ran on $ran_on, and the super-token carried $carried"
-test "$ran_on" = "$carried"
-echo "ok: $carried went in as a super-token and came back out of the tool"
+if [ "$ran_on" = "$carried" ]; then
+  echo "ok: $carried went in as a super-token and came back out of the tool"
+  exit 0
+fi
+echo "the tool ran on $ran_on, which is not what the super-token carried" >&2
+exit 1

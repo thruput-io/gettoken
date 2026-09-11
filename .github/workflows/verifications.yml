@@ -1,9 +1,8 @@
 name: verifications
 
 on:
-  pull_request:
   push:
-    branches: [main]
+    branches-ignore: [gh-pages]
 
 jobs:
   verify:
@@ -13,12 +12,47 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: macOS stable, os: macos-15,      target: test,        brew: true }
-          - { name: macOS latest, os: macos-latest,  target: test,        brew: true }
-          - { name: Debian stable, os: ubuntu-latest, target: deb-stable,  brew: false }
-          - { name: deb-testing,  os: ubuntu-latest, target: deb-testing, brew: false }
+          - { name: macOS stable,  os: macos-15,      make: test,       brew: true }
+          - { name: macOS latest,  os: macos-latest,  make: test,       brew: true }
+          - { name: Debian stable, os: ubuntu-latest, make: deb-stable, brew: false }
+          - { name: deb-testing,   os: ubuntu-latest, make: deb-testing, brew: false }
     steps:
       - uses: actions/checkout@v4
       - if: matrix.brew
         run: brew install jq bats-core shellcheck go
-      - run: make ${{ matrix.target }}
+      - if: ${{ !matrix.brew }}
+        name: Place the key the archive is signed with
+        env:
+          signing_key: ${{ secrets.ARCHIVE_SIGNING_KEY }}
+        run: |
+          mkdir -p build
+          printf '%s' "$signing_key" > build/signing-key.asc
+          chmod 600 build/signing-key.asc
+          test -s build/signing-key.asc
+      - run: make ${{ matrix.make }} BRANCH="${{ github.ref_name }}"
+      - if: ${{ !matrix.brew }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-${{ matrix.make }}
+          path: build/archive
+          retention-days: 1
+
+  publish:
+    name: Publish the branch's suites
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: archive-*
+          merge-multiple: true
+          path: build/archive
+      - run: >
+          make publish
+          BRANCH="${{ github.ref_name }}"
+          SITE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"

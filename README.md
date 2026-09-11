@@ -158,25 +158,26 @@ than on `PATH`, because it is run with the super-token in reach.
 
 ## Install it
 
-Distribution is `apt`, and the packages are built from this tree rather than kept
-in it. Building them leaves an apt repository behind, so installing is what it
-would be from any other archive:
+Distribution is `apt`, and the packages are published rather than kept in this
+tree, at `/apt` on the site so other platforms can be served beside it. Every
+branch publishes what it built into the archive under a suite of its own, so a
+branch can be installed from while it is still being worked on. `main`'s suite
+is the release, and merging is what promotes a snapshot into it.
+
+The archive says where it is and what signs it, so pointing apt at it is one
+file taken from the archive itself:
 
 ```sh
-make packages
-```
-
-That writes `build/packages/deb-stable/` and `build/packages/deb-testing/`, each
-holding every `.deb` for that release, a `Packages` index, and a `Release` that
-names the index files that exist, so `apt` fetches what is there rather than
-probing for compressions the archive does not carry. Point apt at the one
-for the release you are on and ask for the one tool:
-
-```sh
-echo "deb [trusted=yes] file:/path/to/build/packages/deb-stable ./" | sudo tee /etc/apt/sources.list.d/gettoken.list
+sudo curl -fsSL \
+  https://thruput-io.github.io/gettoken/apt/dists/main/deb-stable/gettoken.sources \
+  -o /etc/apt/sources.list.d/gettoken.sources
 sudo apt-get update
 sudo apt-get install integration-test-tool
 ```
+
+That stanza carries the public half of the key the archive is signed with, so
+apt checks the signature on everything it takes from there and nothing has to
+tell it to trust an archive without looking.
 
 Asking for that one package installs twenty-two: the tool, `gettoken`, the
 privileged half behind it, the store, the dispatcher, the two programs that carry
@@ -184,13 +185,14 @@ a document through a contract, and one package per contract. Nothing else is
 named, and nothing else arrives. Purging it takes them all with it, and the store
 with them.
 
-`make packages` builds for both Debian stable and Debian testing, leaving each
-in its own directory under `build/packages/`. The two say different things about
-themselves because the releases carry different debhelper, lintian and Go, and
-what each target is is written in `scripts/targets/`: what that release's archive
-carries and what its Policy wants said, stated rather than sniffed, so a build
-that finds something different says so. `lintian` at pedantic is what proves the
-statement, on the source and on every package.
+The two Debian releases are two suites, because they carry different debhelper,
+lintian and Go, and what each target is is written in `scripts/targets/`: what
+that release's archive carries and what its Policy wants said, stated rather than
+sniffed, so a build that finds something different says so. `lintian` at pedantic
+is what proves the statement, on the source and on every package. Ask for
+`deb-testing` in place of `deb-stable` for the release you are on, and for
+`dists/<branch>/deb-stable` for what a branch has published rather than what has
+been merged.
 
 Nothing under `debian/` that can be derived is kept. `debian/control` and one
 `.install` per contract are written by `scripts/packaging.sh` from the contracts,
@@ -199,9 +201,17 @@ resolves build dependencies out of `debian/control` before any rule could act.
 `debian/control.in` carries only what none of those know, which is prose about
 the components themselves.
 
-To install onto a machine that is not the one that built them, copy that
-release's directory across and point apt at it there. It is a plain apt repository:
-nothing in it depends on having been built locally.
+Building the archive rather than installing from it is `make packages`, which
+leaves `build/archive/` holding both releases' suites, signed with a key minted
+into `build/` for that build rather than the one the site is signed with.
+`make verify` serves that archive to a stock Debian image over http and installs
+from it there, so what a laptop verifies is an archive and not a directory.
+CI does the same for each release, and only once both have passed does a single
+job join the two and publish them together, so nothing ever writes the site
+alongside something else. Publishing does not finish until the site serves what
+was pushed, because the site serves what it last built and a check that did not
+wait would install the suite as it was before. A branch's suite is taken out of
+the archive when the branch is deleted.
 
 ### What arrives, and why that is the interesting part
 
@@ -331,6 +341,7 @@ debian/
   source/lintian-overrides
 
 scripts/
+  apt.sh
   archive.sh
   deliver.sh
   docker/
@@ -339,9 +350,15 @@ scripts/
   mermaid.sh
   packaging-check.sh
   packaging.sh
+  pages.sh
+  publish.sh
   readme.sh
+  served.sh
+  signing-key.sh
+  sources.sh
   targets/
   test/
+  unpublish.sh
 
 integration-test/
   test.sh

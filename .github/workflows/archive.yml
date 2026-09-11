@@ -1,0 +1,17 @@
+name: archive
+
+on:
+  delete:
+
+jobs:
+  unpublish:
+    name: Unpublish the branch's snapshots
+    if: github.event.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: make unpublish BRANCH="${{ github.event.ref }}"
