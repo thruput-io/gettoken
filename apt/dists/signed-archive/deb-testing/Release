@@ -1,0 +1,20 @@
+Architectures: amd64
+Codename: signed-archive/deb-testing
+Components: main
+Date: Fri, 11 Sep 2026 01:19:39 +0000
+Description: token broker for AI agents
+Label: gettoken
+Origin: gettoken
+Suite: signed-archive/deb-testing
+MD5Sum:
+ cc7b0c6f109f40735c2363f34797c304            24844 main/binary-amd64/Packages
+ d8460b4de15d91bb6aa9abc6f6d1c9e8             7791 main/binary-amd64/Packages.gz
+SHA1:
+ 0e1b014eb50d67d87a02e4271743ed226f43a362            24844 main/binary-amd64/Packages
+ 459b95d44ddc2bd531bf5ddc090f985d48d912d8             7791 main/binary-amd64/Packages.gz
+SHA256:
+ bb5949e521dceaee1e583033e56f85f65c46f4fad02f2bfe8dffe4de2f71474d            24844 main/binary-amd64/Packages
+ f834b80f6b8dd2df0ebc7a6a5859b6f8ec1375fb096d21bf22e7b60ceca75e8d             7791 main/binary-amd64/Packages.gz
+SHA512:
+ 1ff1e86f34cd5e5ba4bec898f0a6733c94212daddb5941a05cd87a2a70026a0f7dd65a2aecf66385ab5838362dcf393dd4f51fbc6b2898a4fe1ac31e5f6d41b6            24844 main/binary-amd64/Packages
+ b350dac86fd1ab932e3a765bcaad7b1024d589b4c4c19e56e906efe341364fb62a89599247a99251f684e3214a651d0d9973d099d48a76c1b37d7c5205439736             7791 main/binary-amd64/Packages.gz

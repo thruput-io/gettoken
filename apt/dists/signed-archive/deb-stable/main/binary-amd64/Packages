@@ -1,0 +1,529 @@
+Package: gettoken-contract-agent-capability-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/signed-archive/deb-stable/gettoken-contract-agent-capability-request_0.1.0_all.deb
+Size: 2240
+MD5sum: b92892d8d323d144382238fd7467ca92
+SHA1: a0ab90918f3042a23200e804e9fad10d6c9e91bb
+SHA256: 2d73120998f35155cb7d03874b948f73409b5b719b9882af9953644c690fbb8d
+SHA512: 6da9af1b2d99530b45040be41eb13cb5b20aa9887debe03d1bb825ea2b38a680b2fc4305671a489c5bb4732d28bfb5d00c7095d1f6c546e6668a39eaa297d2a4
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the agent-capability-request contract
+ What an agent says when it asks for a capability. It carries the capability
+ wanted and nothing else: an agent cannot say who it is or what it is doing,
+ because the privileged half decides that.
+
+Package: gettoken-contract-agent-list-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Filename: pool/signed-archive/deb-stable/gettoken-contract-agent-list-request_0.1.0_all.deb
+Size: 2188
+MD5sum: fe5ab4b5311f7980faee64adb787eabc
+SHA1: d633691d7b88a0b621303ca874b777b24ea5a3be
+SHA256: 54d10f823d1930d8347bd52586196cc5da7ffeecd0a7cb14a21b72d2ef82550c
+SHA512: f8540f1d6c25c7c80632554bf515a182e266728a6b5c7e3fd835e599068e932e2487da362b72de2361818633b320f3a5d3cc6f95dec16987c193d6639a3df69c
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the agent-list-request contract
+ What an agent says when it asks what it may equip. It carries the word list
+ and nothing else, so asking what is available is not a way to ask for
+ anything.
+
+Package: gettoken-contract-defs
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 12
+Filename: pool/signed-archive/deb-stable/gettoken-contract-defs_0.1.0_all.deb
+Size: 2368
+MD5sum: d567a8d65ef76847c043256771d96859
+SHA1: f5b535801fddc9f32688f4fbb6620bed4da599aa
+SHA256: ba8b0a98e22632f83fbf6dfa1fd76e9c1765568e281962cf1e424561bacd57ed
+SHA512: 89fa00d17b944568373c1c09b3c9e47043cb2ced12e4c6bc905e63711f82fbdb1b354d4cfb297e995b8405052f52bd2db3e399a5107542f924f5018c3dab9971
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the defs contract
+ The shapes every other contract is built from. An agent name, an activity, a
+ capability, a signature, a key, a secret, a version, a lifetime. Nothing
+ crosses a boundary except as one of these.
+
+Package: gettoken-contract-entitlements-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/signed-archive/deb-stable/gettoken-contract-entitlements-request_0.1.0_all.deb
+Size: 2252
+MD5sum: d50dc7a13900e1be7b15fc6abd3cd758
+SHA1: 86f2860ef7ffc024442d2a781e6c5c719933f2a0
+SHA256: 10d80c79f406e8c63dcba84c00a6971d3c5fcd0eba00307930a63f9f2eaff60f
+SHA512: 6c58f486a0aa8e208759f33f258a70688902a89db682596b9f9bc4c0da556198eb0cf54c4e319ab2592a5b35e91aaf97df3684c173a0ccdba83b142590bb053e
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the entitlements-request contract
+ What the privileged half asks entitlements. It carries who is asking and what
+ they are doing, signed by the privileged half, and names no capability
+ because none is being asked for.
+
+Package: gettoken-contract-entitlements-response
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 12
+Depends: gettoken-contract-defs
+Filename: pool/signed-archive/deb-stable/gettoken-contract-entitlements-response_0.1.0_all.deb
+Size: 2336
+MD5sum: c362f01982e9784f5a165e1702860ef9
+SHA1: 4729e79565c672eb1d9c4f6b97ea583aa4b80fb6
+SHA256: 55df7ca863a179da88359cc1d78f41a3e60f3e2185e2b00a6829fe153584f94b
+SHA512: 6330387ecbdc9825efc9061f5ab4ba689127f92bbf7aef334dfdb8b7c795cf6ea6dd840bb4304711ecaae3e2d1867d3556bd359f3f8a600a7daf8a8bce428a48
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the entitlements-response contract
+ What entitlements answers: every capability the agent may equip, each saying
+ what it is for and what has to be filled in before it can be asked for.
+
+Package: gettoken-contract-exchange-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/signed-archive/deb-stable/gettoken-contract-exchange-request_0.1.0_all.deb
+Size: 2264
+MD5sum: 84d1c4902909db4076fb12c66f42d87a
+SHA1: 3cb166f9cf78330fd331e6ba36cf8f6f6384e972
+SHA256: 0ab133a2971e0d6c9e9cad8b15ba569a8d3515768e4042e5821094e0a256e0d8
+SHA512: 02a7b3c17e835eb377b43c8e1aec1b1f9d081554c6f560db8d4e6419483c8d4e6a1eaaa531ee10ddc33395e04c277e62d60eb30d73850ac91b3d6ce9fc18d523
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the exchange-request contract
+ What token-service hands an exchanger. It carries who is asking and what for,
+ and neither the signature the request was signed with nor what the agent was
+ doing: an exchanger is told the least that lets it trade.
+
+Package: gettoken-contract-secret-get-request-version
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/signed-archive/deb-stable/gettoken-contract-secret-get-request-version_0.1.0_all.deb
+Size: 2176
+MD5sum: aa3f51bba087dab87ddd1c02b630fb09
+SHA1: 54f9c336730da5738d5cd9a10fd9bb4997f779fb
+SHA256: 2ecc63469d037d29587d26eb6650cd56800e771d8bdd0f6e3ca6073808507355
+SHA512: 47957b56a909b1a5fd9b4940b57a2078b9e715558bedef63fd1aeb5f34459ea7e48ac3bb9d3aa63b3f79cf024c64b85b7240a8080e1137ced387d67a061bf636
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the secret-get-request-version contract
+ Asking the store for one version under a key, for a caller that needs the one
+ it read before rather than whatever is newest.
+
+Package: gettoken-contract-secret-get-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/signed-archive/deb-stable/gettoken-contract-secret-get-request_0.1.0_all.deb
+Size: 2208
+MD5sum: 8f5a074966f4197a54f64c172f431d34
+SHA1: 32d62b6a67fac39660db6bbd75143fe2b207de53
+SHA256: a11bbd951965a91816edee31f1b3d8fc22d75da3a54e855592e01c6b4124978a
+SHA512: 9092c1181f41cf54d2d2097216bf524de0589f157c95cd1e7c7798c7943a271e9d348b7ecc17cb39d4f616c3a9dabe276d582cebf7f3aeab7962768d1ae6cb2f
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the secret-get-request contract
+ Asking the store for the newest secret under a key. It carries the key alone,
+ and the store answers with the version it holds, so no caller has to know
+ which one that is.
+
+Package: gettoken-contract-secret-get-response
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/signed-archive/deb-stable/gettoken-contract-secret-get-response_0.1.0_all.deb
+Size: 2188
+MD5sum: 218484c02bb22d34a5d1876821fb7c68
+SHA1: 9aba78dcc5e68d3345234eac10085d689888f29f
+SHA256: f1eeb95624bd768c3c98a593d4e4941357fab353e4c0901279e5001d9bba3af2
+SHA512: dbbc71c5afad6309ff314aac8208aae2393af24560a128104f9d707945be6415026d20f05c82b6d291c6d4b46167432862dee29c14f77ddaac4426d361256466
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the secret-get-response contract
+ What the store answers with a secret: the secret and the version it is.
+ Nothing says whether anything was found, because the exit status says that.
+
+Package: gettoken-contract-secret-put-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/signed-archive/deb-stable/gettoken-contract-secret-put-request_0.1.0_all.deb
+Size: 2216
+MD5sum: a3c40d754a76cfc5c3658476fafec758
+SHA1: 937823ba687ae2b6c9032e893f2a3ee70a2196e9
+SHA256: 4b3f89de9577d7ff07b29a993ea82d29c39c68bf3efb823850dd951fe97ea1f7
+SHA512: 2e73b3bb20864014ba8210da9dc814aeb6527b0411e5c08b4c19f62af6e0d0199849c44cf6f8f089f49c2055f814723c2d69c5f2b0696213198500837ab2a881
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the secret-put-request contract
+ Putting a secret in the store. It carries the key and the secret and no
+ version, because the store assigns that, so no caller can overwrite what is
+ already held.
+
+Package: gettoken-contract-secret-put-response
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/signed-archive/deb-stable/gettoken-contract-secret-put-response_0.1.0_all.deb
+Size: 2168
+MD5sum: c9e3e853ac311316e4dced3305695429
+SHA1: 657c520c958c2d4c1c80dcf2184e091b8fd27184
+SHA256: 24d86ee1f3f5c2e20ba5293c1389e4926c7af2b418e551e48f8adc93066c6625
+SHA512: b3edaad79c4f818217cee5580fe5eb2acf1416035c862fb5e3c54e5a65b701a209f529a799b8c4b7ada66f84bd23a6b4a9ed7f965747eb76a0a5ff305b62eae7
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the secret-put-response contract
+ What the store answers when it stored a secret: the secret and the version
+ the store gave it, so the caller can ask for that one again later.
+
+Package: gettoken-contract-token-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/signed-archive/deb-stable/gettoken-contract-token-request_0.1.0_all.deb
+Size: 2216
+MD5sum: fefe933f78a580a721819291e4783650
+SHA1: 453a6418163d6fd278df4e077b3f6a46e33d1efb
+SHA256: 8d0693112f242202935dc191f75c760a5541e8c76f003b852067f30994389dc2
+SHA512: 711092310db96d82eebe4ecaddbb79e66113cb59ebb703c811c215a368d90a2e9aac99eab082f1beee5965a390597e042f28205d8cc1d8ace2df1df7dd70974c
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the token-request contract
+ What the privileged half asks token-service. It carries who is asking, what
+ they are doing, what they want, and the signature the privileged half vouches
+ with.
+
+Package: gettoken-contract-token-response
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/signed-archive/deb-stable/gettoken-contract-token-response_0.1.0_all.deb
+Size: 2268
+MD5sum: 58051de14c9eddca51836733ff0d6e39
+SHA1: a979b8003bfecaab0f51b84366f58a49be35b36b
+SHA256: b2e819c646d761bd3583440b7cdb4542d18de51335d88010b930ceed419ea605
+SHA512: 49df8a255c9ebebd9837efa3912c5e444166700270320f4c31c36504a4d9c828a60eaaf78d471b38ab6696f261391bf7d7c4f82a835b5e22d97b7a62c3599e0f
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the token-response contract
+ What token-service answers with a token: the token and how long it lasts. A
+ lifetime is bounded at both ends, so neither a token that expires before it
+ is used nor one that outlives the job is admitted.
+
+Package: gettoken-entitlements
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-entitlements-request, gettoken-contract-entitlements-response, gettoken-format, gettoken-parse
+Filename: pool/signed-archive/deb-stable/gettoken-entitlements_0.1.0_all.deb
+Size: 2112
+MD5sum: 5896e86e04d34d341ae35e66638d8f95
+SHA1: c65128005e10aad7a2905206adc4515d7691e73a
+SHA256: 7e413c2d46830939ce3e899ed3313860442a42e8de78b0250a9de6819420242b
+SHA512: 668d92751448c52e0ba2253b069be52f2c835ac33638adac1c27c821d61b67b51b44c62b38859c474326ba09ddd3fb8f8f223393c68b577018b5123a089a87b2
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - capability inventory
+ entitlements answers what an agent has to work with. It is what
+ "gettoken --list" shows, and it is also the control: a request for a
+ capability it does not list is refused.
+
+Package: gettoken-format-dbgsym
+Architecture: amd64
+Version: 0.1.0
+Auto-Built-Package: debug-symbols
+Priority: optional
+Section: debug
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 1549
+Depends: gettoken-format (= 0.1.0)
+Filename: pool/signed-archive/deb-stable/gettoken-format-dbgsym_0.1.0_amd64.deb
+Size: 1104404
+MD5sum: ed66d5423115d045d94c15517f7ecd9c
+SHA1: 9aaf0c927aa2b6db3813df487202ac2b00501fd2
+SHA256: 7670b947a5749610c3f63abd3375e093e950ca60d954e344b352c805f9d06be5
+SHA512: ea1c8513f92949628c0ef4f55328eba0b2ceabb5109797cf8594a53c04192a4303a38bd7d44487645c3e570edd6c0120fc67e2c5d56cb8707595c94e1516b4b3
+Description: debug symbols for gettoken-format
+Build-Ids: 89071cc7f5b87db5eca92e9a2a4ade4df95abc2d
+
+Package: gettoken-format
+Architecture: amd64
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 2974
+Depends: libc6 (>= 2.34)
+Filename: pool/signed-archive/deb-stable/gettoken-format_0.1.0_amd64.deb
+Size: 1001252
+MD5sum: 022d02dbfbb1fb9213338d70de84c2fb
+SHA1: ac7b3166de812c5561ca554196ebc6c6b26c0cc6
+SHA256: b973af494761e1eaa6d2864fa7f4c810a7b8f80e4e6edc4875adb012e190552f
+SHA512: c91a846d4304f8617198af916baed64c4bb4c0d361392f0a57fefabac33527b6b27bbe78ed3f87d957920797446d2a30fdd560f4acc6770e2c76fe375821dc55
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - writes a document through its contract
+ format takes the fields named on its command line from the environment, writes
+ the document they make, and checks that document against the contract before
+ handing it over. A component cannot emit something its contract does not admit.
+ .
+ It carries no contract of its own, for the same reason parse does not.
+
+Package: gettoken-parse-dbgsym
+Architecture: amd64
+Version: 0.1.0
+Auto-Built-Package: debug-symbols
+Priority: optional
+Section: debug
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 1551
+Depends: gettoken-parse (= 0.1.0)
+Filename: pool/signed-archive/deb-stable/gettoken-parse-dbgsym_0.1.0_amd64.deb
+Size: 1106308
+MD5sum: 95ac511c113dbaa81ec20b8a6937a8f8
+SHA1: 893e7471e6d3f6f7da26ad2a75575b936eab71bd
+SHA256: b55b4ffb9e486be0671d95c456363b4948ee4ffa9723325db8d5654eef6d78fc
+SHA512: 330725fed097b9bc7614694c36839dc550057b34dfd5d427a3e7a09a730becd9d9683893a1df12899f96b055f124052f419ba338a1f15bd196bc9fc7bc7d1f15
+Description: debug symbols for gettoken-parse
+Build-Ids: 3abad2166ba5d375e66c90cac18e4a500023cc21
+
+Package: gettoken-parse
+Architecture: amd64
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 2978
+Depends: libc6 (>= 2.34)
+Filename: pool/signed-archive/deb-stable/gettoken-parse_0.1.0_amd64.deb
+Size: 1001360
+MD5sum: 07758b314bd914dd82cbffe81b7d0780
+SHA1: a59c537ec5d5de18b80b12e70031236891632f44
+SHA256: e725f37d69ed38323cb95b88fafaae1ca9743a8695dd97e70c63aac4f7a56365
+SHA512: 340ae7e86de213339cf3c1882b817ffadd557a32628558722e491ff6d4263296c3b3e90f9793dc510357281fdf67d6cf80c4386befac74367f64b3fbcc28c8ad
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - reads a document through its contract
+ parse reads one document on standard input, checks it against the contract
+ named on its command line, and hands back the fields asked for as assignments
+ a shell can evaluate. A document that does not satisfy its contract yields
+ nothing to evaluate.
+ .
+ It carries no contract of its own. What may cross a boundary is stated by the
+ contract package the component reading that boundary depends on.
+
+Package: gettoken-secret-manager
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 13
+Depends: gettoken-contract-secret-get-request, gettoken-contract-secret-get-request-version, gettoken-contract-secret-get-response, gettoken-contract-secret-put-request, gettoken-contract-secret-put-response, gettoken-format, gettoken-parse
+Filename: pool/signed-archive/deb-stable/gettoken-secret-manager_0.1.0_all.deb
+Size: 2804
+MD5sum: 6e42ab3c086758ad0a10955083119067
+SHA1: f1295df4e9971f273bed374e9c7e7af6009746b0
+SHA256: 94758e49a4b1369abf08ef759f8016f04c506b83d5c5772705bdaed85f9cf395
+SHA512: 13cf206e058d016240e9ca8ceca62af65fc85aab137e2deb9670a631c38c81d2b3ac094e94a6fbbcf8ef28903ba595d808c73432bdbdbc7689eed378931bb8d6
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - super-token store
+ The store holds the super-tokens a human placed on the privileged side,
+ keyed by who holds them and which service they are for, and keeps every
+ version that was put in.
+ .
+ The store is /var/lib/gettoken/secrets, and no account but the privileged one
+ can read it. Nothing an agent runs reaches it; only an exchanger does, and
+ only for as long as it takes to trade a super-token for a narrow one. Purging
+ this package takes the store with it.
+
+Package: gettoken-token-requester
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-entitlements, gettoken-token-service, gettoken-contract-agent-capability-request, gettoken-contract-agent-list-request, gettoken-contract-entitlements-request, gettoken-contract-entitlements-response, gettoken-contract-token-request, gettoken-contract-token-response, gettoken-format, gettoken-parse
+Filename: pool/signed-archive/deb-stable/gettoken-token-requester_0.1.0_all.deb
+Size: 2424
+MD5sum: 904f4afb9b67cc2bfbd4b277fa278924
+SHA1: 31ddd78fac8543c37a5e1c82fcb0daffcfac47f6
+SHA256: 646fd95e081cb5b4fb0b4ded8da69c8a5d0dd7d8c74c07530adc7c680c17384b
+SHA512: b3d65a6a1324a3871e43c26b270c4ed30e2f86c95323d6f24c82ff1d221ebf5772236a20220be2e2c341835a1782e12af287365357869c53aeaf31120567fedb
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the privileged half
+ token-requester is what runs once the agent's ask has crossed over. It says who
+ is asking and what they are doing from the kernel rather than from anything the
+ agent can set, signs the request, and hands it to token-service.
+ .
+ It is not a name on a public PATH. An agent reaches it by invoking gettoken,
+ which is the only public name the components claim, and never by naming this.
+
+Package: gettoken-token-service
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-secret-manager, gettoken-contract-exchange-request, gettoken-contract-token-request, gettoken-contract-token-response, gettoken-format, gettoken-parse
+Filename: pool/signed-archive/deb-stable/gettoken-token-service_0.1.0_all.deb
+Size: 2316
+MD5sum: fd0a0966f6c0a7ace27b5adc678d6702
+SHA1: fa0778565f9fa2b6a70067562257a3b238517239
+SHA256: 679e9cecf7617cefb3fc5a2c1d8d7c238f420ce37f6ba5620b21814acad9894e
+SHA512: b20d6aec6619e0ef03b8e9fe20dea41386df158c44745c6175dc39cf160b514e3d934ce7062e238905c2fdd656b3bf51a11199f0c4941081d41c5404c82b5b95
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - exchange dispatcher
+ token-service authenticates a request, resolves what it asks for, and hands
+ the capability to the exchanger registered for the service named by the
+ capability's first segment.
+ .
+ It ships no exchanger. Each integrated tool installs its own into
+ /usr/lib/gettoken/exchangers, so adding the hundredth tool costs what the
+ first one did.
+
+Package: gettoken
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 19
+Depends: gettoken-token-requester, gettoken-contract-agent-capability-request, gettoken-contract-agent-list-request, gettoken-format
+Filename: pool/signed-archive/deb-stable/gettoken_0.1.0_all.deb
+Size: 9484
+MD5sum: b790282ff7969d2f44a0108686425c05
+SHA1: dd091d7ca7ad232bcfa8c24bf98379d2716536b2
+SHA256: 942ae772986bd70e3e9db55b447cbb6ae3d2d46bed698fdc07f1ce071eeed91f
+SHA512: b68534946daa1a5989e7230cc2a117214e1ef4e83c093199a1a56e90e1ee4e1a292a8aed7d94895bf1096227dc7347876fb8e018f87deb4244e1be6f582a78cc
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents
+ An agent that holds a long-lived credential holds whatever authority that
+ credential carries, and an agent can be talked into things by whatever it
+ reads. gettoken hands an agent a token narrow enough for the job in front of
+ it and nothing more, drawn from a super-token a human already holds.
+ .
+ This package contains the entry point the agent invokes and the privileged
+ half that builds the request on its behalf. The agent never holds the
+ super-token: it says what it wants, and gets back a token for that job.
+
+Package: integration-test-tool-exchanger
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 12
+Depends: gettoken-secret-manager, gettoken-contract-exchange-request, gettoken-contract-secret-get-request, gettoken-contract-secret-get-response, gettoken-contract-token-response, gettoken-format, gettoken-parse
+Filename: pool/signed-archive/deb-stable/integration-test-tool-exchanger_0.1.0_all.deb
+Size: 2492
+MD5sum: c28ab63a4e2523b257b8081440aaf0a1
+SHA1: 7f9298cdcacc2d1071a8b1f9ce78def5b7012161
+SHA256: 790bc9e9475c0b358ba9aef25c322ed5b19995ab470cf20238225d2920fd0885
+SHA512: 56067fa77c8bc6ed1f89c13df242b1a1fcd86f8c84c41ef9b55746ccbb30d8cd5aaf3f44b9c04741fa2d41da8b30014908e31113501720a8c02db74368032efb
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the exchanger the tool integrates
+ The exchanger integrationtest/ci/run is served by. It is told who is asking and
+ what for, trades the super-token the store holds for a narrow one, and answers
+ with that.
+ .
+ It is a separate package from the tool because it is on the other side of the
+ boundary: the tool is a public name an agent runs, and this is run by
+ token-service with the super-token in reach. What each may be told is what each
+ depends on, and they are not the same.
+
+Package: integration-test-tool
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 13
+Depends: gettoken, integration-test-tool-exchanger
+Filename: pool/signed-archive/deb-stable/integration-test-tool_0.1.0_all.deb
+Size: 2944
+MD5sum: 078cd9ae310bca68579ff9c74a8529c3
+SHA1: 9bb5199875c57c27d67858bb3e7eb2518ae21d99
+SHA256: d936e036d7e02da91c7c541f6ee62baa7a0969429ba5430cb34bc645624e702a
+SHA512: e0d9eb46f07cf1a0c5b529aecdee9ed74a3826e0791b2081b6882be5562ba336ffa97d84b24d5fc1c792a6a0530462aace95559988dc24b5ac25dd68b9625c53
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - tool that verifies the chain
+ The tool the verification suite integrates, standing in for a real one so the
+ chain can be exercised without reaching a service. It runs on the token that
+ integrationtest/ci/run downgrades to and refuses the super-token that token
+ was traded for, so a run that succeeds is proof that a downgrade happened. It
+ writes back what the narrow token carries, so what the store was given can be
+ followed all the way to the tool.
+ .
+ It is also the worked example of an integration: it depends on gettoken and
+ carries one exchanger, which knows one service and nothing about any other.
+ What that exchanger may say and be told is the contracts it depends on, and
+ nothing else. Installing it is what brings the chain onto a machine.
+

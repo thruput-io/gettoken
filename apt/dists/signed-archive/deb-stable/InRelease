@@ -1,0 +1,30 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Architectures: amd64
+Codename: signed-archive/deb-stable
+Components: main
+Date: Fri, 11 Sep 2026 01:19:30 +0000
+Description: token broker for AI agents
+Label: gettoken
+Origin: gettoken
+Suite: signed-archive/deb-stable
+MD5Sum:
+ b3ab12ec4205f1f4ba88ff4cfdf938c7            24820 main/binary-amd64/Packages
+ bff7f7985456176e7d3456edf843ca7b             7793 main/binary-amd64/Packages.gz
+SHA1:
+ 0d68390396a1a3a0eeb7830d2c06dabf259f03ca            24820 main/binary-amd64/Packages
+ b037f3fd2ea8873b50ad466c605fe2e192253910             7793 main/binary-amd64/Packages.gz
+SHA256:
+ 2215f6d4933652099817354171a86983c10b6654e20e4710ef8bfe6db26c45c1            24820 main/binary-amd64/Packages
+ adf0c2131424e04f4a8a269edb42ebe1922fc9ca336806c526e54d096971e6b4             7793 main/binary-amd64/Packages.gz
+SHA512:
+ 2274fb645b4bc53e4a900d45369f46834088a3575ff7c44f34c1d976b5b0270c90587e835062ec5a70c1f65b56598b22244a17a3c07c225b1f8884f7f4406b0c            24820 main/binary-amd64/Packages
+ 4841634c6b56c1fad69a4b5d4108b1b52a16c1aa72f3f700f6e186c4657ae626f533433c29f7bcb4bc836f77860a83842fc4f4df721d76de556e7c427662d5c4             7793 main/binary-amd64/Packages.gz
+-----BEGIN PGP SIGNATURE-----
+
+iHUEARYKAB0WIQST+7ZFs8H9vdh9ucAhVh7bqmSIggUCaqNXIgAKCRAhVh7bqmSI
+ggJhAQCEmwVMmTjR7k9zDR1dopYkEL1rACAZuqPVLkGHox19ugEA+4Wt6taKgKz5
+WFRhE/YiXqTVUiwHiWc3q8IrlSypawE=
+=zBkQ
+-----END PGP SIGNATURE-----
