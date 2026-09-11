@@ -266,8 +266,7 @@ flowchart LR
 implements yet carries a `SEAT.md` saying what it is for, so the list stays whole.
 A tool lives under `tools/` and owns its own privileged half, so the boundary sits
 inside the tool rather than across the top of the tree. Man pages live with what
-they document. `exploratory/` answers a question rather than guarding the
-product. `debian/` says which of these goes into which
+they document. `debian/` says which of these goes into which
 package, and it is one directory because Debian builds many packages from one
 source tree.
 
@@ -345,7 +344,5 @@ scripts/
 
 integration-test/
   test.sh
-
-exploratory/
 ```
 <!-- end layout -->
