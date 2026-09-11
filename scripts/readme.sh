@@ -43,8 +43,6 @@ entries() {
   echo
   echo 'integration-test/'
   entries integration-test | sed 's/^/  /'
-  echo
-  echo 'exploratory/'
 } > "$listing"
 
 awk -v listing="$listing" '
