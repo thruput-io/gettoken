@@ -1,12 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
-archive=$1
+list=$1
 
 # shellcheck source=scripts/archive.sh
 . "$(CDPATH='' cd "$(dirname "$0")/.." && pwd)/scripts/archive.sh"
 
-apt_takes_the_published_archive_or_stops "$archive"
+apt_takes_the_published_list_or_stops "$list"
 
 apt-get install -y --no-install-recommends integration-test-tool
 

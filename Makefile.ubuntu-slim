@@ -1,0 +1,7 @@
+.PHONY: setup-ubuntu-slim package-ubuntu-slim
+
+setup-ubuntu-slim:
+	sudo apt-get update
+	sudo apt-get install -y --no-install-recommends jq bats shellcheck golang-go kcov gnupg
+
+BASH_PARSER = /bin/bash

@@ -1,0 +1,12 @@
+
+PACKAGE_PLATFORMS = macos-26
+
+.PHONY: setup-macos-26 package-macos-26 \
+        $(PACKAGE_PLATFORMS:%=package-for-%)
+
+setup-macos-26:
+	brew install --no-ask jq bats-core shellcheck go kcov bash gnupg
+
+package-macos-26: $(PACKAGE_PLATFORMS:%=package-for-%)
+
+BASH_PARSER = /opt/homebrew/bin/bash

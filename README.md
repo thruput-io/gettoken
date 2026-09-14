@@ -363,10 +363,10 @@ scripts/
   mermaid.sh
   packaging-check.sh
   packaging.sh
-  pages.sh
-  promote.sh
   publish.sh
   readme.sh
+  sign.sh
+  signing-key.sh
   targets/
   test/
 
