@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eu
+cd /
+instance=macos
+owner=_colima
+
+if [ $# -ne 0 ]; then
+  echo "${0##*/}: takes no arguments" >&2
+  exit 1
+fi
+
+if [ "$(id -un)" != "$owner" ]; then
+  echo "${0##*/}: must run as $owner" >&2
+  exit 1
+fi
+
+HOME=/Users/$owner
+PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+LIMA_HOME=$HOME/.lima
+export HOME PATH LIMA_HOME
+
+exec limactl delete -f "$instance"

@@ -1,0 +1,27 @@
+#!/bin/sh
+set -eu
+cd /
+owner=_colima
+libexec=/usr/local/libexec
+
+usage() {
+  echo "usage: macos-vm build|reset|shell|destroy|status" >&2
+  exit 1
+}
+
+[ $# -ge 1 ] || usage
+verb=$1
+shift
+
+case "$verb" in
+  build|reset|destroy|status)
+    [ $# -eq 0 ] || usage
+    exec sudo -u "$owner" "$libexec/macos-vm-$verb"
+    ;;
+  shell)
+    exec sudo -u "$owner" "$libexec/macos-vm-shell" "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
