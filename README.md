@@ -203,6 +203,31 @@ To install onto a machine that is not the one that built them, copy that
 release's directory across and point apt at it there. It is a plain apt repository:
 nothing in it depends on having been built locally.
 
+### From the published archive
+
+`make publish` uploads that same directory to the URL it is given, and
+`make promote` moves the one that passed its tests to the URL a machine points
+apt at. Nothing about the archive changes on the way: `Packages` names each file
+relative to the archive, so an archive that moves keeps working, and `Release`
+covers the indices rather than where they sit, so the signature survives the move
+too.
+
+Published, it is signed, and the key it was signed with has to be somewhere apt
+can read rather than verification being turned off:
+
+```sh
+curl -fsSL https://thruput-io.github.io/gettoken/gettoken-archive-keyring.gpg \
+  | sudo tee /etc/apt/keyrings/gettoken-archive-keyring.gpg > /dev/null
+echo "deb [signed-by=/etc/apt/keyrings/gettoken-archive-keyring.gpg] https://thruput-io.github.io/gettoken/ ./" \
+  | sudo tee /etc/apt/sources.list.d/gettoken.list
+sudo apt-get update
+sudo apt-get install integration-test-tool
+```
+
+`signed-by` names the one key that one archive may be signed with. A key put in
+`/etc/apt/trusted.gpg.d` instead would be trusted to sign every other archive on
+that machine, Debian's own included, which is why it does not go there.
+
 ### What arrives, and why that is the interesting part
 
 A contract is an interface, so it is a package, and a component depends on the
@@ -338,6 +363,9 @@ scripts/
   mermaid.sh
   packaging-check.sh
   packaging.sh
+  pages.sh
+  promote.sh
+  publish.sh
   readme.sh
   targets/
   test/

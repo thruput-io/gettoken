@@ -8,11 +8,12 @@ RUN      = docker run --rm -v "$(CURDIR)":/work
 BUILDER  = $(RUN) -w /work -e GETTOKEN_TARGET=$(TARGET) $(IMAGE):$(TARGET)
 OFFICIAL = $(RUN) -w /work debian:$(TAG)
 
-.PHONY: test lint check-readme contract unit \
-        verify setup test-base build integration-test packaging-check \
+.PHONY: unit lint check-readme contract \
+        setup test-base package packaging-check publish test promote \
         deb-stable deb-testing packages readme diagrams clean
 
-test: lint check-readme unit
+unit: lint check-readme contract
+	PATH="$(BIN):$$PATH" bats --recursive components tools scripts
 
 lint:
 	./scripts/lint.sh "$(CURDIR)"
@@ -23,36 +24,37 @@ check-readme:
 contract:
 	./components/contract/build.sh "$(BIN)"
 
-unit: contract
-	PATH="$(BIN):$$PATH" bats --recursive components tools scripts
-
-verify: integration-test packaging-check
-
 setup:
 	docker build -t $(IMAGE):$(TARGET) --build-arg DEBIAN_TAG=$(TAG) \
 	  -f scripts/docker/Dockerfile scripts/docker
 
 test-base: setup
-	$(BUILDER) make test
+	$(BUILDER) make unit
 
-build: test-base
+package: test-base
 	$(BUILDER) ./scripts/deliver.sh $(TARGET) /work/$(ARCHIVE)
 
-integration-test: build
-	$(OFFICIAL) ./integration-test/test.sh /work/$(ARCHIVE)
-
-packaging-check: build
+packaging-check: package
 	$(OFFICIAL) ./scripts/packaging-check.sh /work/$(ARCHIVE)
 
+publish: packaging-check
+	./scripts/publish.sh "$(CURDIR)/$(ARCHIVE)" "$(ARCHIVE_URL)"
+
+test: publish
+	$(OFFICIAL) ./integration-test/test.sh "$(ARCHIVE_URL)"
+
+promote: test
+	./scripts/promote.sh "$(ARCHIVE_URL)" "$(PROMOTED_URL)"
+
 deb-stable:
-	$(MAKE) verify TARGET=deb-stable
+	$(MAKE) test TARGET=deb-stable
 
 deb-testing:
-	$(MAKE) verify TARGET=deb-testing
+	$(MAKE) test TARGET=deb-testing
 
 packages:
-	$(MAKE) build TARGET=deb-stable
-	$(MAKE) build TARGET=deb-testing
+	$(MAKE) package TARGET=deb-stable
+	$(MAKE) package TARGET=deb-testing
 
 readme:
 	./scripts/readme.sh "$(CURDIR)" --write
