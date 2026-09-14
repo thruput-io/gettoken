@@ -1,0 +1,40 @@
+#!/bin/sh
+set -eu
+cd /
+golden=macos-snapshot
+template=/usr/local/etc/lima/macos-26.yaml
+owner=_colima
+
+if [ $# -ne 0 ]; then
+  echo "${0##*/}: takes no arguments" >&2
+  exit 1
+fi
+
+if [ "$(id -un)" != "$owner" ]; then
+  echo "${0##*/}: must run as $owner" >&2
+  exit 1
+fi
+
+HOME=/Users/$owner
+PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+LIMA_HOME=$HOME/.lima
+export HOME PATH LIMA_HOME
+
+keychain=$HOME/Library/Keychains/login.keychain-db
+if [ -f "$keychain" ]; then
+  security unlock-keychain -p '' "$keychain"
+fi
+
+if limactl list -q | grep -x "$golden" >/dev/null; then
+  limactl unprotect "$golden"
+  limactl delete -f "$golden"
+fi
+
+limactl start --tty=false --name="$golden" "$template"
+
+if ! limactl shell "$golden" -- command -v brew >/dev/null 2>&1; then
+  limactl shell "$golden" -- /bin/bash -c "NONINTERACTIVE=1 /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+fi
+
+limactl stop "$golden"
+limactl protect "$golden"

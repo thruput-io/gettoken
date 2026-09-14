@@ -1,0 +1,5 @@
+%developers ALL=(_colima) NOPASSWD: /usr/local/libexec/macos-vm-build ""
+%developers ALL=(_colima) NOPASSWD: /usr/local/libexec/macos-vm-reset ""
+%developers ALL=(_colima) NOPASSWD: /usr/local/libexec/macos-vm-destroy ""
+%developers ALL=(_colima) NOPASSWD: /usr/local/libexec/macos-vm-status ""
+%developers ALL=(_colima) NOPASSWD: /usr/local/libexec/macos-vm-shell

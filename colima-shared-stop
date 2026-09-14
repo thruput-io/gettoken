@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+cd /
+owner=_colima
+
+if [ "$(id -un)" != "$owner" ]; then
+  echo "${0##*/}: must run as $owner" >&2
+  exit 1
+fi
+
+HOME=/Users/$owner
+PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+export HOME PATH
+
+exec colima --profile shared stop "$@"
