@@ -2,12 +2,13 @@
 set -euo pipefail
 
 packages=$1
+keyring=$2
 tool=integration-test-tool
 
 # shellcheck source=scripts/archive.sh
 . "$(CDPATH='' cd "$(dirname "$0")/.." && pwd)/scripts/archive.sh"
 
-apt_takes_the_archive_or_stops "$packages"
+apt_takes_the_archive_or_stops "$packages" "$keyring"
 apt-get install -y --no-install-recommends "$tool"
 
 apt-get purge -y "$tool"
