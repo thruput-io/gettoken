@@ -52,8 +52,7 @@ and put them on `PATH` yourself.
 
 The gate reads every file's first line: a script says which shell it is written
 for with a shebang, and a file that is sourced rather than run says it with a
-`shellcheck` directive instead. It also reads what the tree holds off the tree
-and fails when `README.md` has drifted from it; `make readme` writes it back.
+`shellcheck` directive instead.
 
 Nothing is skipped when a tool is missing. A test that cannot run fails.
 

@@ -9,41 +9,17 @@ cd "$root"
 listing=$(mktemp)
 trap 'rm -f "$listing"' EXIT
 
-entries() {
-  {
-    find "$1" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sed 's|$|/|'
-    find "$1" -mindepth 1 -maxdepth 1 ! -type d -exec basename {} \;
-  } | sort
-}
-
-{
-  echo 'contracts/'
-  find contracts -maxdepth 1 -name '*.schema.json' -exec basename {} \; | sort | sed 's/^/  /'
-  echo
-  echo 'components/'
-  for d in components/*/; do
-    name=$(basename "$d")
-    note=''
-    if [ -f "$d/SEAT.md" ]; then note='SEAT.md'; fi
-    if [ -d "$d/cmd" ]; then note='parse and format, in Go'; fi
-    printf '  %-27s %s\n' "$name/" "$note" | sed 's/[[:space:]]*$//'
-  done
-  echo
-  echo 'tools/'
-  for d in tools/*/; do
-    echo "  $(basename "$d")/"
-    entries "$d" | sed 's/^/    /'
-  done
-  echo
-  echo 'debian/'
-  find debian -mindepth 1 -maxdepth 2 -type f | sed 's|debian/||' | sort | sed 's/^/  /'
-  echo
-  echo 'scripts/'
-  entries scripts | sed 's/^/  /'
-  echo
-  echo 'integration-test/'
-  entries integration-test | sed 's/^/  /'
-} > "$listing"
+find . \
+  \( -path ./.git -o -path ./build -o -path ./.idea -o -path ./.claude \
+     -o -name vendor -o -name testdata \) -prune -o -type d -print \
+  | sed 's|^\./||' \
+  | grep -v '^\.$' \
+  | sort \
+  | awk -F/ '{
+      indent = ""
+      for (depth = 1; depth < NF; depth++) indent = indent "  "
+      print indent $NF "/"
+    }' > "$listing"
 
 awk -v listing="$listing" '
   /^<!-- layout -->$/ {

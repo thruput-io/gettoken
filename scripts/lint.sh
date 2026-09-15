@@ -29,3 +29,4 @@ if [ ! -s "$selected" ]; then
 fi
 
 xargs shellcheck -s bash -x < "$selected"
+echo "ok: shellcheck read $(wc -l < "$selected" | tr -d ' ') files and reported nothing"
