@@ -1,12 +1,12 @@
-PACKAGE_PLATFORMS = ubuntu-slim ubuntu-26.04
-
-.PHONY: setup-ubuntu-26.04 package-ubuntu-26.04 \
-        $(PACKAGE_PLATFORMS:%=package-for-%)
+.PHONY: setup-ubuntu-26.04
 
 setup-ubuntu-26.04:
 	sudo apt-get update
 	sudo apt-get install -y --no-install-recommends jq bats shellcheck golang-go kcov gnupg
 
-package-ubuntu-26.04: $(PACKAGE_PLATFORMS:%=package-for-%)
+PLATFORM_ROOT  = $(CURDIR)
+PLATFORM_BUILD = $(CURDIR)/build
+PLATFORM_PATH  = /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+ON_PLATFORM    =
 
 BASH_PARSER = /bin/bash

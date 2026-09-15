@@ -7,17 +7,17 @@ on:
 
 jobs:
   verify:
-    name: ${{ matrix.name }}
+    name: ${{ matrix.platform }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { name: macOS stable,  os: macos-15,      platform: macos-26,      target: unit }
-          - { name: macOS latest,  os: macos-latest,  platform: macos-26,      target: unit }
-          - { name: Debian stable, os: ubuntu-latest, platform: ubuntu-slim,   target: test }
-          - { name: deb-testing,   os: ubuntu-latest, platform: ubuntu-26.04,  target: test }
+          - { platform: macos-26,     os: macos-15,      make: unit }
+          - { platform: macos-26,     os: macos-latest,  make: unit }
+          - { platform: ubuntu-slim,  os: ubuntu-latest, make: test }
+          - { platform: ubuntu-26.04, os: ubuntu-latest, make: test }
     steps:
       - uses: actions/checkout@v4
       - run: make setup GETTOKEN_PLATFORM=${{ matrix.platform }}
-      - run: make ${{ matrix.target }} GETTOKEN_PLATFORM=${{ matrix.platform }}
+      - run: make ${{ matrix.make }} GETTOKEN_PLATFORM=${{ matrix.platform }}

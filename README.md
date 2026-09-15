@@ -166,14 +166,14 @@ would be from any other archive:
 make packages
 ```
 
-That writes `build/packages/deb-stable/` and `build/packages/deb-testing/`, each
-holding every `.deb` for that release, a `Packages` index, and a `Release` that
-names the index files that exist, so `apt` fetches what is there rather than
-probing for compressions the archive does not carry. Point apt at the one
-for the release you are on and ask for the one tool:
+That writes `build/packages/deb-testing/`, holding every `.deb` for that release,
+a `Packages` index, a `Release` naming the index files that exist, and the
+`InRelease` and `Release.gpg` signatures over it. It also writes the apt source
+line naming the key that archive must verify against, so installing is what it
+would be from any other signed archive:
 
 ```sh
-echo "deb [trusted=yes] file:/path/to/build/packages/deb-stable ./" | sudo tee /etc/apt/sources.list.d/gettoken.list
+sudo cp build/deb-testing.list /etc/apt/sources.list.d/gettoken.list
 sudo apt-get update
 sudo apt-get install integration-test-tool
 ```
@@ -297,30 +297,34 @@ source tree.
 
 <!-- layout -->
 ```
-contracts/
-  agent-capability-request.schema.json
-  agent-list-request.schema.json
-  defs.schema.json
-  entitlements-request.schema.json
-  entitlements-response.schema.json
-  exchange-request.schema.json
-  secret-get-request-version.schema.json
-  secret-get-request.schema.json
-  secret-get-response.schema.json
-  secret-put-request.schema.json
-  secret-put-response.schema.json
-  token-request.schema.json
-  token-response.schema.json
-
+.github/
+  workflows/
 components/
-  agent-identity-authority/   SEAT.md
-  auth-canvas/                SEAT.md
-  contract/                   parse and format, in Go
+  agent-identity-authority/
+  auth-canvas/
+  contract/
+    cmd/
+      format/
+      parse/
+    test/
   entitlements/
-  notifier/                   SEAT.md
+    test/
+  notifier/
   secret-manager/
+    test/
   token-service/
-
+    test/
+contracts/
+debian/
+  source/
+docs/
+  adrs/
+integration-test/
+scripts/
+  docker/
+  fixtures/
+  targets/
+  test/
 tools/
   gettoken/
     bin/
@@ -331,46 +335,7 @@ tools/
     bin/
     man/
     privileged/
+      exchangers/
     test/
-
-debian/
-  changelog
-  control.in
-  copyright
-  gettoken-entitlements.install
-  gettoken-format.install
-  gettoken-parse.install
-  gettoken-secret-manager.install
-  gettoken-secret-manager.postrm
-  gettoken-token-requester.install
-  gettoken-token-service.install
-  gettoken.docs
-  gettoken.install
-  gettoken.manpages
-  integration-test-tool-exchanger.install
-  integration-test-tool.install
-  integration-test-tool.manpages
-  rules
-  source/format
-  source/lintian-overrides
-
-scripts/
-  archive.sh
-  deliver.sh
-  docker/
-  fixtures/
-  lint.sh
-  mermaid.sh
-  packaging-check.sh
-  packaging.sh
-  publish.sh
-  readme.sh
-  sign.sh
-  signing-key.sh
-  targets/
-  test/
-
-integration-test/
-  test.sh
 ```
 <!-- end layout -->
