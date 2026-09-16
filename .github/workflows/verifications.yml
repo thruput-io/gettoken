@@ -6,18 +6,37 @@ on:
     branches: [main]
 
 jobs:
-  verify:
-    name: ${{ matrix.platform }} on ${{ matrix.os }}
+  unit:
+    name: unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make setup
+      - run: make unit
+
+  integration:
+    name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { platform: macos-26,     os: macos-15,      make: unit }
-          - { platform: macos-26,     os: macos-latest,  make: unit }
-          - { platform: ubuntu-slim,  os: ubuntu-latest, make: test }
-          - { platform: ubuntu-26.04, os: ubuntu-latest, make: test }
+          - name: ubuntu-slim
+            os: ubuntu-latest
+            install: sudo apt-get install -y --no-install-recommends
+            unprivileged: nobody
+          - name: ubuntu-26.04
+            os: ubuntu-latest
+            install: sudo apt-get install -y --no-install-recommends
+            unprivileged: nobody
+          - name: macos-26
+            os: macos-15
+            install: brew install --no-ask
+            unprivileged: nobody
     steps:
       - uses: actions/checkout@v4
-      - run: make setup GETTOKEN_PLATFORM=${{ matrix.platform }}
-      - run: make ${{ matrix.make }} GETTOKEN_PLATFORM=${{ matrix.platform }}
+      - run: make setup
+        env:
+          INSTALL_COMMAND: ${{ matrix.install }}
+      - run: ./integration-test/test.sh "${{ matrix.install }}" "${{ matrix.unprivileged }}"

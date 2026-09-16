@@ -2,36 +2,41 @@
 
 ## Decision
 
-`Makefile.{GETTOKEN_PLATFORM}` contains the platform-specific variables and
-targets.
+Makefile shall produce a brew package (formula only, built from source, no bottle) and debian package. The only difference between executioners of makefile is apt or brew, the setup target will install the build tools needed using the INSTALL_COMMAND BUILD_DEPS.
 
-Nowhere in the code is `GETTOKEN_PLATFORM` tested to discover what the current
-context is. A value that differs is stored in `Makefile.{GETTOKEN_PLATFORM}`
-and passed via a make target.
+brew package and debian package are hard-coded out-comes of the Makefile, both should be produced no matter the builders platform.
 
-A platform-specific target is invoked through a target dependency. For example,
-the abstract target `lint` in the main Makefile depends on
-`lint-{GETTOKEN_PLATFORM}`.
+Make test will execute integrationstest/test.sh test.sh. test.sh will have two parameters INSTALL_COMMAND and UNPRIVILEGED_USER. It will pull package by invoking provided INSTALL_COMMAND {get token-package} it will use sudo to UNPRIVILEGED_USER to do unprivileged actions, It will assume user running the script is correct PRIVILIGED_USER.
 
-`GETTOKEN_PLATFORM` is the only variable allowed to denote the building or
-target context, rather than calling `uname` or any alternative thereof. You can
-pass it on to new contexts, but never call it by another name or mutate it.
+Config.sh will provide configuration of the build, in this moment something like this:
+Variables can only be declared in config.sh
 
-`GETTOKEN_PLATFORM` is set by the invoker. The invoker is not part of this
-repository.
+config.sh will export: configuration should work on github build agent
+export PUBLISH_BREW_COMMAND=xxx<something that works in build pipeline>
+export PUBLISH_APT_COMANND=xxx<something that works in build pipeline>
+export INSTALL_COMMAND=sudo apt-get install -y --no-install-recommends
+export BUILD_DEPS=jq bats-core shellcheck go kcov bash gnupg
+export UNPRIVILEGED_USER=nonroot
 
-The Dockerfile describing each `GETTOKEN_PLATFORM` is built by make as well. The
-same rules can handle platform-specific Dockerfiles.
+A variant tha can be used by developer on a mac.
+config.local.sh=brew install --no-ask
+export PUBLISH_BREW_COMMAND=xxx<something that works locally>
+export PUBLISH_APT_COMANND=xxx<something that works locally>
+export INSTALL_COMMAND=sudo apt-get install -y --no-install-recommends
+export BUILD_DEPS=jq bats-core shellcheck go kcov bash gnupg
+export UNPRIVILEGED_USER=user
 
-## Motivation
+Build Chain
+Makefile will produce both package types brew and apt. Makefile has no notion what platform it is executing on setup will invoke:
+"make setup" will only do
+INSTALL_COMMAND BUILD_DEPS
 
-Each build is a completely linear and deterministic process without any branches.
-By having no logic, it cannot fail from logical errors. Platform differences are
-clearly and explicitly handled by the Makefile. Adding a new platform will be
-straightforward, as everything that differs from one platform to another is listed
-in `Makefile.{GETTOKEN_PLATFORM}`.
+publish will publish respective package by invoking
+PUBLISH_BREW_COMMAND <package>
+PUBLISH_APT_COMANND <package>
 
-There is no default value on variables that gets overridden by the platform-specific
-one. If one platform requires a separate value, it must go into all
-`Makefile.{GETTOKEN_PLATFORM}` files.
+make test will execute integrationstest/test.sh test.sh. test.sh will have two parameters INSTALL_COMMAND and UNPRIVILEGED_USER. It will pull package by invoking provided INSTALL_COMMAND {get token-package} it will use sudo to UNPRIVILEGED_USER to do unprivileged actions, It will assume user running the script is correct PRIVILIGED_USER.
+
+On build pipeline a mtraix with all three target plaforms will be configured
+each will just invoke test.sh with parameters INSTALL_COMMAND and UNPRIVILEGED_USER those variables will be set in pipeline yaml
 

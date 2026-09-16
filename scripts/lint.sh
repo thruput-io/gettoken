@@ -7,7 +7,7 @@ candidates=$(mktemp)
 selected=$(mktemp)
 trap 'rm -f "$candidates" "$selected"' EXIT
 
-if ! find "$root" -type f -not -path '*/.git/*' -not -path "$root/build/*" > "$candidates"; then
+if ! find "$root" -path "$root/.git" -prune -o -path "$root/build" -prune -o -type f -print > "$candidates"; then
   echo "lint.sh: could not walk $root, so the gate checked nothing" >&2
   exit 1
 fi

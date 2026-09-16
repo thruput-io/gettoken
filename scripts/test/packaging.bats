@@ -6,11 +6,11 @@ setup() {
 }
 
 installed_into() {
-  awk -v want="$1" '$2 == want { n = split($1, p, "/"); print p[n] }' "$root"/debian/*.install | sort
+  awk -v want="$1" '$2 == want { n = split($1, p, "/"); print p[n] }' "$root"/src/debian/*.install | sort
 }
 
 destinations() {
-  awk '{ print $2 }' "$root"/debian/*.install | sort -u
+  awk '{ print $2 }' "$root"/src/debian/*.install | sort -u
 }
 
 destinations_reachable_without_gettoken_on_path() {
@@ -28,5 +28,5 @@ destinations_reachable_without_gettoken_on_path() {
 
 @test "the exchanger is not something an agent can run" {
   [ "$(installed_into usr/bin)" = "$(installed_into usr/bin | grep -v integrationtest)" ]
-  grep -q 'usr/lib/gettoken/exchangers' "$root/debian/integration-test-tool-exchanger.install"
+  grep -q 'usr/lib/gettoken/exchangers' "$root/src/debian/integration-test-tool-exchanger.install"
 }
