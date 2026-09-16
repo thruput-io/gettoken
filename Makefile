@@ -1,125 +1,142 @@
 .DELETE_ON_ERROR:
 
-include Makefile.$(GETTOKEN_PLATFORM)
+CONFIG = . ./config.sh &&
 
-IMAGE    = gettoken-test
-TARGET   = deb-testing
-TAG      = $(shell sed -n 's/^DEBIAN_TAG=//p' scripts/targets/$(TARGET))
-ARCHIVE  = build/packages/$(TARGET)
-LIST     = build/$(TARGET).list
-REPORTS  = build/reports
-COVERAGE = $(PLATFORM_BUILD)/reports/coverage
-SIGNING  = build/signing
-BIN      = $(PLATFORM_BUILD)/bin
+PACKAGE_FORMATS = $(shell $(CONFIG) echo $$PACKAGE_FORMATS)
 
 BASH_FLOOR = 22
 GO_FLOOR   = 44
 
-SUITE  = $(shell find components tools scripts contracts -type f)
-GO_SRC = $(shell find components/contract -type f -name '*.go') \
-         components/contract/go.mod components/contract/go.sum
+SUITE  = $(shell find src scripts -type f)
+GO_SRC = $(shell find src/components/contract -type f -name '*.go') \
+         src/components/contract/go.mod src/components/contract/go.sum
 
-RUN      = docker run --rm -v "$(CURDIR)":/work
-BUILDER  = $(RUN) -w /work -e GETTOKEN_TARGET=$(TARGET) $(IMAGE):$(TARGET)
-OFFICIAL = $(RUN) -w /work debian:$(TAG)
+.PHONY: setup unit test lint check-readme contract unit-test coverage go-coverage \
+        signing-key package package-deb package-brew sign packaging-check \
+        publish integration-test readme clean
 
-.PHONY: setup unit test readme clean
+setup:            build/reports/setup
+unit:             build/reports/unit
+test:             build/reports/integration-test
+lint:             build/reports/lint
+check-readme:     build/reports/check-readme
+unit-test:        build/reports/unit-test
+coverage:         build/reports/coverage
+go-coverage:      build/reports/go-coverage
+contract:         build/bin/parse build/bin/format
+signing-key:      build/signing/pubkey.gpg
+package:          build/reports/package
+package-deb:      build/reports/package-deb
+package-brew:     build/reports/package-brew
+sign:             build/dist/deb/InRelease
+packaging-check:  build/reports/packaging-check
+publish:          build/reports/publish
+integration-test: build/reports/integration-test
 
-setup: $(SIGNING)/pubkey.gpg build/image.id
-unit:  $(REPORTS)/unit.report
-test:  $(REPORTS)/integration.report
+readme:
+	scripts/readme.sh . --write
 
-$(SIGNING)/pubkey.gpg: | setup-$(GETTOKEN_PLATFORM)
-	$(ON_PLATFORM) ./scripts/signing-key.sh "$(CURDIR)/$(SIGNING)"
+clean:
+	rm -rf build
 
-build/image.id: scripts/docker/Dockerfile scripts/targets/$(TARGET)
+build/reports/setup: config.sh
 	@mkdir -p $(@D)
-	docker build -t $(IMAGE):$(TARGET) --build-arg DEBIAN_TAG=$(TAG) \
-	  -f scripts/docker/Dockerfile scripts/docker
-	docker image inspect -f '{{.Id}}' $(IMAGE):$(TARGET) > $@
+	$(CONFIG) $$INSTALL_COMMAND $$BUILD_DEPS
+	$(CONFIG) echo "installed $$BUILD_DEPS" > $@
 
-$(BIN)/parse $(BIN)/format: $(GO_SRC)
-	$(ON_PLATFORM) ./components/contract/build.sh "$(BIN)"
+build/signing/pubkey.gpg:
+	scripts/signing-key.sh build/signing
 
-$(REPORTS)/lint.report: $(SUITE)
+build/bin/parse build/bin/format: $(GO_SRC)
+	src/components/contract/build.sh build/bin
+
+build/reports/lint: $(SUITE)
 	@mkdir -p $(@D)
-	$(ON_PLATFORM) ./scripts/lint.sh "$(PLATFORM_ROOT)" > $@ 2>&1
+	scripts/lint.sh . > $@ 2>&1
+	test "$$(sed -n 's/^ok: shellcheck read \([0-9]*\) files.*/\1/p' $@)" -ge 1
 
-$(REPORTS)/readme.report: $(SUITE) README.md
+build/reports/check-readme: $(SUITE) README.md
 	@mkdir -p $(@D)
-	$(ON_PLATFORM) ./scripts/readme.sh "$(PLATFORM_ROOT)" > $@ 2>&1
+	scripts/readme.sh . > $@ 2>&1
+	grep -q '^ok: ' $@
 
-$(REPORTS)/readme-is-current: $(REPORTS)/readme.report
-	grep -q '^ok: ' $<
-	cp $< $@
-
-$(REPORTS)/test.report: $(SUITE) $(BIN)/parse $(BIN)/format
+build/reports/unit-test: $(SUITE) build/bin/parse build/bin/format
 	@mkdir -p $(@D)
-	$(ON_PLATFORM) env PATH="$(BIN):$(PLATFORM_PATH)" bats --recursive components tools scripts > $@
+	PATH="build/bin:$$PATH" \
+	  bats --recursive src scripts > $@
+	! grep -q '^not ok' $@
+	test "$$(grep -c '^ok ' $@)" -eq "$$(sed -n 's/^1\.\.//p' $@)"
 
-$(REPORTS)/coverage.report: $(SUITE) $(BIN)/parse $(BIN)/format
+build/reports/coverage: $(SUITE) build/bin/parse build/bin/format
 	@mkdir -p $(@D)
-	$(ON_PLATFORM) env PATH="$(BIN):$(PLATFORM_PATH)" kcov --include-path=components,tools,scripts \
-	  --bash-parse-files-in-dir=components,tools,scripts \
-	  --exclude-pattern=.bats --bash-parser=$(BASH_PARSER) \
-	  $(COVERAGE) bats --recursive components tools scripts
-	$(ON_PLATFORM) jq -r '.percent_covered' $(COVERAGE)/bats/coverage.json > $@
+	PATH="build/bin:$$PATH" \
+	  kcov --include-path=src,scripts \
+	  --bash-parse-files-in-dir=src,scripts \
+	  --exclude-pattern=.bats \
+	  build/kcov bats --recursive src scripts
+	jq -r '.percent_covered' build/kcov/bats/coverage.json > $@
+	test "$$(sed 's/\..*//' $@)" -ge $(BASH_FLOOR)
 
-$(REPORTS)/go-coverage.report: $(GO_SRC)
-	@mkdir -p $(@D)
-	$(ON_PLATFORM) env -C $(PLATFORM_ROOT)/components/contract PATH="$(PLATFORM_PATH)" \
-	  go test -mod=vendor -coverprofile=$(COVERAGE)/go.out ./...
-	$(ON_PLATFORM) env -C $(PLATFORM_ROOT)/components/contract PATH="$(PLATFORM_PATH)" \
-	  go tool cover -func=$(COVERAGE)/go.out > $(@D)/go.func
-	awk 'END { sub(/%/, "", $$3); print $$3 }' $(@D)/go.func > $@
+build/reports/go-coverage: $(GO_SRC)
+	@mkdir -p $(@D) build/kcov
+	cd src/components/contract && go test -mod=vendor \
+	  -coverprofile=../../../build/kcov/go.out ./...
+	cd src/components/contract && go tool cover \
+	  -func=../../../build/kcov/go.out > ../../../build/reports/go.func
+	awk 'END { sub(/%/, "", $$3); print $$3 }' build/reports/go.func > $@
+	test "$$(sed 's/\..*//' $@)" -ge $(GO_FLOOR)
 
-$(REPORTS)/code-is-linted: $(REPORTS)/lint.report
-	test "$$(sed -n 's/^ok: shellcheck read \([0-9]*\) files.*/\1/p' $<)" -ge 1
-	cp $< $@
+build/reports/unit: build/reports/lint \
+                            build/reports/check-readme \
+                            build/reports/unit-test \
+                            build/reports/coverage \
+                            build/reports/go-coverage
+	{ cat build/reports/lint build/reports/check-readme; \
+	  echo "$$(grep -c '^ok ' build/reports/unit-test) tests, all ok"; \
+	  echo "bash $$(cat build/reports/coverage)% covered, floor $(BASH_FLOOR)"; \
+	  echo "go $$(cat build/reports/go-coverage)% covered, floor $(GO_FLOOR)"; } > $@
+	cat $@
 
-$(REPORTS)/tests-pass: $(REPORTS)/test.report
-	! grep -q '^not ok' $<
-	test "$$(grep -c '^ok ' $<)" -eq "$$(sed -n 's/^1\.\.//p' $<)"
-	echo "$$(grep -c '^ok ' $<) tests, all ok" > $@
+build/dist/deb/Packages: build/reports/unit src/debian src/contracts
+	scripts/deliver-deb.sh build/dist/deb
 
-$(REPORTS)/test-has-coverage: $(REPORTS)/coverage.report $(REPORTS)/go-coverage.report
-	grep -qE '^[0-9]+\.[0-9]+$$' $(REPORTS)/coverage.report
-	grep -qE '^[0-9]+\.[0-9]+$$' $(REPORTS)/go-coverage.report
-	test "$$(sed 's/\..*//' $(REPORTS)/coverage.report)" -ge $(BASH_FLOOR)
-	test "$$(sed 's/\..*//' $(REPORTS)/go-coverage.report)" -ge $(GO_FLOOR)
-	echo "bash $$(cat $(REPORTS)/coverage.report) go $$(cat $(REPORTS)/go-coverage.report)" > $@
+build/dist/brew/gettoken.rb: build/reports/unit src/debian/changelog
+	scripts/deliver-brew.sh build/dist/brew
 
-$(REPORTS)/unit.report: $(REPORTS)/code-is-linted $(REPORTS)/readme-is-current \
-                        $(REPORTS)/tests-pass $(REPORTS)/test-has-coverage
+build/dist/deb/InRelease: build/dist/deb/Packages build/signing/pubkey.gpg
+	scripts/sign.sh build/dist/deb build/signing
+
+build/reports/package: $(PACKAGE_FORMATS:%=build/reports/package-%)
 	cat $^ > $@
 	cat $@
 
-$(REPORTS)/base.report: build/image.id $(SUITE) $(GO_SRC)
+build/reports/package-deb: build/dist/deb/InRelease
 	@mkdir -p $(@D)
-	$(BUILDER) make unit GETTOKEN_PLATFORM=$(GETTOKEN_PLATFORM) > $@
+	echo "deb: $$(find build/dist/deb -name '*.deb' | wc -l | tr -d ' ') packages, signed" > $@
 
-$(ARCHIVE)/Packages: $(REPORTS)/base.report debian contracts
-	$(BUILDER) ./scripts/deliver.sh $(TARGET) /work/$(ARCHIVE)
+build/reports/package-brew: build/dist/brew/gettoken.rb
+	@mkdir -p $(@D)
+	echo "brew: $$(basename $<)" > $@
 
-$(ARCHIVE)/InRelease: $(ARCHIVE)/Packages $(SIGNING)/pubkey.gpg
-	$(BUILDER) ./scripts/sign.sh /work/$(ARCHIVE) /work/$(SIGNING)
+build/reports/packaging-check: build/dist/deb/InRelease
+	@mkdir -p $(@D)
+	scripts/packaging-check.sh build/dist/deb \
+	  build/signing/pubkey.gpg > $@
 
-$(REPORTS)/packaging-check.report: $(ARCHIVE)/InRelease
-	$(OFFICIAL) ./scripts/packaging-check.sh /work/$(ARCHIVE) /work/$(SIGNING)/pubkey.gpg > $@
-
-$(LIST): $(REPORTS)/packaging-check.report
-	$(OFFICIAL) ./scripts/publish.sh /work/$(ARCHIVE) /work/$(SIGNING)/pubkey.gpg /work/$(LIST)
-
-$(REPORTS)/integration.report: $(LIST)
-	$(OFFICIAL) ./integration-test/test.sh /work/$(LIST) > $@
+build/reports/publish: build/reports/package build/reports/packaging-check
+	$(CONFIG) for dist in build/dist/*/; do \
+	  format=$$(basename "$$dist"); \
+	  eval "publish=\$$PUBLISH_$$(echo $$format | tr a-z A-Z)_COMMAND"; \
+	  $$publish "$$dist"; \
+	done > $@
 	cat $@
 
-$(REPORTS)/diagrams.report: README.md scripts/mermaid.sh
+build/reports/integration-test: build/reports/publish
 	@mkdir -p $(@D)
-	./scripts/mermaid.sh > $@ 2>&1
+	$(CONFIG) src/integration-test/test.sh \
+	  "$$INSTALL_COMMAND" "$$UNPRIVILEGED_USER" > $@
+	cat $@
 
-readme:
-	./scripts/readme.sh "$(CURDIR)" --write
-
-clean:
-	$(RUN) -w /work debian:$(TAG) rm -rf /work/build
+build/reports/diagrams: README.md scripts/mermaid.sh
+	@mkdir -p $(@D)
+	scripts/mermaid.sh > $@ 2>&1

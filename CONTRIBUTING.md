@@ -32,11 +32,10 @@ is the only place allowed to span them.
 
 ## Running the suite
 
-`make unit` runs the suite where you invoke it. `make deb-stable` and
-`make deb-testing` run that same suite inside the base that release is built in,
-then build the packages there, publish them to the archive `ARCHIVE_URL` names,
-then install and use them from there on the official image for that release.
-Only those two reach the paths a package puts things at. The
+`make unit` runs the suite where you invoke it. `make package` builds both the
+Debian package and the Homebrew formula, and `make test` installs what was built
+and uses it, so only that one reaches the paths a package puts things at. What
+each of them needs is declared in `config.sh`, and `make setup` installs it. The
 host needs `jq`, `bats`, `shellcheck` and a Go toolchain,
 which builds the contract component named in
 [record 17](docs/adrs/0017-a-validator-brew-and-apt-can-carry.md):

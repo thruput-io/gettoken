@@ -166,14 +166,14 @@ would be from any other archive:
 make packages
 ```
 
-That writes `build/packages/deb-testing/`, holding every `.deb` for that release,
+That writes `build/packages/deb/`, holding every `.deb` for that release,
 a `Packages` index, a `Release` naming the index files that exist, and the
 `InRelease` and `Release.gpg` signatures over it. It also writes the apt source
 line naming the key that archive must verify against, so installing is what it
 would be from any other signed archive:
 
 ```sh
-sudo cp build/deb-testing.list /etc/apt/sources.list.d/gettoken.list
+sudo cp build/packages/deb/gettoken.list /etc/apt/sources.list.d/gettoken.list
 sudo apt-get update
 sudo apt-get install integration-test-tool
 ```
@@ -184,13 +184,12 @@ a document through a contract, and one package per contract. Nothing else is
 named, and nothing else arrives. Purging it takes them all with it, and the store
 with them.
 
-`make packages` builds for both Debian stable and Debian testing, leaving each
-in its own directory under `build/packages/`. The two say different things about
-themselves because the releases carry different debhelper, lintian and Go, and
-what each target is is written in `scripts/targets/`: what that release's archive
-carries and what its Policy wants said, stated rather than sniffed, so a build
-that finds something different says so. `lintian` at pedantic is what proves the
-statement, on the source and on every package.
+`make package` builds both outcomes: the Debian packages under
+`build/packages/deb/` and the Homebrew formula under `build/packages/brew/`.
+What debhelper, Go and Policy the packaging says of itself is written in
+`config.sh`, stated rather than sniffed, so a build that finds something
+different says so. `lintian` at pedantic is what proves the statement, on the
+source and on every package.
 
 Nothing under `debian/` that can be derived is kept. `debian/control` and one
 `.install` per contract are written by `scripts/packaging.sh` from the contracts,
@@ -299,43 +298,43 @@ source tree.
 ```
 .github/
   workflows/
-components/
-  agent-identity-authority/
-  auth-canvas/
-  contract/
-    cmd/
-      format/
-      parse/
-    test/
-  entitlements/
-    test/
-  notifier/
-  secret-manager/
-    test/
-  token-service/
-    test/
-contracts/
-debian/
-  source/
 docs/
   adrs/
-integration-test/
 scripts/
   docker/
   fixtures/
-  targets/
   test/
-tools/
-  gettoken/
-    bin/
-    man/
-    privileged/
-    test/
-  integration-test-tool/
-    bin/
-    man/
-    privileged/
-      exchangers/
-    test/
+src/
+  components/
+    agent-identity-authority/
+    auth-canvas/
+    contract/
+      cmd/
+        format/
+        parse/
+      test/
+    entitlements/
+      test/
+    notifier/
+    secret-manager/
+      test/
+    token-service/
+      test/
+  contracts/
+  debian/
+    source/
+  integration-test/
+  tools/
+    gettoken/
+      bin/
+      man/
+      privileged/
+      test/
+    integration-test-tool/
+      bin/
+      man/
+      privileged/
+        exchangers/
+      test/
 ```
 <!-- end layout -->

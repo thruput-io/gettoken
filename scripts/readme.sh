@@ -6,6 +6,7 @@ mode=${2:-}
 
 cd "$root"
 
+mkdir -p build
 listing=$(mktemp)
 trap 'rm -f "$listing"' EXIT
 
@@ -32,14 +33,14 @@ awk -v listing="$listing" '
   }
   /^<!-- end layout -->$/ { skip = 0 }
   !skip { print }
-' README.md > README.generated
+' README.md > build/readme.generated
 
 if [ "$mode" = --write ]; then
-  mv README.generated README.md
+  mv build/readme.generated README.md
   echo "README.md written from the tree"
 else
-  diff -u README.md README.generated > /dev/null && result=same || result=drifted
-  rm -f README.generated
+  diff -u README.md build/readme.generated > /dev/null && result=same || result=drifted
+  rm -f build/readme.generated
   if [ "$result" = drifted ]; then
     echo "readme.sh: README.md does not say what the tree holds. Run: make readme" >&2
     exit 1

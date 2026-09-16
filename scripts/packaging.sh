@@ -1,39 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-name=$1
-source=$2
-
-root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
-# shellcheck source=/dev/null
-. "$root/scripts/targets/$name"
-
-carried_compat=$(dpkg-query -W -f='${Version}' debhelper | sed 's/[.~].*//')
-if [ "$carried_compat" != "$DEBHELPER_COMPAT" ]; then
-  echo "packaging.sh: $name says debhelper $DEBHELPER_COMPAT, this base carries $carried_compat" >&2
-  exit 1
-fi
-
-carried_go=$(go version | sed 's/.*go\([0-9]*\.[0-9]*\).*/\1/')
-if [ "$carried_go" != "$GO_VERSION" ]; then
-  echo "packaging.sh: $name says go $GO_VERSION, this base carries $carried_go" >&2
-  exit 1
-fi
+source=$1
 
 cd "$source"
 
-sed -i "s/^go [0-9]*\.[0-9]*$/go $GO_VERSION/" components/contract/go.mod
-
-priority_line=""
-if [ -n "$PRIORITY" ]; then priority_line="Priority: $PRIORITY\n"; fi
-rrr_line=""
-if [ -n "$RULES_REQUIRES_ROOT" ]; then rrr_line="Rules-Requires-Root: $RULES_REQUIRES_ROOT\n"; fi
-
-sed -e "s/@COMPAT@/$DEBHELPER_COMPAT/" \
-    -e "s|@PRIORITY@|$priority_line|" \
-    -e "s/@STANDARDS@/Standards-Version: $STANDARDS_VERSION\n/" \
-    -e "s|@RULES_REQUIRES_ROOT@|$rrr_line|" \
-    debian/control.in > debian/control
+cp debian/control.in debian/control
 
 dpkg_expands_this_one_not_the_shell='$'
 
@@ -109,4 +81,4 @@ awk -v speaks="$speaks" '
 ' debian/control > debian/control.spliced
 mv debian/control.spliced debian/control
 
-echo "built as $name: debhelper $DEBHELPER_COMPAT, go $GO_VERSION, Policy $STANDARDS_VERSION, $(grep -c '^Package: ' debian/control) packages"
+echo "built $(grep -c '^Package: ' debian/control) packages"
