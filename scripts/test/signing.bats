@@ -8,7 +8,14 @@ setup() {
   mkdir -p "$archive"
   printf 'Suite: testing\nCodename: testing\nDate: Sun, 14 Sep 2026 00:00:00 +0000\n' \
     > "$archive/Release"
-  export root work signing archive
+  made="$work/made"
+  mkdir -p "$made"
+  chmod 700 "$made"
+  GNUPGHOME="$made" gpg --batch --quiet --pinentry-mode loopback --passphrase '' \
+    --quick-generate-key 'gettoken archive <archive@gettoken.invalid>' default default never
+  ARCHIVE_SIGNING_KEY=$(GNUPGHOME="$made" gpg --batch --armor --export-secret-keys 'gettoken archive')
+
+  export root work signing archive ARCHIVE_SIGNING_KEY
 }
 
 teardown() { rm -rf "$work"; }
@@ -25,7 +32,7 @@ verified_against_the_published_key() {
   GNUPGHOME="$home" gpg --batch --verify "$@" 2>&1
 }
 
-@test "the key it generates is named by a forty-digit fingerprint" {
+@test "the key it signs with is named by a forty-digit fingerprint" {
   a_key
   run cat "$signing/fingerprint"
   [[ "$output" =~ ^[0-9A-F]{40}$ ]]
@@ -94,17 +101,22 @@ verified_against_the_published_key() {
   [ ! -e "$work/gettoken.list" ]
 }
 
-@test "generating a key with nowhere to put it is refused before anything is removed" {
+@test "a key with nowhere to put it is refused before anything is removed" {
   run "$root/scripts/signing-key.sh" ""
   [ "$status" -ne 0 ]
-  [[ "$output" == *"no directory to write the key into"* ]]
+  [[ "$output" == *"name a directory to write the key into"* ]]
 }
 
-@test "generating a key twice into the same directory replaces it" {
+@test "the key it is given is the key it signs with, every time" {
   a_key
   first=$(cat "$signing/fingerprint")
   a_key
-  second=$(cat "$signing/fingerprint")
-  [ "$first" != "$second" ]
-  [[ "$second" =~ ^[0-9A-F]{40}$ ]]
+  [ "$first" = "$(cat "$signing/fingerprint")" ]
+  [[ "$first" =~ ^[0-9A-F]{40}$ ]]
+}
+
+@test "an archive with no key to sign with is refused" {
+  ARCHIVE_SIGNING_KEY="" run "$root/scripts/signing-key.sh" "$signing"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"the archive has no key to sign with"* ]]
 }
