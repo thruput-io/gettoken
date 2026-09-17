@@ -13,30 +13,59 @@ jobs:
       - uses: actions/checkout@v4
       - run: make setup
       - run: make unit
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            build/*.xml
+            build/*.tap
+            build/*.json
+            build/*.checked
+            build/*.txt
+
+  package:
+    name: package
+    needs: unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make setup
+      - run: make package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: build/dist
 
   integration:
-    name: ${{ matrix.name }}
+    name: ${{ matrix.platform }}
+    needs: package
     runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
     continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: ubuntu-slim
+          - platform: ubuntu-slim
             os: ubuntu-latest
+            container: ubuntu:24.04
+            install: apt-get install -y --no-install-recommends
+            unprivileged: nobody
+          - platform: ubuntu-26.04
+            os: ubuntu-latest
+            container: ''
             install: sudo apt-get install -y --no-install-recommends
             unprivileged: nobody
-          - name: ubuntu-26.04
-            os: ubuntu-latest
-            install: sudo apt-get install -y --no-install-recommends
-            unprivileged: nobody
-          - name: macos-26
+          - platform: macos-26
             os: macos-15
+            container: ''
             install: brew install --no-ask
             unprivileged: nobody
     steps:
       - uses: actions/checkout@v4
-      - run: make setup
-        env:
-          INSTALL_COMMAND: ${{ matrix.install }}
-      - run: ./integration-test/test.sh "${{ matrix.install }}" "${{ matrix.unprivileged }}"
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: build/dist
+      - run: src/integration-test/test.sh "${{ matrix.install }}" "${{ matrix.unprivileged }}"
