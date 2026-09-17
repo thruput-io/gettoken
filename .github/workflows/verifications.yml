@@ -24,10 +24,12 @@ jobs:
             build/*.checked
             build/*.txt
 
-  package:
-    name: package
+  build:
+    name: build
     needs: unit
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - run: make setup
@@ -36,7 +38,7 @@ jobs:
           ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
         run: |
           printf 'export ARCHIVE_SIGNING_KEY=%q\n' "$ARCHIVE_SIGNING_KEY" > config.local.sh
-      - run: make package
+      - run: make build
       - uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -44,7 +46,7 @@ jobs:
 
   integration:
     name: ${{ matrix.platform }}
-    needs: package
+    needs: build
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.container }}
     continue-on-error: true
@@ -74,12 +76,6 @@ jobs:
               printf 'deb [signed-by=/etc/apt/keyrings/gettoken-archive-keyring.pgp] file:%s/build/dist/deb ./\n' "$PWD" \
                 | sudo tee /etc/apt/sources.list.d/gettoken.list
               sudo apt-get update
-          - platform: macos-26
-            os: macos-15
-            container: ''
-            install: brew install --no-ask
-            unprivileged: nobody
-            reach-the-archive: brew tap gettoken/local build/dist/brew
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
