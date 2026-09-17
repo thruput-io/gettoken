@@ -1,0 +1,5 @@
+# shellcheck shell=bash
+
+export INSTALL_COMMAND="brew install --no-ask"
+export BUILD_DEPS="jq bats-core shellcheck go kcov bash gnupg xmlstarlet dpkg"
+export UNPRIVILEGED_USER="nobody"

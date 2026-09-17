@@ -2,7 +2,7 @@
 set -euo pipefail
 
 root=$1
-format=${2:---format=tty}
+format=$2
 
 candidates=$(mktemp)
 selected=$(mktemp)

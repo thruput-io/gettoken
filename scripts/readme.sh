@@ -2,7 +2,7 @@
 set -euo pipefail
 
 root=$1
-mode=${2:-}
+mode=$2
 
 cd "$root"
 

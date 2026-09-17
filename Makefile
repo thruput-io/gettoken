@@ -1,12 +1,13 @@
 .DELETE_ON_ERROR:
 
-CONFIG = . ./config.sh &&
+LOCAL_CONFIG = $(wildcard config.local.sh)
+
+CONFIG = . ./config.sh $(LOCAL_CONFIG:%=&& . ./%) &&
 
 PACKAGE_FORMATS = $(shell $(CONFIG) echo $$PACKAGE_FORMATS)
 
-SUITE  = build/sources $(shell find src scripts -type f)
-GO_SRC = build/go-sources $(shell find src/components/contract -type f -name '*.go') \
-         src/components/contract/go.mod src/components/contract/go.sum
+SUITE  = build/sources
+GO_SRC = build/go-sources
 
 .PHONY: setup unit test contract signing-key \
         lint check-readme bash-unit-test bash-coverage go-unit-test go-coverage \
@@ -19,6 +20,7 @@ test:             build/integration-test.tap
 contract:         build/bin/parse build/bin/format
 signing-key:      build/signing/pubkey.gpg
 lint:             build/lint.checked
+no-branching:     build/no-branching.checked
 check-readme:     build/check-readme.txt
 bash-unit-test:   build/bash-unit-test.checked
 bash-coverage:    build/bash-coverage.checked
@@ -36,13 +38,19 @@ FORCE:
 
 build/sources: FORCE
 	@mkdir -p $(@D)
-	@find src scripts -type f | sort > $@.new
-	@if cmp -s $@.new $@; then rm $@.new; else mv $@.new $@; fi
+	@find src scripts -type f -exec sha256sum {} + | sort -k 2 > $@.new
+	@cmp -s $@.new $@ && rm $@.new || mv $@.new $@
 
 build/go-sources: FORCE
 	@mkdir -p $(@D)
-	@find src/components/contract -type f -name '*.go' | sort > $@.new
-	@if cmp -s $@.new $@; then rm $@.new; else mv $@.new $@; fi
+	@find src/components/contract -type f \( -name '*.go' -o -name 'go.mod' -o -name 'go.sum' \) \
+	  -exec sha256sum {} + | sort -k 2 > $@.new
+	@cmp -s $@.new $@ && rm $@.new || mv $@.new $@
+
+build/config-sources: FORCE
+	@mkdir -p $(@D)
+	@sha256sum config.sh config.local.sh.example > $@.new
+	@cmp -s $@.new $@ && rm $@.new || mv $@.new $@
 
 build/setup.txt: config.sh
 	@mkdir -p $(@D)
@@ -61,7 +69,7 @@ build/lint.xml: $(SUITE)
 
 build/check-readme.txt: $(SUITE) README.md
 	@mkdir -p $(@D)
-	scripts/readme.sh . > $@
+	scripts/readme.sh . --check > $@
 
 build/bash-unit-test.tap: $(SUITE) build/bin/parse build/bin/format
 	@mkdir -p $(@D)
@@ -95,6 +103,9 @@ build/go-coverage.json: build/go-unit-test.json
 build/lint.checked: build/lint.xml thresholds.json
 	scripts/check-lint.sh $< thresholds.json > $@
 
+build/no-branching.checked: $(SUITE) build/config-sources thresholds.json
+	scripts/check-branching.sh . thresholds.json > $@
+
 build/bash-unit-test.checked: build/bash-unit-test.tap
 	prove --exec cat $< > $@
 
@@ -104,10 +115,11 @@ build/bash-coverage.checked: build/bash-coverage.json thresholds.json
 build/go-coverage.checked: build/go-coverage.json thresholds.json
 	scripts/check-coverage.sh $< thresholds.json go-coverage > $@
 
-build/unit.txt: build/check-readme.txt build/lint.checked \
+build/unit.txt: build/check-readme.txt build/lint.checked build/no-branching.checked \
                 build/bash-unit-test.checked build/bash-coverage.checked \
                 build/go-unit-test.json build/go-coverage.checked
-	cat build/check-readme.txt build/lint.checked build/bash-unit-test.checked \
+	cat build/check-readme.txt build/lint.checked build/no-branching.checked \
+	    build/bash-unit-test.checked \
 	    build/bash-coverage.checked build/go-coverage.checked > $@
 	cat $@
 
