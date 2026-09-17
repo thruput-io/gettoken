@@ -1,12 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-into=$1
-
-if [ -z "$into" ]; then
-  echo "deliver-brew.sh: no directory to deliver the formula into" >&2
-  exit 1
-fi
+into=${1:?deliver-brew.sh: name a directory to deliver the formula into}
 
 mkdir -p "$into"
 into=$(CDPATH='' cd "$into" && pwd)

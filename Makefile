@@ -9,13 +9,14 @@ PACKAGE_FORMATS = $(shell $(CONFIG) echo $$PACKAGE_FORMATS)
 SUITE  = build/sources
 GO_SRC = build/go-sources
 
-.PHONY: setup unit test contract signing-key \
+.PHONY: setup unit build test contract signing-key \
         lint check-readme bash-unit-test bash-coverage go-unit-test go-coverage \
         package package-deb package-brew sign packaging-check publish \
         integration-test readme clean
 
 setup:            build/setup.txt
 unit:             build/unit.txt
+build:            build/publish.txt
 test:             build/integration-test.tap
 contract:         build/bin/parse build/bin/format
 signing-key:      build/signing/pubkey.gpg
@@ -52,26 +53,26 @@ build/config-sources: FORCE
 	@sha256sum config.sh config.local.sh.example > $@.new
 	@cmp -s $@.new $@ && rm $@.new || mv $@.new $@
 
-build/setup.txt: config.sh
+build/setup.txt: build/config-sources
 	@mkdir -p $(@D)
 	$(CONFIG) $$INSTALL_COMMAND $$BUILD_DEPS
 	$(CONFIG) echo "$$BUILD_DEPS" > $@
 
-build/signing/pubkey.gpg:
+build/signing/pubkey.gpg: build/setup.txt
 	scripts/signing-key.sh build/signing
 
-build/bin/parse build/bin/format: $(GO_SRC)
+build/bin/parse build/bin/format: $(GO_SRC) build/setup.txt
 	src/components/contract/build.sh build/bin
 
-build/lint.xml: $(SUITE)
+build/lint.xml: $(SUITE) build/setup.txt
 	@mkdir -p $(@D)
 	scripts/lint.sh . --format=checkstyle > $@
 
-build/check-readme.txt: $(SUITE) README.md
+build/check-readme.txt: $(SUITE) README.md build/setup.txt
 	@mkdir -p $(@D)
 	scripts/readme.sh . --check > $@
 
-build/bash-unit-test.tap: $(SUITE) build/bin/parse build/bin/format
+build/bash-unit-test.tap: $(SUITE) build/bin/parse build/bin/format build/setup.txt
 	@mkdir -p $(@D)
 	PATH="$$PWD/build/bin:$$PATH" \
 	  bats --recursive --timing --print-output-on-failure \
@@ -79,7 +80,7 @@ build/bash-unit-test.tap: $(SUITE) build/bin/parse build/bin/format
 	  src scripts > /dev/null
 	mv build/report.tap $@
 
-build/bash-coverage.json: $(SUITE) build/bin/parse build/bin/format
+build/bash-coverage.json: $(SUITE) build/bin/parse build/bin/format build/setup.txt
 	@mkdir -p $(@D)
 	PATH="$$PWD/build/bin:$$PATH" \
 	  kcov --include-path=src,scripts \
@@ -89,7 +90,7 @@ build/bash-coverage.json: $(SUITE) build/bin/parse build/bin/format
 	jq '{percent: (.percent_covered | tonumber)}' \
 	  build/kcov/bats/coverage.json > $@
 
-build/go-unit-test.json: $(GO_SRC)
+build/go-unit-test.json: $(GO_SRC) build/setup.txt
 	@mkdir -p $(@D)
 	cd src/components/contract && go test -json -mod=vendor \
 	  -coverprofile=../../../build/go.coverprofile ./... > ../../../$@
@@ -103,7 +104,7 @@ build/go-coverage.json: build/go-unit-test.json
 build/lint.checked: build/lint.xml thresholds.json
 	scripts/check-lint.sh $< thresholds.json > $@
 
-build/no-branching.checked: $(SUITE) build/config-sources thresholds.json
+build/no-branching.checked: $(SUITE) build/config-sources thresholds.json build/setup.txt
 	scripts/check-branching.sh . thresholds.json > $@
 
 build/bash-unit-test.checked: build/bash-unit-test.tap
@@ -156,7 +157,7 @@ build/publish.txt: build/package.txt build/packaging-check.txt
 	done > $@
 	cat $@
 
-build/integration-test.tap: build/publish.txt
+build/integration-test.tap: build/config-sources
 	@mkdir -p $(@D)
 	$(CONFIG) src/integration-test/test.sh \
 	  "$$INSTALL_COMMAND" "$$UNPRIVILEGED_USER" > $@

@@ -1,12 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-into=$1
-
-if [ -z "$into" ]; then
-  echo "signing-key.sh: no directory to write the key into" >&2
-  exit 1
-fi
+into=${1:?signing-key.sh: name a directory to write the key into}
+: "${ARCHIVE_SIGNING_KEY:?signing-key.sh: the archive has no key to sign with}"
 
 mkdir -p "$into"
 into=$(CDPATH='' cd "$into" && pwd)
@@ -17,9 +13,7 @@ rm -rf -- "$into/gnupg"
 mkdir -p "$GNUPGHOME"
 chmod 700 "$GNUPGHOME"
 
-gpg --batch --quiet --pinentry-mode loopback --passphrase '' \
-    --quick-generate-key 'gettoken test archive <test@gettoken.invalid>' \
-    default default never
+printf '%s' "$ARCHIVE_SIGNING_KEY" | gpg --batch --quiet --import
 
 gpg --list-secret-keys --with-colons \
   | awk -F: '/^fpr/ { print $10; exit }' > "$into/fingerprint"
@@ -27,4 +21,4 @@ gpg --list-secret-keys --with-colons \
 gpg --export --export-options export-minimal "$(cat "$into/fingerprint")" \
   > "$into/pubkey.gpg"
 
-echo "ok: test archive key $(cat "$into/fingerprint") in $into"
+echo "ok: the archive signs with $(cat "$into/fingerprint")"

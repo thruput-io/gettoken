@@ -16,4 +16,6 @@ cd "$archive"
 gpg --batch --yes --default-key "$signs_with" --clearsign --output InRelease Release
 gpg --batch --yes --default-key "$signs_with" --armor --detach-sign --output Release.gpg Release
 
-echo "ok: $archive carries InRelease and Release.gpg, signed by $signs_with"
+cp "$signing/pubkey.gpg" "$archive/gettoken-archive-keyring.pgp"
+
+echo "ok: $archive carries InRelease, Release.gpg and gettoken-archive-keyring.pgp, signed by $signs_with"

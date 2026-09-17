@@ -1,12 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-into=$1
-
-if [ -z "$into" ]; then
-  echo "deliver.sh: no directory to deliver the packages into" >&2
-  exit 1
-fi
+into=${1:?deliver-deb.sh: name a directory to deliver the packages into}
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 
