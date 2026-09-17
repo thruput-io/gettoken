@@ -1,5 +1,15 @@
 {
-  "lint":          { "errors": 0, "warnings": 0 },
-  "bash-coverage": { "percent": 22 },
-  "go-coverage":   { "percent": 44 }
+  "lint": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "bash-coverage": {
+    "percent": 22
+  },
+  "go-coverage": {
+    "percent": 44
+  },
+  "no-branching": {
+    "sites": 0
+  }
 }
