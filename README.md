@@ -258,6 +258,43 @@ theirs is not ours to change — `gh-gettoken` next to `gh`. `integration-test-t
 stands in for that: the tool and the exchanger beside it are two packages, because
 the tool is not ours to speak for and the exchanger is.
 
+## Build it
+
+`config.sh` says how to install build dependencies, which package formats to
+produce, how to publish each of them, and who the unprivileged user is.
+`config.local.sh`, if you have one, says it differently for your machine, and
+`config.local.sh.example` says what belongs in one.
+
+The archive signs what it publishes, so it needs a key of its own. On a machine
+that publishes for real the key is the same every time, because a key that
+changes is a keyring every reader has to replace. Make one once:
+
+```sh
+GNUPGHOME=$(mktemp -d) gpg --batch --quiet --pinentry-mode loopback \
+  --passphrase '' --quick-generate-key 'gettoken archive <archive@gettoken.invalid>' \
+  default default never
+gpg --batch --armor --export-secret-keys 'gettoken archive' > ~/.gettoken-archive-key.asc
+```
+
+and `config.local.sh` reads it from there.
+
+`make build` verifies, packages and publishes. `make test` installs what was
+published and uses it, so it runs on a machine that built nothing. What points a
+machine at the archive is the machine's business, not the test's: locally that is
+the container `make publish` writes into, and in the pipeline it is a step before
+`make test`.
+
+```sh
+docker run -d --name package-archive -p 8080:80 nginx
+```
+
+```sh
+curl -fsS http://localhost:8080/deb/gettoken-archive-keyring.pgp \
+  | sudo tee /etc/apt/keyrings/gettoken-archive-keyring.pgp > /dev/null
+echo "deb [signed-by=/etc/apt/keyrings/gettoken-archive-keyring.pgp] http://localhost:8080/deb ./" \
+  | sudo tee /etc/apt/sources.list.d/gettoken.list
+```
+
 ## Vision
 
 Many agents running autonomous workflows in containers, self-serving scoped
