@@ -14,6 +14,7 @@ build=$(mktemp -d)
 trap 'rm -rf "$build"' EXIT
 
 cp -a "$root/src" "$build/source"
+cp "$root/README.md" "$build/source/README.md"
 "$root/scripts/packaging.sh" "$build/source"
 
 (cd "$build/source" && dpkg-buildpackage -us -uc)

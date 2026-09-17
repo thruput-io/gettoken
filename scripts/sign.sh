@@ -4,6 +4,9 @@ set -euo pipefail
 archive=$1
 signing=$2
 
+archive=$(CDPATH='' cd "$archive" && pwd)
+signing=$(CDPATH='' cd "$signing" && pwd)
+
 GNUPGHOME="$signing/gnupg"
 export GNUPGHOME
 
