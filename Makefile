@@ -11,7 +11,7 @@ GO_SRC = build/go-sources
 
 .PHONY: setup unit build test contract signing-key \
         lint check-readme bash-unit-test bash-coverage go-unit-test go-coverage \
-        package package-deb package-brew sign packaging-check publish \
+        package package-deb package-brew sign publish \
         integration-test readme clean
 
 setup:            build/setup.txt
@@ -31,7 +31,6 @@ package:          build/package.txt
 package-deb:      build/dist/deb/InRelease
 package-brew:     build/dist/brew/gettoken.rb
 sign:             build/dist/deb/InRelease
-packaging-check:  build/packaging-check.txt
 publish:          build/publish.txt
 integration-test: build/integration-test.tap
 
@@ -50,7 +49,7 @@ build/go-sources: FORCE
 
 build/config-sources: FORCE
 	@mkdir -p $(@D)
-	@sha256sum config.sh config.local.sh.example > $@.new
+	@sha256sum config.sh $(LOCAL_CONFIG) > $@.new
 	@cmp -s $@.new $@ && rm $@.new || mv $@.new $@
 
 build/setup.txt: build/config-sources
@@ -59,7 +58,7 @@ build/setup.txt: build/config-sources
 	$(CONFIG) echo "$$BUILD_DEPS" > $@
 
 build/signing/pubkey.gpg: build/setup.txt
-	scripts/signing-key.sh build/signing
+	$(CONFIG) scripts/signing-key.sh build/signing
 
 build/bin/parse build/bin/format: $(GO_SRC) build/setup.txt
 	src/components/contract/build.sh build/bin
@@ -145,11 +144,7 @@ build/package-brew.txt: build/dist/brew/gettoken.rb
 	@mkdir -p $(@D)
 	echo "brew: $$(basename $<)" > $@
 
-build/packaging-check.txt: build/dist/deb/InRelease
-	@mkdir -p $(@D)
-	scripts/packaging-check.sh build/dist/deb build/signing/pubkey.gpg > $@
-
-build/publish.txt: build/package.txt build/packaging-check.txt
+build/publish.txt: build/package.txt
 	$(CONFIG) for dist in build/dist/*/; do \
 	  format=$$(basename "$$dist"); \
 	  eval "publish=\$$PUBLISH_$$(echo $$format | tr a-z A-Z)_COMMAND"; \

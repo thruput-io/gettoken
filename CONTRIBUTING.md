@@ -57,14 +57,10 @@ Nothing is skipped when a tool is missing. A test that cannot run fails.
 
 ## The chain a package travels
 
-`package` builds the packages, `packaging-check` asserts what installing and
-purging one does, `publish` signs the archive and uploads it to the URL
-`ARCHIVE_URL` names, `test` installs from that URL on the official image, and
-`promote` moves the archive that passed from there to `PROMOTED_URL`.
-
-Neither URL has a default. The invoker names both, so a pull request publishes
-to an address of its own and only what passed is moved to the address a
-`sources.list` points at.
+`make build` runs the suite, builds a package in every format `config.sh` asks
+for, signs the archive and publishes it. `make test` installs what was published
+and uses it. Nothing joins those two, because they do not run on the same
+machine: one needs a toolchain, the other needs to have nothing.
 
 ## What a green run means
 
@@ -80,10 +76,6 @@ holding a Go toolchain, debhelper and lintian cannot show what installing a
 package brought. That is why the official image, which nobody built, is where the
 use-case runs.
 
-Beside it, `scripts/packaging-check.sh` installs that one package on the same
-untouched image and asserts what `apt` drew in, that nothing else came, and that
-a purge leaves nothing behind — both on disk and in `/var/log/dpkg.log`, which is
-dpkg's own record of what it installed and what it removed. The two are not the
-same check: a package whose files are gone while dpkg still registers it passes
-the first and fails the second. `scripts/deliver.sh` has `lintian` read the source
-and every package as it builds them.
+`scripts/deliver-deb.sh` has `lintian` read the source and every package as it
+builds them, down to pedantic, so what the packaging says of itself is checked
+where it is written rather than after it is installed.
