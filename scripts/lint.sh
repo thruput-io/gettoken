@@ -2,6 +2,7 @@
 set -euo pipefail
 
 root=$1
+format=${2:---format=tty}
 
 candidates=$(mktemp)
 selected=$(mktemp)
@@ -28,5 +29,14 @@ if [ ! -s "$selected" ]; then
   exit 1
 fi
 
-xargs shellcheck -s bash -x < "$selected"
-echo "ok: shellcheck read $(wc -l < "$selected" | tr -d ' ') files and reported nothing"
+mapfile -t shell_files < "$selected"
+
+set +e
+shellcheck -s bash -x "$format" "${shell_files[@]}"
+reported=$?
+set -e
+
+if [ "$reported" -gt 1 ]; then
+  echo "lint.sh: shellcheck could not run, exit $reported" >&2
+  exit "$reported"
+fi
