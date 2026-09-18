@@ -55,7 +55,6 @@ jobs:
       fail-fast: false
       matrix:
         container:
-          - ubuntu:26.04
           - node:26-slim
     steps:
       - uses: actions/checkout@v4
