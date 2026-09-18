@@ -5,7 +5,7 @@ export PACKAGE_FORMATS="brew"
 export INSTALL_COMMAND="brew install --no-ask"
 export BUILD_DEPS="jq bats-core shellcheck go kcov bash gnupg xmlstarlet"
 
-export PUBLISH_BREW_COMMAND="scripts/publish-brew-to-container.sh package-archive"
+export SITE_URL="http://archive"
 
 ARCHIVE_SIGNING_KEY=$(cat "$HOME/.gettoken-archive-key.asc")
 export ARCHIVE_SIGNING_KEY

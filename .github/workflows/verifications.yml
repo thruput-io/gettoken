@@ -37,7 +37,11 @@ jobs:
         env:
           ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
         run: |
-          printf 'export ARCHIVE_SIGNING_KEY=%q\n' "$ARCHIVE_SIGNING_KEY" > config.local.sh
+          printf '%s' "$ARCHIVE_SIGNING_KEY" > "$HOME/.gettoken-archive-key.asc"
+          {
+            echo 'ARCHIVE_SIGNING_KEY=$(cat "$HOME/.gettoken-archive-key.asc")'
+            echo 'export ARCHIVE_SIGNING_KEY'
+          } > config.local.sh
       - run: make build
       - uses: actions/upload-artifact@v4
         with:
@@ -59,28 +63,31 @@ jobs:
             container: ubuntu:24.04
             install: apt-get install -y --no-install-recommends
             reach-the-archive: |
-              mkdir -p /etc/apt/keyrings
-              cp build/dist/deb/gettoken-archive-keyring.pgp /etc/apt/keyrings/
-              printf 'deb [signed-by=/etc/apt/keyrings/gettoken-archive-keyring.pgp] file:%s/build/dist/deb ./\n' "$PWD" \
-                > /etc/apt/sources.list.d/gettoken.list
               apt-get update
+              apt-get install -y --no-install-recommends curl ca-certificates
+              curl -fsS "$SITE_URL/apt/dists/$BRANCH/gettoken.sources" \
+                -o /etc/apt/sources.list.d/gettoken.sources
+              apt-get update -o APT::Update::Error-Mode=any
           - platform: ubuntu-26.04
             os: ubuntu-latest
             container: ''
             install: sudo apt-get install -y --no-install-recommends
             reach-the-archive: |
-              sudo mkdir -p /etc/apt/keyrings
-              sudo cp build/dist/deb/gettoken-archive-keyring.pgp /etc/apt/keyrings/
-              printf 'deb [signed-by=/etc/apt/keyrings/gettoken-archive-keyring.pgp] file:%s/build/dist/deb ./\n' "$PWD" \
-                | sudo tee /etc/apt/sources.list.d/gettoken.list
-              sudo apt-get update
+              sudo curl -fsS "$SITE_URL/apt/dists/$BRANCH/gettoken.sources" \
+                -o /etc/apt/sources.list.d/gettoken.sources
+              sudo apt-get update -o APT::Update::Error-Mode=any
+          - platform: macos-26
+            os: macos-15
+            container: ''
+            install: brew install --no-ask
+            reach-the-archive: |
+              echo "nothing points a Mac at an apt archive; issue #44 says what would"
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: build/dist
       - name: point this machine at the archive it installs from
+        env:
+          SITE_URL: https://thruput.se/gettoken
+          BRANCH: ${{ github.head_ref || github.ref_name }}
         run: ${{ matrix.reach-the-archive }}
       - run: make test
         env:
