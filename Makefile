@@ -47,7 +47,7 @@ build/config-sources: FORCE
 
 build/setup.txt: build/config-sources
 	@mkdir -p $(@D)
-	$$INSTALL_COMMAND $$BUILD_DEPS
+	sh -ec "$$INSTALL_COMMAND $$BUILD_DEPS"
 	echo "$$BUILD_DEPS" > $@
 
 build/signing-key.asc: build/setup.txt

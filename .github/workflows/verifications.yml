@@ -12,7 +12,7 @@ jobs:
     container: debian:testing-slim
     steps:
       - uses: actions/checkout@v4
-      - run: apt-get update && apt-get install -y --no-install-recommends make
+      - run: scripts/bootstrap.sh
       - run: make setup
       - run: make unit
       - if: always()
@@ -35,7 +35,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - run: apt-get update && apt-get install -y --no-install-recommends make
+      - run: scripts/bootstrap.sh
       - run: make setup
       - run: make build BRANCH="${{ github.head_ref || github.ref_name }}"
         env:
@@ -63,8 +63,8 @@ jobs:
           SITE_URL: https://thruput.se/gettoken
           BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
-          apt-get update
-          apt-get install -y --no-install-recommends curl ca-certificates make
+          scripts/bootstrap.sh
+          apt-get install -y --no-install-recommends curl ca-certificates
           curl -fsS "$SITE_URL/apt/dists/$BRANCH/gettoken.sources" \
             -o /etc/apt/sources.list.d/gettoken.sources
           apt-get update -o APT::Update::Error-Mode=any
