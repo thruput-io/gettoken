@@ -1,11 +1,6 @@
-# shellcheck shell=bash
+export PACKAGE_FORMATS = deb
 
-export PACKAGE_FORMATS="deb"
+export INSTALL_COMMAND = apt-get install -y --no-install-recommends
+export BUILD_DEPS = jq bats shellcheck golang-go kcov gnupg xmlstarlet dpkg-dev debhelper lintian build-essential golang-any apt-utils git
 
-export INSTALL_COMMAND="apt-get install -y --no-install-recommends"
-export BUILD_DEPS="jq bats shellcheck golang-go kcov gnupg xmlstarlet dpkg-dev debhelper lintian build-essential golang-any apt-utils"
-
-export SITE_URL="http://archive"
-
-ARCHIVE_SIGNING_KEY=$(cat "$HOME/.gettoken-archive-key.asc")
-export ARCHIVE_SIGNING_KEY
+export SITE_URL = http://archive

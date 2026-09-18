@@ -33,16 +33,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: make setup
-      - name: let the archive sign with the key it always signs with
+      - run: make build BRANCH="${{ github.head_ref || github.ref_name }}"
         env:
           ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
-        run: |
-          printf '%s' "$ARCHIVE_SIGNING_KEY" > "$HOME/.gettoken-archive-key.asc"
-          {
-            echo 'ARCHIVE_SIGNING_KEY=$(cat "$HOME/.gettoken-archive-key.asc")'
-            echo 'export ARCHIVE_SIGNING_KEY'
-          } > config.local.sh
-      - run: make build
       - uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -75,7 +68,7 @@ jobs:
             reach-the-archive: |
               sudo curl -fsS "$SITE_URL/apt/dists/$BRANCH/gettoken.sources" \
                 -o /etc/apt/sources.list.d/gettoken.sources
-              sudo apt-get update -o APT::Update::Error-Mode=any
+                sudo apt-get update -o APT::Update::Error-Mode=any
           - platform: macos-26
             os: macos-15
             container: ''
@@ -89,6 +82,4 @@ jobs:
           SITE_URL: https://thruput.se/gettoken
           BRANCH: ${{ github.head_ref || github.ref_name }}
         run: ${{ matrix.reach-the-archive }}
-      - run: make test
-        env:
-          INSTALL_COMMAND: ${{ matrix.install }}
+      - run: make test INSTALL_COMMAND="${{ matrix.install }}"
