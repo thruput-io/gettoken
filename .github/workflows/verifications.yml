@@ -9,9 +9,10 @@ jobs:
   unit:
     name: unit
     runs-on: ubuntu-latest
+    container: debian:testing-slim
     steps:
       - uses: actions/checkout@v4
-      - run: make setup
+      - run: make setup INSTALL_COMMAND="apt-get install -y --no-install-recommends"
       - run: make unit
       - if: always()
         uses: actions/upload-artifact@v4
@@ -28,11 +29,12 @@ jobs:
     name: build
     needs: unit
     runs-on: ubuntu-latest
+    container: debian:testing-slim
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - run: make setup
+      - run: make setup INSTALL_COMMAND="apt-get install -y --no-install-recommends"
       - run: make build BRANCH="${{ github.head_ref || github.ref_name }}"
         env:
           ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
@@ -42,44 +44,37 @@ jobs:
           path: build/dist
 
   integration:
-    name: ${{ matrix.platform }}
+    name: ${{ matrix.container }}
     needs: build
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     container: ${{ matrix.container }}
     continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - platform: ubuntu-slim
-            os: ubuntu-latest
-            container: ubuntu:24.04
-            install: apt-get install -y --no-install-recommends
-            reach-the-archive: |
-              apt-get update
-              apt-get install -y --no-install-recommends curl ca-certificates
-              curl -fsS "$SITE_URL/apt/dists/$BRANCH/gettoken.sources" \
-                -o /etc/apt/sources.list.d/gettoken.sources
-              apt-get update -o APT::Update::Error-Mode=any
-          - platform: ubuntu-26.04
-            os: ubuntu-latest
-            container: ''
-            install: sudo apt-get install -y --no-install-recommends
-            reach-the-archive: |
-              sudo curl -fsS "$SITE_URL/apt/dists/$BRANCH/gettoken.sources" \
-                -o /etc/apt/sources.list.d/gettoken.sources
-                sudo apt-get update -o APT::Update::Error-Mode=any
-          - platform: macos-26
-            os: macos-15
-            container: ''
-            install: brew install --no-ask
-            reach-the-archive: |
-              echo "nothing points a Mac at an apt archive; issue #44 says what would"
+        container:
+          - debian:testing-slim
+          - ubuntu:24.04
     steps:
       - uses: actions/checkout@v4
       - name: point this machine at the archive it installs from
         env:
           SITE_URL: https://thruput.se/gettoken
           BRANCH: ${{ github.head_ref || github.ref_name }}
-        run: ${{ matrix.reach-the-archive }}
-      - run: make test INSTALL_COMMAND="${{ matrix.install }}"
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends curl ca-certificates make
+          curl -fsS "$SITE_URL/apt/dists/$BRANCH/gettoken.sources" \
+            -o /etc/apt/sources.list.d/gettoken.sources
+          apt-get update -o APT::Update::Error-Mode=any
+      - run: make test INSTALL_COMMAND="apt-get install -y --no-install-recommends"
+
+  macos:
+    name: macos-26
+    needs: build
+    runs-on: macos-15
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "nothing points a Mac at an apt archive; issue #44 says what would"
+      - run: make test INSTALL_COMMAND="brew install --no-ask"
