@@ -4,6 +4,10 @@ LOCAL_CONFIG = $(wildcard config.local.sh)
 
 CONFIG = . ./config.sh $(LOCAL_CONFIG:%=&& . ./%) &&
 
+BRANCH = $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
+
+SITE_URL = $(shell $(CONFIG) echo $$SITE_URL)
+
 PACKAGE_FORMATS = $(shell $(CONFIG) echo $$PACKAGE_FORMATS)
 
 SUITE  = build/sources
@@ -11,7 +15,7 @@ GO_SRC = build/go-sources
 
 .PHONY: setup unit build test contract signing-key \
         lint check-readme bash-unit-test bash-coverage go-unit-test go-coverage \
-        package package-deb package-brew sign publish \
+        package package-deb package-brew archive publish unpublish \
         integration-test readme clean
 
 setup:            build/setup.txt
@@ -19,7 +23,7 @@ unit:             build/unit.txt
 build:            build/publish.txt
 test:             build/integration-test.tap
 contract:         build/bin/parse build/bin/format
-signing-key:      build/signing/pubkey.gpg
+signing-key:      build/signing-key.asc
 lint:             build/lint.checked
 no-branching:     build/no-branching.checked
 check-readme:     build/check-readme.txt
@@ -28,9 +32,9 @@ bash-coverage:    build/bash-coverage.checked
 go-unit-test:     build/go-unit-test.json
 go-coverage:      build/go-coverage.checked
 package:          build/package.txt
-package-deb:      build/dist/deb/InRelease
+package-deb:      build/site/apt/dists/$(BRANCH)/main/Release
 package-brew:     build/dist/brew/gettoken.rb
-sign:             build/dist/deb/InRelease
+archive:          build/site/apt/dists/$(BRANCH)/main/Release
 publish:          build/publish.txt
 integration-test: build/integration-test.tap
 
@@ -57,8 +61,8 @@ build/setup.txt: build/config-sources
 	$(CONFIG) $$INSTALL_COMMAND $$BUILD_DEPS
 	$(CONFIG) echo "$$BUILD_DEPS" > $@
 
-build/signing/pubkey.gpg: build/setup.txt
-	$(CONFIG) scripts/signing-key.sh build/signing
+build/signing-key.asc: build/setup.txt
+	$(CONFIG) scripts/signing-key.sh $@
 
 build/bin/parse build/bin/format: $(GO_SRC) build/setup.txt
 	src/components/contract/build.sh build/bin
@@ -91,12 +95,12 @@ build/bash-coverage.json: $(SUITE) build/bin/parse build/bin/format build/setup.
 
 build/go-unit-test.json: $(GO_SRC) build/setup.txt
 	@mkdir -p $(@D)
-	cd src/components/contract && go test -json -mod=vendor \
-	  -coverprofile=../../../build/go.coverprofile ./... > ../../../$@
+	go test -C src/components/contract -json -mod=vendor \
+	  -coverprofile=../../../build/go.coverprofile ./... > $@
 
 build/go-coverage.json: build/go-unit-test.json
-	cd src/components/contract && go tool cover \
-	  -func=../../../build/go.coverprofile > ../../../build/go-coverage.txt
+	go -C src/components/contract tool cover \
+	  -func=../../../build/go.coverprofile > build/go-coverage.txt
 	awk 'END { sub(/%/, "", $$3); printf "{\"percent\":%s}\n", $$3 }' \
 	  build/go-coverage.txt > $@
 
@@ -123,33 +127,31 @@ build/unit.txt: build/check-readme.txt build/lint.checked build/no-branching.che
 	    build/bash-coverage.checked build/go-coverage.checked > $@
 	cat $@
 
-build/dist/deb/Packages: build/unit.txt src/debian src/contracts
+build/dist/deb/packages: build/unit.txt src/debian src/contracts
 	scripts/deliver-deb.sh build/dist/deb
+	@touch $@
 
 build/dist/brew/gettoken.rb: build/unit.txt src/debian/changelog
 	scripts/deliver-brew.sh build/dist/brew
 
-build/dist/deb/InRelease: build/dist/deb/Packages build/signing/pubkey.gpg
-	scripts/sign.sh build/dist/deb build/signing
+build/site/apt/dists/$(BRANCH)/main/Release: build/dist/deb/packages build/signing-key.asc
+	scripts/archive.sh build/dist/deb build/site/apt $(BRANCH) build/signing-key.asc
+	scripts/sources.sh build/site/apt $(BRANCH) $(SITE_URL)/apt
 
 build/package.txt: $(PACKAGE_FORMATS:%=build/package-%.txt)
 	cat $^ > $@
 	cat $@
 
-build/package-deb.txt: build/dist/deb/InRelease
+build/package-deb.txt: build/site/apt/dists/$(BRANCH)/main/Release
 	@mkdir -p $(@D)
-	echo "deb: $$(find build/dist/deb -name '*.deb' | wc -l | tr -d ' ') packages, signed" > $@
+	echo "deb: $$(find build/site/apt -name '*.deb' | wc -l | tr -d ' ') packages in suite $(BRANCH)" > $@
 
 build/package-brew.txt: build/dist/brew/gettoken.rb
 	@mkdir -p $(@D)
 	echo "brew: $$(basename $<)" > $@
 
 build/publish.txt: build/package.txt
-	$(CONFIG) for dist in build/dist/*/; do \
-	  format=$$(basename "$$dist"); \
-	  eval "publish=\$$PUBLISH_$$(echo $$format | tr a-z A-Z)_COMMAND"; \
-	  $$publish "$$dist"; \
-	done > $@
+	$(CONFIG) scripts/publish.sh build/site/apt $(BRANCH) $$SITE_URL > $@
 	cat $@
 
 build/integration-test.tap: build/config-sources
