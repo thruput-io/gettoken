@@ -1,8 +1,8 @@
 # Contributing
 
-## make test does not shrink
+## make unit does not shrink
 
-`make test` is the entry point. Every verification runs it, on the machine it
+`make unit` is the entry point. Every verification runs it, on the machine it
 is invoked on or inside a named base.
 
 Its scope does not decrease. Not directly, by removing or weakening what it
@@ -32,10 +32,10 @@ is the only place allowed to span them.
 
 ## Running the suite
 
-`make test` runs the suite where you invoke it. `make deb-stable` and
-`make deb-testing` run that same suite inside the base that release is built in,
-then build the packages there, then install and use them on the official image
-for that release. Only those two reach the paths a package puts things at. The
+`make unit` runs the suite where you invoke it. `make package` builds both the
+Debian package and the Homebrew formula, and `make test` installs what was built
+and uses it, so only that one reaches the paths a package puts things at. What
+each of them needs is declared in `config.sh`, and `make setup` installs it. The
 host needs `jq`, `bats`, `shellcheck` and a Go toolchain,
 which builds the contract component named in
 [record 17](docs/adrs/0017-a-validator-brew-and-apt-can-carry.md):
@@ -45,16 +45,22 @@ apt install jq bats shellcheck golang-go
 brew install jq bats-core shellcheck go
 ```
 
-`make test` builds `parse` and `format` before it runs anything, into a
+`make unit` builds `parse` and `format` before it runs anything, into a
 directory it puts on `PATH`. To run one `bats` file on its own, build them first
 and put them on `PATH` yourself.
 
 The gate reads every file's first line: a script says which shell it is written
 for with a shebang, and a file that is sourced rather than run says it with a
-`shellcheck` directive instead. It also reads what the tree holds off the tree
-and fails when `README.md` has drifted from it; `make readme` writes it back.
+`shellcheck` directive instead.
 
 Nothing is skipped when a tool is missing. A test that cannot run fails.
+
+## The chain a package travels
+
+`make build` runs the suite, builds a package in every format `config.sh` asks
+for, signs the archive and publishes it. `make test` installs what was published
+and uses it. Nothing joins those two, because they do not run on the same
+machine: one needs a toolchain, the other needs to have nothing.
 
 ## What a green run means
 
@@ -70,10 +76,6 @@ holding a Go toolchain, debhelper and lintian cannot show what installing a
 package brought. That is why the official image, which nobody built, is where the
 use-case runs.
 
-Beside it, `scripts/packaging-check.sh` installs that one package on the same
-untouched image and asserts what `apt` drew in, that nothing else came, and that
-a purge leaves nothing behind — both on disk and in `/var/log/dpkg.log`, which is
-dpkg's own record of what it installed and what it removed. The two are not the
-same check: a package whose files are gone while dpkg still registers it passes
-the first and fails the second. `scripts/deliver.sh` has `lintian` read the source
-and every package as it builds them.
+`scripts/deliver-deb.sh` has `lintian` read the source and every package as it
+builds them, down to pedantic, so what the packaging says of itself is checked
+where it is written rather than after it is installed.

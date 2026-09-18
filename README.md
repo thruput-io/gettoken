@@ -166,14 +166,14 @@ would be from any other archive:
 make packages
 ```
 
-That writes `build/packages/deb-stable/` and `build/packages/deb-testing/`, each
-holding every `.deb` for that release, a `Packages` index, and a `Release` that
-names the index files that exist, so `apt` fetches what is there rather than
-probing for compressions the archive does not carry. Point apt at the one
-for the release you are on and ask for the one tool:
+That writes `build/packages/deb/`, holding every `.deb` for that release,
+a `Packages` index, a `Release` naming the index files that exist, and the
+`InRelease` and `Release.gpg` signatures over it. It also writes the apt source
+line naming the key that archive must verify against, so installing is what it
+would be from any other signed archive:
 
 ```sh
-echo "deb [trusted=yes] file:/path/to/build/packages/deb-stable ./" | sudo tee /etc/apt/sources.list.d/gettoken.list
+sudo cp build/packages/deb/gettoken.list /etc/apt/sources.list.d/gettoken.list
 sudo apt-get update
 sudo apt-get install integration-test-tool
 ```
@@ -184,13 +184,12 @@ a document through a contract, and one package per contract. Nothing else is
 named, and nothing else arrives. Purging it takes them all with it, and the store
 with them.
 
-`make packages` builds for both Debian stable and Debian testing, leaving each
-in its own directory under `build/packages/`. The two say different things about
-themselves because the releases carry different debhelper, lintian and Go, and
-what each target is is written in `scripts/targets/`: what that release's archive
-carries and what its Policy wants said, stated rather than sniffed, so a build
-that finds something different says so. `lintian` at pedantic is what proves the
-statement, on the source and on every package.
+`make package` builds both outcomes: the Debian packages under
+`build/packages/deb/` and the Homebrew formula under `build/packages/brew/`.
+What debhelper, Go and Policy the packaging says of itself is written in
+`config.sh`, stated rather than sniffed, so a build that finds something
+different says so. `lintian` at pedantic is what proves the statement, on the
+source and on every package.
 
 Nothing under `debian/` that can be derived is kept. `debian/control` and one
 `.install` per contract are written by `scripts/packaging.sh` from the contracts,
@@ -202,6 +201,31 @@ the components themselves.
 To install onto a machine that is not the one that built them, copy that
 release's directory across and point apt at it there. It is a plain apt repository:
 nothing in it depends on having been built locally.
+
+### From the published archive
+
+`make publish` uploads that same directory to the URL it is given, and
+`make promote` moves the one that passed its tests to the URL a machine points
+apt at. Nothing about the archive changes on the way: `Packages` names each file
+relative to the archive, so an archive that moves keeps working, and `Release`
+covers the indices rather than where they sit, so the signature survives the move
+too.
+
+Published, it is signed, and the key it was signed with has to be somewhere apt
+can read rather than verification being turned off:
+
+```sh
+curl -fsSL https://thruput-io.github.io/gettoken/gettoken-archive-keyring.gpg \
+  | sudo tee /etc/apt/keyrings/gettoken-archive-keyring.gpg > /dev/null
+echo "deb [signed-by=/etc/apt/keyrings/gettoken-archive-keyring.gpg] https://thruput-io.github.io/gettoken/ ./" \
+  | sudo tee /etc/apt/sources.list.d/gettoken.list
+sudo apt-get update
+sudo apt-get install integration-test-tool
+```
+
+`signed-by` names the one key that one archive may be signed with. A key put in
+`/etc/apt/trusted.gpg.d` instead would be trusted to sign every other archive on
+that machine, Debian's own included, which is why it does not go there.
 
 ### What arrives, and why that is the interesting part
 
@@ -233,6 +257,43 @@ someone else already packages, that is a second package alongside theirs, becaus
 theirs is not ours to change — `gh-gettoken` next to `gh`. `integration-test-tool`
 stands in for that: the tool and the exchanger beside it are two packages, because
 the tool is not ours to speak for and the exchanger is.
+
+## Build it
+
+`config.sh` says how to install build dependencies, which package formats to
+produce, how to publish each of them, and who the unprivileged user is.
+`config.local.sh`, if you have one, says it differently for your machine, and
+`config.local.sh.example` says what belongs in one.
+
+The archive signs what it publishes, so it needs a key of its own. On a machine
+that publishes for real the key is the same every time, because a key that
+changes is a keyring every reader has to replace. Make one once:
+
+```sh
+GNUPGHOME=$(mktemp -d) gpg --batch --quiet --pinentry-mode loopback \
+  --passphrase '' --quick-generate-key 'gettoken archive <archive@gettoken.invalid>' \
+  default default never
+gpg --batch --armor --export-secret-keys 'gettoken archive' > ~/.gettoken-archive-key.asc
+```
+
+and `config.local.sh` reads it from there.
+
+`make build` verifies, packages and publishes. `make test` installs what was
+published and uses it, so it runs on a machine that built nothing. What points a
+machine at the archive is the machine's business, not the test's: locally that is
+the container `make publish` writes into, and in the pipeline it is a step before
+`make test`.
+
+```sh
+docker run -d --name package-archive -p 8080:80 nginx
+```
+
+```sh
+curl -fsS http://localhost:8080/deb/gettoken-archive-keyring.pgp \
+  | sudo tee /etc/apt/keyrings/gettoken-archive-keyring.pgp > /dev/null
+echo "deb [signed-by=/etc/apt/keyrings/gettoken-archive-keyring.pgp] http://localhost:8080/deb ./" \
+  | sudo tee /etc/apt/sources.list.d/gettoken.list
+```
 
 ## Vision
 
@@ -272,77 +333,45 @@ source tree.
 
 <!-- layout -->
 ```
-contracts/
-  agent-capability-request.schema.json
-  agent-list-request.schema.json
-  defs.schema.json
-  entitlements-request.schema.json
-  entitlements-response.schema.json
-  exchange-request.schema.json
-  secret-get-request-version.schema.json
-  secret-get-request.schema.json
-  secret-get-response.schema.json
-  secret-put-request.schema.json
-  secret-put-response.schema.json
-  token-request.schema.json
-  token-response.schema.json
-
-components/
-  agent-identity-authority/   SEAT.md
-  auth-canvas/                SEAT.md
-  contract/                   parse and format, in Go
-  entitlements/
-  notifier/                   SEAT.md
-  secret-manager/
-  token-service/
-
-tools/
-  gettoken/
-    bin/
-    man/
-    privileged/
-    test/
-  integration-test-tool/
-    bin/
-    man/
-    privileged/
-    test/
-
-debian/
-  changelog
-  control.in
-  copyright
-  gettoken-entitlements.install
-  gettoken-format.install
-  gettoken-parse.install
-  gettoken-secret-manager.install
-  gettoken-secret-manager.postrm
-  gettoken-token-requester.install
-  gettoken-token-service.install
-  gettoken.docs
-  gettoken.install
-  gettoken.manpages
-  integration-test-tool-exchanger.install
-  integration-test-tool.install
-  integration-test-tool.manpages
-  rules
-  source/format
-  source/lintian-overrides
-
+.github/
+  workflows/
+docs/
+  adrs/
 scripts/
-  archive.sh
-  deliver.sh
   docker/
   fixtures/
-  lint.sh
-  mermaid.sh
-  packaging-check.sh
-  packaging.sh
-  readme.sh
-  targets/
   test/
-
-integration-test/
-  test.sh
+src/
+  components/
+    agent-identity-authority/
+    auth-canvas/
+    contract/
+      cmd/
+        format/
+        parse/
+      test/
+    entitlements/
+      test/
+    notifier/
+    secret-manager/
+      test/
+    token-service/
+      test/
+  contracts/
+  debian/
+    source/
+  integration-test/
+  tools/
+    gettoken/
+      bin/
+      man/
+      privileged/
+      test/
+    integration-test-tool/
+      bin/
+      man/
+      privileged/
+        exchangers/
+      test/
 ```
 <!-- end layout -->

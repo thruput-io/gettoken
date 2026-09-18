@@ -1,0 +1,2 @@
+# The archive a developer publishes into is served beside the build, not on the site.
+export SITE_URL = http://archive

@@ -1,0 +1,41 @@
+minimumLimaVersion: 2.3.0-beta.0
+
+base:
+- template:_images/macos-26
+
+cpus: 2
+memory: "4GiB"
+disk: "64GiB"
+
+vmOpts:
+  vz:
+    diskImageFormat: "asif"
+
+video:
+  display: "none"
+
+osOpts:
+  Darwin:
+    suppressFirstLoginSetup: true
+
+user:
+  name: "mr-priviligied"
+  comment: "mr-priviligied"
+  home: "/Users/mr-priviligied.guest"
+
+mounts:
+- location: "/Users/Shared/workspace"
+  writable: true
+
+ssh:
+  loadDotSSHPubKeys: false
+
+provision:
+- mode: system
+  script: |
+    #!/bin/sh
+    echo "mr-priviligied ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/50_lima
+    chmod 0440 /etc/sudoers.d/50_lima
+    if ! id mr-unpriviliged >/dev/null 2>&1; then
+      sysadminctl -addUser mr-unpriviliged -fullName "mr-unpriviliged" -password "-"
+    fi
