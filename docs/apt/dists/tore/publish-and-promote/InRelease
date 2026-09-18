@@ -4,27 +4,27 @@ Hash: SHA512
 Architectures: amd64
 Codename: tore/publish-and-promote
 Components: main
-Date: Fri, 18 Sep 2026 11:39:02 +0000
+Date: Fri, 18 Sep 2026 11:48:02 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/publish-and-promote
 MD5Sum:
  f32e779a7c5062f4cba7546a01ae90ff            24796 main/binary-amd64/Packages
- 7c837bbd835de3bafb81349e16655c74             7782 main/binary-amd64/Packages.gz
+ e2d0851b8fe4942cf429465bf327c1f6             7782 main/binary-amd64/Packages.gz
 SHA1:
  b3e1608761922fe9d3d40c3b505430e08e4cea6c            24796 main/binary-amd64/Packages
- 669502d0d6f7da44c325fa03369b3e28f8ebcf67             7782 main/binary-amd64/Packages.gz
+ ffece6ff2a74bd4837212c5681a38f8bfb5f9ce7             7782 main/binary-amd64/Packages.gz
 SHA256:
  24408660a899fbfe6041f03b5123261b89af45402a83679018d6538c7fc647cf            24796 main/binary-amd64/Packages
- 86bf3a01099f8497a5750756695ffb279e7326d4022c867a54fa39663cb1914b             7782 main/binary-amd64/Packages.gz
+ dc1897bd9f7c0686ec6884517c0d9366ac44185e926d45f3fb06c59cbcc53bf4             7782 main/binary-amd64/Packages.gz
 SHA512:
  98ef8c267af2159defc32b8d76dd9bd1c583cf2915c59e63c13fc49c166bebfad263bafdf0405b9705aa513bbf31ffe0c24e32563c87e00756ddd469429f8726            24796 main/binary-amd64/Packages
- cb52810d46124fdf49adf33a568222eef0981b4535479e89501ff958b1e76800cfb5d9c42f20f5671fb725927470e51273403664847009a1aadf3aaf487ae0c2             7782 main/binary-amd64/Packages.gz
+ ee9e44960070b328217da9ccd175def1aed36a684fcf4dcf161dc0c9519c507045837d44b0970e1ea73a7ec75c28921498f636ae24976318c40c5af60142fb04             7782 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCaq0i1gAKCRDDrTt86Qtc
-+j8QAQD2hxjQyUT+ZRqrVliJtBczwBSuydoieqJeD0hMYSjkdQEAgSDevg2NUe5/
-w7w3tOwRlccV5GT8bJ8C8FQx/zxPeg4=
-=ZzOU
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCaq0k8gAKCRDDrTt86Qtc
++mQnAP9ZisNCiENGCgcTYQ3IX5aqD/GicUmvfurn+K06tC0k+wEAvaY3o0x4i6pn
+xENu7QIX9c5LMpc742Pl6qSbxfafxAQ=
+=GrJk
 -----END PGP SIGNATURE-----
