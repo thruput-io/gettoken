@@ -1,0 +1,30 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Architectures: amd64
+Codename: tore/publish-and-promote
+Components: main
+Date: Fri, 18 Sep 2026 11:35:13 +0000
+Description: token broker for AI agents
+Label: gettoken
+Origin: gettoken
+Suite: tore/publish-and-promote
+MD5Sum:
+ f32e779a7c5062f4cba7546a01ae90ff            24796 main/binary-amd64/Packages
+ 624c1edc9a638b64ba524b521271b313             7782 main/binary-amd64/Packages.gz
+SHA1:
+ b3e1608761922fe9d3d40c3b505430e08e4cea6c            24796 main/binary-amd64/Packages
+ 906fc36689bf33f4b38cb803250534e1303ebe23             7782 main/binary-amd64/Packages.gz
+SHA256:
+ 24408660a899fbfe6041f03b5123261b89af45402a83679018d6538c7fc647cf            24796 main/binary-amd64/Packages
+ d376ec8e7fdffd0bfca6cc0551e73ba53c04a012384aa8b6164af32d7a36837f             7782 main/binary-amd64/Packages.gz
+SHA512:
+ 98ef8c267af2159defc32b8d76dd9bd1c583cf2915c59e63c13fc49c166bebfad263bafdf0405b9705aa513bbf31ffe0c24e32563c87e00756ddd469429f8726            24796 main/binary-amd64/Packages
+ a80bc6f1a73ab28bf9d24ac6024f54053411bf43fbae8047544ef3885e22a1bbd2935c065bc6c785afc83766bfb5212133dfb08226da716d8d0aff0f65070673             7782 main/binary-amd64/Packages.gz
+-----BEGIN PGP SIGNATURE-----
+
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCaq0h8QAKCRDDrTt86Qtc
++lBKAQCcoil284blmaksuEU5GwSFqzSV+oPHwCSTUrVZFMHLkQEAiA/JKMVMvZNG
+ix+zUdYhrkfFL0u+UC2w9b8Q+fEfKQM=
+=haA9
+-----END PGP SIGNATURE-----
