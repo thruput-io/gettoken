@@ -40,18 +40,18 @@ the_tree | docker run -i --name gettoken-builder --network host \
     make archive BRANCH="$branch"'
 
 
-say "test on a clean debian slim"
-the_tree | scripts/served.sh "$site" -i debian:testing-slim sh -ec "
+say "test on a clean ubuntu"
+the_tree | scripts/served.sh "$site" -i ubuntu:26.04 sh -ec "
     mkdir -p /work && cd /work && tar xf -
     $reaches_the_archive
-    printf 'export INSTALL_COMMAND = apt-get install -y --no-install-recommends\n' > config.local.sh
+    cp config.local.sh.ubuntu.example config.local.sh
     make test"
 
-say "test on a clean ubuntu"
-the_tree | scripts/served.sh "$site" -i ubuntu:24.04 sh -ec "
+say "test on a clean node slim"
+the_tree | scripts/served.sh "$site" -i node:26-slim sh -ec "
     mkdir -p /work && cd /work && tar xf -
     $reaches_the_archive
-    printf 'export INSTALL_COMMAND = apt-get install -y --no-install-recommends\n' > config.local.sh
+    cp config.local.sh.ubuntu.example config.local.sh
     make test"
 
 say "everything the pipeline does, done here"
