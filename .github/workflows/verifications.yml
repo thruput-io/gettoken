@@ -58,7 +58,6 @@ jobs:
             os: ubuntu-latest
             container: ubuntu:24.04
             install: apt-get install -y --no-install-recommends
-            unprivileged: nobody
             reach-the-archive: |
               mkdir -p /etc/apt/keyrings
               cp build/dist/deb/gettoken-archive-keyring.pgp /etc/apt/keyrings/
@@ -69,7 +68,6 @@ jobs:
             os: ubuntu-latest
             container: ''
             install: sudo apt-get install -y --no-install-recommends
-            unprivileged: nobody
             reach-the-archive: |
               sudo mkdir -p /etc/apt/keyrings
               sudo cp build/dist/deb/gettoken-archive-keyring.pgp /etc/apt/keyrings/
@@ -87,4 +85,3 @@ jobs:
       - run: make test
         env:
           INSTALL_COMMAND: ${{ matrix.install }}
-          UNPRIVILEGED_USER: ${{ matrix.unprivileged }}

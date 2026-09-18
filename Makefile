@@ -154,8 +154,7 @@ build/publish.txt: build/package.txt
 
 build/integration-test.tap: build/config-sources
 	@mkdir -p $(@D)
-	$(CONFIG) src/integration-test/test.sh \
-	  "$$INSTALL_COMMAND" "$$UNPRIVILEGED_USER" > $@
+	$(CONFIG) src/integration-test/test.sh "$$INSTALL_COMMAND" > $@
 	prove --exec cat $@
 
 readme:
