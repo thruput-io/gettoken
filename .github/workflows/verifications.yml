@@ -36,6 +36,7 @@ jobs:
     steps:
       - run: apt-get update && apt-get install -y --no-install-recommends git ca-certificates
       - uses: actions/checkout@v4
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: scripts/bootstrap.sh
       - run: make setup
       - run: make build BRANCH="${{ github.head_ref || github.ref_name }}"
