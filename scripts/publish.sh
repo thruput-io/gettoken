@@ -12,8 +12,6 @@ root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 
 corner_of_the_site_that_is_debian=apt
 
-suites=$(cd "$archive/dists/$branch" && find . -name InRelease | sed 's|^\./||; s|/InRelease$||')
-
 pages_open
 trap pages_close EXIT
 
@@ -27,34 +25,29 @@ cp -a "$archive/pool/$branch/." "$apt/pool/$branch/"
 cp "$archive/gettoken-archive-keyring.asc" "$apt/gettoken-archive-keyring.asc"
 : > "$pages/.nojekyll"
 
-for release in $suites; do
-  "$root/scripts/sources.sh" "$apt" "$branch/$release" "$url"
-done
+"$root/scripts/sources.sh" "$apt" "$branch" "$url"
 
 pages_push "Publish $branch"
 
 served=$(mktemp)
 trap 'rm -f "$served"; pages_close' EXIT
 
-for release in $suites; do
-  suite="$branch/$release"
-  pushed=$(sha256sum < "$archive/dists/$suite/InRelease" | cut -d' ' -f1)
+suite=$branch
+pushed=$(sha256sum < "$archive/dists/$suite/InRelease" | cut -d' ' -f1)
+served_now=""
 
-  attempt=0
-  while [ "$attempt" -lt 60 ]; do
-    if curl --fail --silent --show-error --location \
-         "$url/dists/$suite/InRelease" --output "$served"; then
-      if [ "$(sha256sum < "$served" | cut -d' ' -f1)" = "$pushed" ]; then
-        break
-      fi
-    fi
-    attempt=$((attempt + 1))
-    sleep 10
-  done
-
-  if [ "$attempt" -ge 60 ]; then
-    echo "publish.sh: $url did not serve the pushed $suite within ten minutes" >&2
-    exit 1
-  fi
-  echo "ok: $url serves the $suite that was just pushed"
+attempt=0
+while [ "$attempt" -lt 60 ] && [ "$served_now" != "$pushed" ]; do
+  set +e
+  curl --fail --silent --show-error --location \
+    "$url/dists/$suite/InRelease" --output "$served"
+  reached=$?
+  set -e
+  test "$reached" -le 22
+  served_now=$(sha256sum < "$served" | cut -d' ' -f1)
+  attempt=$((attempt + 1))
+  sleep 10
 done
+
+test "$served_now" = "$pushed"
+echo "ok: $url serves the $suite that was just pushed"
