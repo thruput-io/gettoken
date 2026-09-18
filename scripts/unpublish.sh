@@ -1,11 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-if [ $# -ne 1 ]; then
-  echo "usage: unpublish.sh BRANCH" >&2
-  exit 1
-fi
-branch=$1
+branch=${1:?unpublish.sh: name the branch whose suite is being removed}
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 # shellcheck source-path=SCRIPTDIR

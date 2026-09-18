@@ -1,13 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-if [ $# -ne 3 ]; then
-  echo "usage: sources.sh ROOT SUITE URL" >&2
-  exit 1
-fi
-root=$1
-suite=$2
-url=$3
+root=${1:?sources.sh: name the archive to write the sources file into}
+suite=${2:?sources.sh: name the suite the sources file points at}
+url=${3:?sources.sh: name the URL the archive is served from}
 
 {
   echo 'Types: deb'

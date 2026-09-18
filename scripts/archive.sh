@@ -1,14 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-if [ $# -ne 4 ]; then
-  echo "usage: archive.sh PACKAGES ROOT SUITE SIGNING-KEY" >&2
-  exit 1
-fi
-packages=$1
-root=$2
-suite=$3
-key=$4
+packages=${1:?archive.sh: name the directory holding the packages}
+root=${2:?archive.sh: name the directory to build the archive in}
+suite=${3:?archive.sh: name the suite, which is the branch the packages were built on}
+key=${4:?archive.sh: name the key the archive signs with}
 
 pool="pool/$suite"
 dist="dists/$suite"

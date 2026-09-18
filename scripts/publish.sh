@@ -1,13 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-if [ $# -ne 3 ]; then
-  echo "usage: publish.sh ARCHIVE BRANCH SITE-URL" >&2
-  exit 1
-fi
-archive=$1
-branch=$2
-site=$3
+archive=${1:?publish.sh: name the archive to publish}
+branch=${2:?publish.sh: name the branch whose suite is being published}
+site=${3:?publish.sh: name the site the archive is served from}
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 # shellcheck source-path=SCRIPTDIR
