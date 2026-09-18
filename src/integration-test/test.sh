@@ -3,7 +3,7 @@ set -euo pipefail
 
 install_command=${1:?test.sh: name the command that installs a package}
 
-$install_command gettoken integration-test-tool > /dev/null
+sh -ec "$install_command gettoken integration-test-tool" > /dev/null
 
 carried=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
 
