@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: apt-get update && apt-get install -y --no-install-recommends make
-      - run: make setup INSTALL_COMMAND="apt-get install -y --no-install-recommends"
+      - run: make setup
       - run: make unit
       - if: always()
         uses: actions/upload-artifact@v4
@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: apt-get update && apt-get install -y --no-install-recommends make
-      - run: make setup INSTALL_COMMAND="apt-get install -y --no-install-recommends"
+      - run: make setup
       - run: make build BRANCH="${{ github.head_ref || github.ref_name }}"
         env:
           ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
@@ -68,14 +68,15 @@ jobs:
           curl -fsS "$SITE_URL/apt/dists/$BRANCH/gettoken.sources" \
             -o /etc/apt/sources.list.d/gettoken.sources
           apt-get update -o APT::Update::Error-Mode=any
-      - run: make test INSTALL_COMMAND="apt-get install -y --no-install-recommends"
+      - run: make test
 
   macos:
     name: macos-26
     needs: build
-    runs-on: macos-15
+    runs-on: macos-26
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - run: echo "nothing points a Mac at an apt archive; issue #44 says what would"
-      - run: make test INSTALL_COMMAND="brew install --no-ask"
+      - run: cp config.local.sh.mac.example config.local.sh
+      - run: make test
