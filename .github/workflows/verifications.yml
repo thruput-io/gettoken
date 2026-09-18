@@ -12,6 +12,7 @@ jobs:
     container: debian:testing-slim
     steps:
       - uses: actions/checkout@v4
+      - run: apt-get update && apt-get install -y --no-install-recommends make
       - run: make setup INSTALL_COMMAND="apt-get install -y --no-install-recommends"
       - run: make unit
       - if: always()
@@ -34,6 +35,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+      - run: apt-get update && apt-get install -y --no-install-recommends make
       - run: make setup INSTALL_COMMAND="apt-get install -y --no-install-recommends"
       - run: make build BRANCH="${{ github.head_ref || github.ref_name }}"
         env:
@@ -53,8 +55,8 @@ jobs:
       fail-fast: false
       matrix:
         container:
-          - debian:testing-slim
-          - ubuntu:24.04
+          - ubuntu:26.04
+          - node:26-slim
     steps:
       - uses: actions/checkout@v4
       - name: point this machine at the archive it installs from
