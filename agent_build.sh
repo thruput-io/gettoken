@@ -15,7 +15,7 @@ the_tree() { COPYFILE_DISABLE=1 git ls-files -z | COPYFILE_DISABLE=1 tar --null 
 
 reaches_the_archive='
   scripts/bootstrap.sh > /dev/null
-  apt-get install -y -qq --no-install-recommends curl ca-certificates perl > /dev/null
+  apt-get install -y -qq --no-install-recommends curl ca-certificates > /dev/null
   curl -fsS http://archive/apt/dists/'"$branch"'/gettoken.sources -o /etc/apt/sources.list.d/gettoken.sources
   apt-get update -o APT::Update::Error-Mode=any
 '

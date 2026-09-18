@@ -137,6 +137,7 @@ build/publish.txt: build/package.txt
 
 build/integration-test.tap: build/config-sources
 	@mkdir -p $(@D)
+	sh -ec "$$INSTALL_COMMAND $$TEST_DEPS"
 	src/integration-test/test.sh "$$INSTALL_COMMAND" > $@
 	prove --exec cat $@
 
