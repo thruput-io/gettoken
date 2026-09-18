@@ -14,7 +14,7 @@ the_tree() { COPYFILE_DISABLE=1 git ls-files -z | COPYFILE_DISABLE=1 tar --null 
 
 reaches_the_archive='
   apt-get update -qq > /dev/null
-  apt-get install -y -qq --no-install-recommends make curl ca-certificates sudo > /dev/null
+  apt-get install -y -qq --no-install-recommends make curl ca-certificates perl > /dev/null
   mkdir -p /etc/apt/keyrings
   curl -fsS http://localhost:8080/deb/gettoken-archive-keyring.pgp \
     -o /etc/apt/keyrings/gettoken-archive-keyring.pgp
@@ -45,14 +45,14 @@ say "test on a clean debian slim"
 the_tree | docker run -i --rm --network host debian:testing-slim sh -ec "
     mkdir -p /work && cd /work && tar xf -
     $reaches_the_archive
-    cp config.local.sh.ubuntu.example config.local.sh
+    printf 'export INSTALL_COMMAND=\"apt-get install -y --no-install-recommends\"\n' > config.local.sh
     make test"
 
 say "test on a clean ubuntu"
 the_tree | docker run -i --rm --network host ubuntu:24.04 sh -ec "
     mkdir -p /work && cd /work && tar xf -
     $reaches_the_archive
-    cp config.local.sh.ubuntu.example config.local.sh
+    printf 'export INSTALL_COMMAND=\"apt-get install -y --no-install-recommends\"\n' > config.local.sh
     make test"
 
 say "everything the pipeline does, done here"
