@@ -4,27 +4,27 @@ Hash: SHA512
 Architectures: amd64
 Codename: tore/publish-and-promote
 Components: main
-Date: Sun, 20 Sep 2026 08:47:56 +0000
+Date: Sun, 20 Sep 2026 10:15:57 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/publish-and-promote
 MD5Sum:
  f7bd59d4971362771121802beb572ae4            24796 main/binary-amd64/Packages
- 4376bb57cc83ff4bd1073f869a661c60             7790 main/binary-amd64/Packages.gz
+ e8829b6cdc1d17426c2e67e1ace498a0             7790 main/binary-amd64/Packages.gz
 SHA1:
  5b5e45a1010b65ba135f03ea056a72aff836c955            24796 main/binary-amd64/Packages
- 0e43a929087b6ff2e82ac7b1e3e8ec5b5138c50e             7790 main/binary-amd64/Packages.gz
+ b70ea2f2d95e818d96602083f1848c30d8d8319c             7790 main/binary-amd64/Packages.gz
 SHA256:
  967bc11e42007e7e79c2a2af63c605296c79161017b2e707db4311097add6828            24796 main/binary-amd64/Packages
- 590fc4bc473f6ad7a2e3924c9d1ad587c19c073dcdd091c3d496387ab60fa741             7790 main/binary-amd64/Packages.gz
+ a353cd3bf8c29f96d08f1fa0b3a4fb4cf06f1346b6d96bdf01e761817273fcdf             7790 main/binary-amd64/Packages.gz
 SHA512:
  0355ba184c0445a2c9b9a298ba9aa06506e22976927263573bf4368fefe4f9f708ee78a8e86dfcff045adf6335a25362bbfd57d9f63a118a4c143b26c13d3de9            24796 main/binary-amd64/Packages
- 70a2f3d4ee79a04313006956825867c52fff170477a6cb101b63565d7ec07602798cffeaa4c3dd58d04eae53e8590ca102479bee125f0af52ee03ea960e98747             7790 main/binary-amd64/Packages.gz
+ c67f92dce643bc36d557afd9377b25dcf75a8757cab74c0b7b6f5b24d3c89ce1d27a1cd2f0546221db641530b95741345632a202172c3d9a7a094ad2db6eb6b2             7790 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCaq+dvAAKCRDDrTt86Qtc
-+nsqAQCRpsR42Sdwg6uqXpzLzBPFZrjT7Su7mboojbUWKL2LKAD/YMVFnxNP2Ktr
-+FPLBuxa3osN2Xz4elTfGkLtWvadEAM=
-=kIMH
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCaq+yXQAKCRDDrTt86Qtc
++mxnAP4uGLGrDth515hqEtJE8ayBD0IpPcWMPSSlFIDm8oX5PAD/b+w76kd3aiDJ
+usOMvKjQdVx7RrM7GK+gpbHAV3gW4AE=
+=V0xO
 -----END PGP SIGNATURE-----
