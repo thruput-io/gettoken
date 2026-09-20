@@ -1,20 +1,20 @@
 Architectures: amd64
 Codename: tore/publish-and-promote
 Components: main
-Date: Sun, 20 Sep 2026 08:27:04 +0000
+Date: Sun, 20 Sep 2026 08:47:56 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/publish-and-promote
 MD5Sum:
  f7bd59d4971362771121802beb572ae4            24796 main/binary-amd64/Packages
- f1b3b64fcad7b0d9891d99247cbc1c2f             7790 main/binary-amd64/Packages.gz
+ 4376bb57cc83ff4bd1073f869a661c60             7790 main/binary-amd64/Packages.gz
 SHA1:
  5b5e45a1010b65ba135f03ea056a72aff836c955            24796 main/binary-amd64/Packages
- a5df7db7bffb0d7e48b6d85ebf0351554366ad2e             7790 main/binary-amd64/Packages.gz
+ 0e43a929087b6ff2e82ac7b1e3e8ec5b5138c50e             7790 main/binary-amd64/Packages.gz
 SHA256:
  967bc11e42007e7e79c2a2af63c605296c79161017b2e707db4311097add6828            24796 main/binary-amd64/Packages
- 8389d8775ad397cb8c421f499ea4be79eb26407f5e20860d3cf9809b861c7c8a             7790 main/binary-amd64/Packages.gz
+ 590fc4bc473f6ad7a2e3924c9d1ad587c19c073dcdd091c3d496387ab60fa741             7790 main/binary-amd64/Packages.gz
 SHA512:
  0355ba184c0445a2c9b9a298ba9aa06506e22976927263573bf4368fefe4f9f708ee78a8e86dfcff045adf6335a25362bbfd57d9f63a118a4c143b26c13d3de9            24796 main/binary-amd64/Packages
- b387759ddb4f39a54e3df7ccccce8c709d7f616c419a4b9c27256aa583eff9c73327ba0d7362b2cf4024ca75999270a991b5a8d4b0f09e8e85aee758a7add73d             7790 main/binary-amd64/Packages.gz
+ 70a2f3d4ee79a04313006956825867c52fff170477a6cb101b63565d7ec07602798cffeaa4c3dd58d04eae53e8590ca102479bee125f0af52ee03ea960e98747             7790 main/binary-amd64/Packages.gz
