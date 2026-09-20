@@ -1,0 +1,585 @@
+Package: gettoken-contract-agent-capability-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-contract-agent-capability-request_0.1.0_all.deb
+Size: 2240
+MD5sum: b92892d8d323d144382238fd7467ca92
+SHA1: a0ab90918f3042a23200e804e9fad10d6c9e91bb
+SHA256: 2d73120998f35155cb7d03874b948f73409b5b719b9882af9953644c690fbb8d
+SHA512: 6da9af1b2d99530b45040be41eb13cb5b20aa9887debe03d1bb825ea2b38a680b2fc4305671a489c5bb4732d28bfb5d00c7095d1f6c546e6668a39eaa297d2a4
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the agent-capability-request contract
+ What an agent says when it asks for a capability. It carries the capability
+ wanted and nothing else: an agent cannot say who it is or what it is doing,
+ because the privileged half decides that.
+
+Package: gettoken-contract-agent-list-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-contract-agent-list-request_0.1.0_all.deb
+Size: 2188
+MD5sum: fe5ab4b5311f7980faee64adb787eabc
+SHA1: d633691d7b88a0b621303ca874b777b24ea5a3be
+SHA256: 54d10f823d1930d8347bd52586196cc5da7ffeecd0a7cb14a21b72d2ef82550c
+SHA512: f8540f1d6c25c7c80632554bf515a182e266728a6b5c7e3fd835e599068e932e2487da362b72de2361818633b320f3a5d3cc6f95dec16987c193d6639a3df69c
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the agent-list-request contract
+ What an agent says when it asks what it may equip. It carries the word list
+ and nothing else, so asking what is available is not a way to ask for
+ anything.
+
+Package: gettoken-contract-defs
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 12
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-contract-defs_0.1.0_all.deb
+Size: 2368
+MD5sum: d567a8d65ef76847c043256771d96859
+SHA1: f5b535801fddc9f32688f4fbb6620bed4da599aa
+SHA256: ba8b0a98e22632f83fbf6dfa1fd76e9c1765568e281962cf1e424561bacd57ed
+SHA512: 89fa00d17b944568373c1c09b3c9e47043cb2ced12e4c6bc905e63711f82fbdb1b354d4cfb297e995b8405052f52bd2db3e399a5107542f924f5018c3dab9971
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the defs contract
+ The shapes every other contract is built from. An agent name, an activity, a
+ capability, a signature, a key, a secret, a version, a lifetime. Nothing
+ crosses a boundary except as one of these.
+
+Package: gettoken-contract-entitlements-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-contract-entitlements-request_0.1.0_all.deb
+Size: 2252
+MD5sum: d50dc7a13900e1be7b15fc6abd3cd758
+SHA1: 86f2860ef7ffc024442d2a781e6c5c719933f2a0
+SHA256: 10d80c79f406e8c63dcba84c00a6971d3c5fcd0eba00307930a63f9f2eaff60f
+SHA512: 6c58f486a0aa8e208759f33f258a70688902a89db682596b9f9bc4c0da556198eb0cf54c4e319ab2592a5b35e91aaf97df3684c173a0ccdba83b142590bb053e
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the entitlements-request contract
+ What the privileged half asks entitlements. It carries who is asking and what
+ they are doing, signed by the privileged half, and names no capability
+ because none is being asked for.
+
+Package: gettoken-contract-entitlements-response
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 12
+Depends: gettoken-contract-defs
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-contract-entitlements-response_0.1.0_all.deb
+Size: 2336
+MD5sum: c362f01982e9784f5a165e1702860ef9
+SHA1: 4729e79565c672eb1d9c4f6b97ea583aa4b80fb6
+SHA256: 55df7ca863a179da88359cc1d78f41a3e60f3e2185e2b00a6829fe153584f94b
+SHA512: 6330387ecbdc9825efc9061f5ab4ba689127f92bbf7aef334dfdb8b7c795cf6ea6dd840bb4304711ecaae3e2d1867d3556bd359f3f8a600a7daf8a8bce428a48
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the entitlements-response contract
+ What entitlements answers: every capability the agent may equip, each saying
+ what it is for and what has to be filled in before it can be asked for.
+
+Package: gettoken-contract-exchange-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-contract-exchange-request_0.1.0_all.deb
+Size: 2264
+MD5sum: 84d1c4902909db4076fb12c66f42d87a
+SHA1: 3cb166f9cf78330fd331e6ba36cf8f6f6384e972
+SHA256: 0ab133a2971e0d6c9e9cad8b15ba569a8d3515768e4042e5821094e0a256e0d8
+SHA512: 02a7b3c17e835eb377b43c8e1aec1b1f9d081554c6f560db8d4e6419483c8d4e6a1eaaa531ee10ddc33395e04c277e62d60eb30d73850ac91b3d6ce9fc18d523
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the exchange-request contract
+ What token-service hands an exchanger. It carries who is asking and what for,
+ and neither the signature the request was signed with nor what the agent was
+ doing: an exchanger is told the least that lets it trade.
+
+Package: gettoken-contract-secret-get-request-version
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-contract-secret-get-request-version_0.1.0_all.deb
+Size: 2176
+MD5sum: aa3f51bba087dab87ddd1c02b630fb09
+SHA1: 54f9c336730da5738d5cd9a10fd9bb4997f779fb
+SHA256: 2ecc63469d037d29587d26eb6650cd56800e771d8bdd0f6e3ca6073808507355
+SHA512: 47957b56a909b1a5fd9b4940b57a2078b9e715558bedef63fd1aeb5f34459ea7e48ac3bb9d3aa63b3f79cf024c64b85b7240a8080e1137ced387d67a061bf636
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the secret-get-request-version contract
+ Asking the store for one version under a key, for a caller that needs the one
+ it read before rather than whatever is newest.
+
+Package: gettoken-contract-secret-get-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-contract-secret-get-request_0.1.0_all.deb
+Size: 2208
+MD5sum: 8f5a074966f4197a54f64c172f431d34
+SHA1: 32d62b6a67fac39660db6bbd75143fe2b207de53
+SHA256: a11bbd951965a91816edee31f1b3d8fc22d75da3a54e855592e01c6b4124978a
+SHA512: 9092c1181f41cf54d2d2097216bf524de0589f157c95cd1e7c7798c7943a271e9d348b7ecc17cb39d4f616c3a9dabe276d582cebf7f3aeab7962768d1ae6cb2f
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the secret-get-request contract
+ Asking the store for the newest secret under a key. It carries the key alone,
+ and the store answers with the version it holds, so no caller has to know
+ which one that is.
+
+Package: gettoken-contract-secret-get-response
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-contract-secret-get-response_0.1.0_all.deb
+Size: 2188
+MD5sum: 218484c02bb22d34a5d1876821fb7c68
+SHA1: 9aba78dcc5e68d3345234eac10085d689888f29f
+SHA256: f1eeb95624bd768c3c98a593d4e4941357fab353e4c0901279e5001d9bba3af2
+SHA512: dbbc71c5afad6309ff314aac8208aae2393af24560a128104f9d707945be6415026d20f05c82b6d291c6d4b46167432862dee29c14f77ddaac4426d361256466
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the secret-get-response contract
+ What the store answers with a secret: the secret and the version it is.
+ Nothing says whether anything was found, because the exit status says that.
+
+Package: gettoken-contract-secret-put-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-contract-secret-put-request_0.1.0_all.deb
+Size: 2216
+MD5sum: a3c40d754a76cfc5c3658476fafec758
+SHA1: 937823ba687ae2b6c9032e893f2a3ee70a2196e9
+SHA256: 4b3f89de9577d7ff07b29a993ea82d29c39c68bf3efb823850dd951fe97ea1f7
+SHA512: 2e73b3bb20864014ba8210da9dc814aeb6527b0411e5c08b4c19f62af6e0d0199849c44cf6f8f089f49c2055f814723c2d69c5f2b0696213198500837ab2a881
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the secret-put-request contract
+ Putting a secret in the store. It carries the key and the secret and no
+ version, because the store assigns that, so no caller can overwrite what is
+ already held.
+
+Package: gettoken-contract-secret-put-response
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-contract-secret-put-response_0.1.0_all.deb
+Size: 2168
+MD5sum: c9e3e853ac311316e4dced3305695429
+SHA1: 657c520c958c2d4c1c80dcf2184e091b8fd27184
+SHA256: 24d86ee1f3f5c2e20ba5293c1389e4926c7af2b418e551e48f8adc93066c6625
+SHA512: b3edaad79c4f818217cee5580fe5eb2acf1416035c862fb5e3c54e5a65b701a209f529a799b8c4b7ada66f84bd23a6b4a9ed7f965747eb76a0a5ff305b62eae7
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the secret-put-response contract
+ What the store answers when it stored a secret: the secret and the version
+ the store gave it, so the caller can ask for that one again later.
+
+Package: gettoken-contract-token-request
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-contract-token-request_0.1.0_all.deb
+Size: 2216
+MD5sum: fefe933f78a580a721819291e4783650
+SHA1: 453a6418163d6fd278df4e077b3f6a46e33d1efb
+SHA256: 8d0693112f242202935dc191f75c760a5541e8c76f003b852067f30994389dc2
+SHA512: 711092310db96d82eebe4ecaddbb79e66113cb59ebb703c811c215a368d90a2e9aac99eab082f1beee5965a390597e042f28205d8cc1d8ace2df1df7dd70974c
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the token-request contract
+ What the privileged half asks token-service. It carries who is asking, what
+ they are doing, what they want, and the signature the privileged half vouches
+ with.
+
+Package: gettoken-contract-token-response
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 11
+Depends: gettoken-contract-defs
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-contract-token-response_0.1.0_all.deb
+Size: 2268
+MD5sum: 58051de14c9eddca51836733ff0d6e39
+SHA1: a979b8003bfecaab0f51b84366f58a49be35b36b
+SHA256: b2e819c646d761bd3583440b7cdb4542d18de51335d88010b930ceed419ea605
+SHA512: 49df8a255c9ebebd9837efa3912c5e444166700270320f4c31c36504a4d9c828a60eaaf78d471b38ab6696f261391bf7d7c4f82a835b5e22d97b7a62c3599e0f
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the token-response contract
+ What token-service answers with a token: the token and how long it lasts. A
+ lifetime is bounded at both ends, so neither a token that expires before it
+ is used nor one that outlives the job is admitted.
+
+Package: gettoken-entitlements
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 12
+Depends: gettoken-contract-entitlements-request, gettoken-contract-entitlements-response, gettoken-format, gettoken-serve
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-entitlements_0.1.0_all.deb
+Size: 2192
+MD5sum: f95f48631df527520547690b4ede08ed
+SHA1: 0aa121ebb81246006659722d1cc552579e2531ca
+SHA256: a06431f3fbbf84bdf9bd40ed206f56f88449d74ba523d796d8555dbfb67e2b80
+SHA512: f08dce20ca3313b563eca273c80c245f30286c0b64e4fdc72bd3b9126193b5649298fd5427f3a7e4b3197996ce20dfa0ba286bc7bfae304140c05d920e6f0b31
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - capability inventory
+ entitlements answers what an agent has to work with. It is what
+ "gettoken --list" shows, and it is also the control: a request for a
+ capability it does not list is refused.
+
+Package: gettoken-format-dbgsym
+Architecture: amd64
+Version: 0.1.0
+Auto-Built-Package: debug-symbols
+Priority: optional
+Section: debug
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 2548
+Depends: gettoken-format (= 0.1.0)
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-format-dbgsym_0.1.0_amd64.deb
+Size: 1137656
+MD5sum: 3c1f35b8586eb2887ffbc5b424c945ca
+SHA1: bc612330902f99c35bfabaeea1a326b9d5cffa59
+SHA256: 7e5bbfabc95fe7c101e9eee3cf77f6688ea14c505481e60abaa8606644d8d1bd
+SHA512: 7da21796c32271e9017af2fb3595518fa2cf81747ec448a72e29a11dcb95934ec130405b4183a7499d1dc0608cfe838d439268d26f6335236003325b10b7d9b1
+Description: debug symbols for gettoken-format
+Build-Ids: 25502edae5c056bc2343fec8fd10c61212cd7154
+
+Package: gettoken-format
+Architecture: amd64
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 3281
+Depends: libc6 (>= 2.34)
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-format_0.1.0_amd64.deb
+Size: 1084848
+MD5sum: eb5f2e738bd76d2ee362a3070eb75ea6
+SHA1: 08f39a2734d95be67a7dc90bc66103876fab904a
+SHA256: a06f4311ef7b4ff34409f292bf7128490e921c54385206fe5c67baf55fb7b12c
+SHA512: 3875d71181015880fc939bcfa6c3d845b471c1c3f1e3a39ce6d526383c63d4b61653244a296138590d80ffe5cf0e91ffad43e09fc3daff41829072f2a58c6a03
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - writes a document through its contract
+ format takes the fields named on its command line from the environment, writes
+ the document they make, and checks that document against the contract before
+ handing it over. A component cannot emit something its contract does not admit.
+ .
+ It carries no contract of its own, for the same reason parse does not.
+
+Package: gettoken-parse-dbgsym
+Architecture: amd64
+Version: 0.1.0
+Auto-Built-Package: debug-symbols
+Priority: optional
+Section: debug
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 2552
+Depends: gettoken-parse (= 0.1.0)
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-parse-dbgsym_0.1.0_amd64.deb
+Size: 1140184
+MD5sum: b75f3a3c240fa5238a93e363128e98f5
+SHA1: 0cad6963dcafa935e7debbff3e0adf8581c15473
+SHA256: 44c92c6ed848b483b785779703f997e8f9020572d06c6fcb3b4ecbcb37ce7dbe
+SHA512: 28c4e3e8685f0c10db6d29bd8f010566ce66193a5dba29808e978e27cc6bd4d56259d3799f0444132619e67c373966d2ff4ded43ecd5297b7138c4da3730dcb0
+Description: debug symbols for gettoken-parse
+Build-Ids: ffda0d8cd9e5fe1be33d2ad8dcbba8439757933e
+
+Package: gettoken-parse
+Architecture: amd64
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 3289
+Depends: libc6 (>= 2.34)
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-parse_0.1.0_amd64.deb
+Size: 1086352
+MD5sum: ef737b51c862c7fa616e276a26f212ad
+SHA1: f1aef83d57d39886188e129cb140964aacde0882
+SHA256: 3fedadbd1c3a2c7af72f97d8004151dadc3245fbcbcb676df63bf3675852c043
+SHA512: 79fbcbf4e77d6c90dd78bd605f76b76cec5c1365b4dba69fc9f3d611e79c31463d57e92f4d94f57b0cb4f96b758fb5407941846f442511e8e5c8080f391b2c4e
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - reads a document through its contract
+ parse reads one document on standard input, checks it against the contract
+ named on its command line, and hands back the fields asked for as assignments
+ a shell can evaluate. A document that does not satisfy its contract yields
+ nothing to evaluate.
+ .
+ It carries no contract of its own. What may cross a boundary is stated by the
+ contract package the component reading that boundary depends on.
+
+Package: gettoken-secret-manager
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 15
+Depends: gettoken-contract-secret-get-request, gettoken-contract-secret-get-request-version, gettoken-contract-secret-get-response, gettoken-contract-secret-put-request, gettoken-contract-secret-put-response, gettoken-format, gettoken-parse, gettoken-serve
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-secret-manager_0.1.0_all.deb
+Size: 2916
+MD5sum: 6259a5e86e482b40d048d5a605471924
+SHA1: 8c4bb813a27b97b2c1edce93ec390c45224caa94
+SHA256: a370707fd280e80b86fc68ec32d9fbd4defcdf88000c503b614ec3ec7186de4e
+SHA512: e6b9d0b8b47008cd6189f748766ad31162c4c61e0d6cd811976c005dae3a429d550e935833d10973b5a2ca0c92655817a6c17fc0472959fde6493c0462fa84f1
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - super-token store
+ The store holds the super-tokens a human placed on the privileged side,
+ keyed by who holds them and which service they are for, and keeps every
+ version that was put in.
+ .
+ The store is /var/lib/gettoken/secrets, and no account but the privileged one
+ can read it. Nothing an agent runs reaches it; only an exchanger does, and
+ only for as long as it takes to trade a super-token for a narrow one. Purging
+ this package takes the store with it.
+
+Package: gettoken-serve-dbgsym
+Architecture: amd64
+Version: 0.1.0
+Auto-Built-Package: debug-symbols
+Priority: optional
+Section: debug
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 2737
+Depends: gettoken-serve (= 0.1.0)
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-serve-dbgsym_0.1.0_amd64.deb
+Size: 1220632
+MD5sum: fb6f4cb6ee0eb7ddc6b0e2af80d389b1
+SHA1: 63542066eadd9faf19cfa419cba29a0339ffcfc7
+SHA256: ad335ef4ed709d595db0586b813aec5328dd4aa1a623166f1fc785b6cc7c9a15
+SHA512: a23f9da670bddc0c761995e1584284208082a855ee4653ff3cb23c0367b774606ea30a7f5d2d9536aa58bb2b53e2a408b3fae15346edfb272566a44569b23fba
+Description: debug symbols for gettoken-serve
+Build-Ids: 0b8a9a9ff2118009f51a308f8955f3a82619e08c
+
+Package: gettoken-serve
+Architecture: amd64
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 3527
+Depends: libc6 (>= 2.34)
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-serve_0.1.0_amd64.deb
+Size: 1161608
+MD5sum: e499d0bb3f8e7f3b77233b41558ac132
+SHA1: f8a683aa189079a5e7f22ef00e0143e25f7aa2d3
+SHA256: 498acfccf759e187f9ccb097c4f49dde60f0f5789c1b66df8184e5cf35699d7e
+SHA512: d860a55f686246fd690d7a1c5c7464fe100f84a0aa470178a948d47e0981f5153ea8f52ae6d40636508b2b81c443cee38ae6f14338ae3d730587a6a36702e675
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the door a component answers at
+ serve is how every component is reached and the only way anything leaves one.
+ It takes the ask as an argument or from standard input, holds it to the
+ contract the component says it takes, runs the component with nothing but the
+ document, holds what comes back to the contract the component says it gives,
+ and writes that to standard output or to a file closed to everyone but its
+ owner. Nothing is written until the answer has been admitted.
+ .
+ It carries no contract of its own, for the same reason parse and format do
+ not. What a component says it speaks is the contract packages it depends on.
+ .
+ A component behind a door reads one document and writes one, and is told
+ nothing about how it was reached. What carries the document can therefore be
+ replaced - a socket, a listener on the privileged side of a boundary - without
+ the component being touched.
+
+Package: gettoken-token-requester
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 14
+Depends: gettoken-entitlements, gettoken-token-service, gettoken-contract-agent-capability-request, gettoken-contract-agent-list-request, gettoken-contract-entitlements-request, gettoken-contract-entitlements-response, gettoken-contract-token-request, gettoken-contract-token-response, gettoken-format, gettoken-parse, gettoken-serve
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-token-requester_0.1.0_all.deb
+Size: 2668
+MD5sum: 9ffc7db22c084f969fd368f92808b4b5
+SHA1: 5fd27775ed74d1de4bada9cff82015b87e55d378
+SHA256: 8ed6027130be2a935d6ceacced41f5b025544b77d8bc6a09ac6a4880c0026474
+SHA512: 950ad64c9e49c64a2f95c51e22bd313810a9e45e63aac5103f45d817e0aac54a2c5a752e493c56a2f77a56ef0eab7f6bae5c1f85884f144ba970cd0917c57b62
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the privileged half
+ token-requester is what runs once the agent's ask has crossed over. It says who
+ is asking and what they are doing from the kernel rather than from anything the
+ agent can set, signs the request, and hands it to token-service. It answers
+ with the token alone: how long that token lasts is not the agent's to be told.
+ .
+ Beside it stands entitlements-requester, which does the same for the ask that
+ names no capability and hands that one to entitlements. One door per ask, so
+ neither has to work out which of two things it was asked.
+ .
+ Neither is a name on a public PATH. An agent reaches them by invoking gettoken,
+ which is the only public name the components claim, and never by naming these.
+
+Package: gettoken-token-service
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 12
+Depends: gettoken-secret-manager, gettoken-contract-exchange-request, gettoken-contract-token-request, gettoken-contract-token-response, gettoken-format, gettoken-parse, gettoken-serve
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken-token-service_0.1.0_all.deb
+Size: 2376
+MD5sum: 84f120c05049a89352831df83bdf2172
+SHA1: 7c26cd3089648d845028eedcd85e6e41fa9eb821
+SHA256: 156ac81aa7e36a0699fc5ea4d604a5066ce9e07f35123ade972c81e8f11215e5
+SHA512: db511698e62bf4b302b365c9427a8a791b4f7e221f507c2d50abbecaaec905f6d80bf296b029d3709ef8b98d3724708364ad4abf755aaf07e177ba8fd35e87a5
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - exchange dispatcher
+ token-service authenticates a request, resolves what it asks for, and hands
+ the capability to the exchanger registered for the service named by the
+ capability's first segment.
+ .
+ It ships no exchanger. Each integrated tool installs its own into
+ /usr/lib/gettoken/exchangers, so adding the hundredth tool costs what the
+ first one did.
+
+Package: gettoken
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 22
+Depends: gettoken-token-requester, gettoken-contract-agent-capability-request, gettoken-contract-agent-list-request, gettoken-format
+Filename: pool/claude/harmonize-command-interface-kamkvf/gettoken_0.1.0_all.deb
+Size: 11196
+MD5sum: a2c7fa44cc57ab7efe8641a7408cf990
+SHA1: 6c5a96fadb247915b175600e41b1b6175a4e754e
+SHA256: 386c404da7eafc8071a3f58befae59d5b06180ea73e8ea642119a828e7912de0
+SHA512: 33d97627678e0a54e56dcc0300373626703d83142dbd603b4a349b608b1a89d8a8517d42dc32bd0ad6f28dbef20b8ed97f335236b879d2957b9a8a0e586ad828
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents
+ An agent that holds a long-lived credential holds whatever authority that
+ credential carries, and an agent can be talked into things by whatever it
+ reads. gettoken hands an agent a token narrow enough for the job in front of
+ it and nothing more, drawn from a super-token a human already holds.
+ .
+ This package contains the entry point the agent invokes and the privileged
+ half that builds the request on its behalf. The agent never holds the
+ super-token: it says what it wants, and gets back a token for that job.
+
+Package: integration-test-tool-exchanger
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 13
+Depends: gettoken-secret-manager, gettoken-contract-exchange-request, gettoken-contract-secret-get-request, gettoken-contract-secret-get-response, gettoken-contract-token-response, gettoken-format, gettoken-parse, gettoken-serve
+Filename: pool/claude/harmonize-command-interface-kamkvf/integration-test-tool-exchanger_0.1.0_all.deb
+Size: 2564
+MD5sum: aabf743ec6541364f0bb318d855234c4
+SHA1: df9d7514a861fd6031c016f4fdde405694fee6d4
+SHA256: e42a50c244eb62a23c16174e014187060d5cb7828e0635d19705de565defc0fc
+SHA512: 7625afade6b6e755d7626bf7f20c54b4d31563de1afc31e04739bf6303322bcc9986067b42e2a74c878f42f3fb35ebd18882300f75b8e64a9a0d07a3be90c35a
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - the exchanger the tool integrates
+ The exchanger integrationtest/ci/run is served by. It is told who is asking and
+ what for, trades the super-token the store holds for a narrow one, and answers
+ with that.
+ .
+ It is a separate package from the tool because it is on the other side of the
+ boundary: the tool is a public name an agent runs, and this is run by
+ token-service with the super-token in reach. What each may be told is what each
+ depends on, and they are not the same.
+
+Package: integration-test-tool
+Architecture: all
+Version: 0.1.0
+Priority: optional
+Section: admin
+Source: gettoken
+Maintainer: Johan Granlund <johan.granlund@thruput.se>
+Installed-Size: 13
+Depends: gettoken, integration-test-tool-exchanger
+Filename: pool/claude/harmonize-command-interface-kamkvf/integration-test-tool_0.1.0_all.deb
+Size: 2944
+MD5sum: 078cd9ae310bca68579ff9c74a8529c3
+SHA1: 9bb5199875c57c27d67858bb3e7eb2518ae21d99
+SHA256: d936e036d7e02da91c7c541f6ee62baa7a0969429ba5430cb34bc645624e702a
+SHA512: e0d9eb46f07cf1a0c5b529aecdee9ed74a3826e0791b2081b6882be5562ba336ffa97d84b24d5fc1c792a6a0530462aace95559988dc24b5ac25dd68b9625c53
+Homepage: https://github.com/thruput-io/gettoken
+Description: token broker for AI agents - tool that verifies the chain
+ The tool the verification suite integrates, standing in for a real one so the
+ chain can be exercised without reaching a service. It runs on the token that
+ integrationtest/ci/run downgrades to and refuses the super-token that token
+ was traded for, so a run that succeeds is proof that a downgrade happened. It
+ writes back what the narrow token carries, so what the store was given can be
+ followed all the way to the tool.
+ .
+ It is also the worked example of an integration: it depends on gettoken and
+ carries one exchanger, which knows one service and nothing about any other.
+ What that exchanger may say and be told is the contracts it depends on, and
+ nothing else. Installing it is what brings the chain onto a machine.
+

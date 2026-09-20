@@ -1,0 +1,20 @@
+Architectures: amd64
+Codename: claude/harmonize-command-interface-kamkvf
+Components: main
+Date: Sun, 20 Sep 2026 22:03:26 +0000
+Description: token broker for AI agents
+Label: gettoken
+Origin: gettoken
+Suite: claude/harmonize-command-interface-kamkvf
+MD5Sum:
+ c29631d9ed7e291ca8ca01172def1b5c            27955 main/binary-amd64/Packages
+ 452155252241ef3cf15d4655a2da4e24             8673 main/binary-amd64/Packages.gz
+SHA1:
+ 602ef656875f355fc570affc310a3d39af124a16            27955 main/binary-amd64/Packages
+ 5f57e67cf40f144bcdc328f264175522cca51078             8673 main/binary-amd64/Packages.gz
+SHA256:
+ fc92c69eb579b1c8dfbfa28dae0012fb216810eaeeb28f545fafbf196e52d0bd            27955 main/binary-amd64/Packages
+ 2f678a13de120c851322d1826365fa70b21d0bff5c2f0f63b2e3b61a93dbd017             8673 main/binary-amd64/Packages.gz
+SHA512:
+ 97b1ce3b8bb29be6bf84e9f161dcff8d85b1f3436b59bc71437689dd75d11bc3c3f12a3f4b4fdea0ecc7ee70da0458da1877bfa0af12dd579bf32b9a743a67c2            27955 main/binary-amd64/Packages
+ ecab600eef4ed17881278e76d057ce24a02670fd442b42922d719086394a38f0a91b976901041cbdf95aa8cf51f1843d69e077cb3786b08db4c06afb28dac698             8673 main/binary-amd64/Packages.gz
