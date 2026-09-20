@@ -52,7 +52,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
