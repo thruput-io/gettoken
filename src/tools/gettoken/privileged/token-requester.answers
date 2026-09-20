@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euo pipefail
+
+fields=$(parse agent-capability-request.schema.json wants)
+wants=''
+eval "$fields"
+
+who=$(id -un)
+doing=$(hostname)
+signed=host-privileged
+export who doing signed wants
+
+request=$(format token-request.schema.json who doing wants signed)
+
+token-service "$request"

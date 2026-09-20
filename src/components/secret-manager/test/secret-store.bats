@@ -13,19 +13,19 @@ teardown() { rm -rf "$(dirname "$SECRET_DIR")"; }
 putting() {
   key=$1 value=$2
   export key value
-  format secret-put-request.schema.json key value | secret-put
+  secret-put "$(format secret-put-request.schema.json key value)"
 }
 
 getting() {
   key=$1
   export key
-  format secret-get-request.schema.json key | secret-get --with-key
+  secret-get "$(format secret-get-request.schema.json key)"
 }
 
 getting_version() {
   key=$1 version=$2
   export key version
-  format secret-get-request-version.schema.json key version | secret-get
+  secret-get "$(format secret-get-request-version.schema.json key version)"
 }
 
 @test "storing a secret answers with version and value" {
@@ -82,29 +82,26 @@ getting_version() {
 }
 
 @test "a key the contract does not admit is refused" {
-  run -1 --separate-stderr sh -c \
-    'printf %s "{\"key\":\"Johans-Laptop\",\"value\":\"super-1\"}" | secret-put'
+  run -1 --separate-stderr secret-put '{"key":"Johans-Laptop","value":"super-1"}'
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
 }
 
 @test "a key climbing out of the store is refused, because a key carries no dots" {
-  run -1 --separate-stderr sh -c \
-    'printf %s "{\"key\":\"..\",\"value\":\"super-1\"}" | secret-put'
+  run -1 --separate-stderr secret-put '{"key":"..","value":"super-1"}'
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
   [ ! -e "$(dirname "$SECRET_DIR")/github" ]
 }
 
 @test "storing a secret with no value is refused" {
-  run -1 --separate-stderr sh -c \
-    'printf %s "{\"key\":\"johans-laptop/github\",\"value\":\"\"}" | secret-put'
+  run -1 --separate-stderr secret-put '{"key":"johans-laptop/github","value":""}'
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
 }
 
 @test "asking with no key at all is refused" {
-  run -1 --separate-stderr sh -c 'printf %s "{}" | secret-get --with-key'
+  run -1 --separate-stderr secret-get '{}'
   [ "$output" = "" ]
   [[ "$stderr" == *"does not satisfy secret-get-request.schema.json"* ]]
 }

@@ -1,1 +1,2 @@
 components/token-service/token-service usr/lib/gettoken
+components/token-service/token-service.answers usr/lib/gettoken

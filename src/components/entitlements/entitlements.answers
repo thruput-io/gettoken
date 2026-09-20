@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euo pipefail
+
+entitlements=$(cat <<'ENTITLEMENTS'
+[{"capability":"integrationtest/ci/run","description":"Run the integration test suite on CI.","variables":[]}]
+ENTITLEMENTS
+)
+export entitlements
+
+format entitlements-response.schema.json entitlements

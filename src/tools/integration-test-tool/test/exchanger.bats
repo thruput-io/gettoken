@@ -6,8 +6,7 @@ setup() {
   PATH="$STUB_DIR:$root/src/tools/integration-test-tool/privileged/exchangers:$root/build/bin:$PATH"
   CONTRACTS_DIR="$root/src/contracts"
   ASKED_FILE="$STUB_DIR/asked"
-  ARGS_FILE="$STUB_DIR/args"
-  export PATH CONTRACTS_DIR ASKED_FILE ARGS_FILE
+  export PATH CONTRACTS_DIR ASKED_FILE
 }
 
 teardown() { rm -rf "$STUB_DIR"; }
@@ -18,8 +17,7 @@ holding() {
   cat > "$STUB_DIR/secret-get" <<'STUB'
 #!/bin/sh
 set -eu
-printf '%s' "$*" > "$ARGS_FILE"
-cat > "$ASKED_FILE"
+printf '%s' "$1" > "$ASKED_FILE"
 version=0
 value=$STORED
 export version value
@@ -29,7 +27,7 @@ STUB
 }
 
 trading() {
-  printf '%s' "{\"who\":\"tore\",\"wants\":\"$1\"}" | integrationtest
+  integrationtest "{\"who\":\"tore\",\"wants\":\"$1\"}"
 }
 
 @test "the narrow token carries what the store holds, not what the exchanger expected" {
@@ -55,7 +53,7 @@ trading() {
   holding super-4f2a9c
   run -0 --separate-stderr trading integrationtest/ci/run
   [ "$(jq -r '.key' < "$ASKED_FILE")" = "host-privileged/integrationtest" ]
-  [ "$(cat "$ARGS_FILE")" = "--with-key" ]
+  [ "$(jq -r 'has("version")' < "$ASKED_FILE")" = "false" ]
 }
 
 @test "a stored value that is not a super-token is refused, and hands over nothing" {
@@ -80,6 +78,7 @@ trading() {
 
 @test "a request carrying what an exchanger may not see is refused by the contract" {
   holding super-4f2a9c
-  run -1 --separate-stderr sh -c 'printf "%s" "{\"who\":\"tore\",\"wants\":\"integrationtest/ci/run\",\"signed\":\"host-privileged\"}" | integrationtest'
+  run -1 --separate-stderr integrationtest \
+    '{"who":"tore","wants":"integrationtest/ci/run","signed":"host-privileged"}'
   [ "$output" = "" ]
 }

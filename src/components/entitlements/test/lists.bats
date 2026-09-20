@@ -8,7 +8,7 @@ setup() {
 }
 
 asking() {
-  printf '%s' '{"who":"tore","doing":"mac.lan","signed":"host-privileged"}' | entitlements
+  entitlements '{"who":"tore","doing":"mac.lan","signed":"host-privileged"}'
 }
 
 @test "the capability the integrated tool is asked for is one the agent may equip" {
@@ -24,6 +24,7 @@ asking() {
 }
 
 @test "a request naming a capability is refused, because none is being asked for" {
-  run -1 --separate-stderr sh -c 'printf "%s" "{\"who\":\"tore\",\"doing\":\"mac.lan\",\"signed\":\"host-privileged\",\"wants\":\"integrationtest/ci/run\"}" | entitlements'
+  run -1 --separate-stderr entitlements \
+    '{"who":"tore","doing":"mac.lan","signed":"host-privileged","wants":"integrationtest/ci/run"}'
   [ "$output" = "" ]
 }

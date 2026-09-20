@@ -3,9 +3,11 @@
 gettoken \- obtain a narrow access token for one job
 .SH SYNOPSIS
 .B gettoken
+[\fB\-f\fR \fIfile\fR]
 .I capability
 .br
 .B gettoken
+[\fB\-f\fR \fIfile\fR]
 .B \-\-list
 .SH DESCRIPTION
 .B gettoken
@@ -18,21 +20,31 @@ A capability is a name, and it is not a secret. Its first segment names the
 service, and the segments after it name what is wanted of that service, as in
 .IR github/thruput\-io/gettoken/pr/create .
 .PP
-A successful run writes the access token, and nothing else, to standard output.
-A failure writes to standard error and leaves standard output empty, so a
-caller cannot mistake a message for a credential.
+A successful run writes the access token, and nothing else, to standard output,
+or to the file named with
+.BR \-f .
+A failure writes to standard error and leaves standard output empty, and the
+named file untouched, so a caller cannot mistake a message for a credential.
 .PP
 The token is not cached and its lifetime is not reported. Ask again for each
 job that needs one.
 .SH OPTIONS
 .TP
 .B \-\-list
-Write the capabilities this agent may equip, one per line. A capability that is
-not listed is refused.
+Write the capabilities this agent may equip. A capability that is not listed is
+refused.
+.TP
+.BI \-f " file"
+Write what was asked for to
+.I file
+rather than to standard output. The file is created closed to everyone but its
+owner, and is made so again if it was already there, so a token never has to
+pass through a shell to reach the thing that needs it. Nothing is written
+unless the answer arrived and satisfied its contract.
 .SH EXIT STATUS
 .TP
 .B 0
-A token was issued and written to standard output.
+A token was issued, and written to standard output or to the named file.
 .TP
 .B 1
 No token was issued. The reason is on standard error.
@@ -41,9 +53,14 @@ No token was issued. The reason is on standard error.
 .I /usr/lib/gettoken
 The privileged half:
 .BR token\-requester ,
+.BR entitlements\-requester ,
 .BR token\-service ,
 .B entitlements
-and the programs that reach the store.
+and the programs that reach the store. Each is reached the same way this
+command is, with what is being asked as an argument, and each is answered by
+the file of the same name with
+.I .answers
+after it.
 .TP
 .I /usr/lib/gettoken/exchangers
 One exchanger per service, named for the first segment of the capability it

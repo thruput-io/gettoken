@@ -1,37 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-if [ "${1:-}" = "--list" ]; then
-  parse agent-list-request.schema.json > /dev/null
-
-  who=$(id -un)
-  doing=$(hostname)
-  signed=host-privileged
-  export who doing signed
-
-  request=$(format entitlements-request.schema.json who doing signed)
-
-  entitled=$(printf '%s' "$request" | entitlements)
-  printf '%s' "$entitled" | parse entitlements-response.schema.json
-  printf '%s\n' "$entitled"
-  exit 0
-fi
-
-fields=$(parse agent-capability-request.schema.json wants)
-wants=''
-eval "$fields"
-
-who=$(id -un)
-doing=$(hostname)
-signed=host-privileged
-export who doing signed wants
-
-request=$(format token-request.schema.json who doing wants signed)
-
-response=$(printf '%s' "$request" | token-service)
-
-fields=$(printf '%s' "$response" | parse token-response.schema.json access_token)
-access_token=''
-eval "$fields"
-
-printf '%s\n' "$access_token"
+exec serve \
+  --request agent-capability-request.schema.json \
+  --response token-response.schema.json \
+  --field access_token \
+  --answers "$0.answers" \
+  -- "$@"

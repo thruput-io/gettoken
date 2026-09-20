@@ -32,14 +32,23 @@ speaks=$(mktemp)
 trap 'rm -f "$speaks"' EXIT
 : > "$speaks"
 
-every_contract_named_on_a_line() {
-  awk '{
-    rest = $0
-    while (match(rest, /(parse|format) [a-z-]+\.schema\.json/)) {
-      print substr(rest, RSTART, RLENGTH)
-      rest = substr(rest, RSTART + RLENGTH)
+every_package_a_file_names() {
+  awk '
+    /(^|[^A-Za-z0-9_-])parse([^A-Za-z0-9_-]|$)/  { print "gettoken-parse" }
+    /(^|[^A-Za-z0-9_-])format([^A-Za-z0-9_-]|$)/ { print "gettoken-format" }
+    /(^|[^A-Za-z0-9_-])serve([^A-Za-z0-9_-]|$)/  { print "gettoken-serve" }
+    {
+      rest = $0
+      while (match(rest, /[a-z][a-z0-9-]*\.schema\.json/)) {
+        print "gettoken-contract-" substr(rest, RSTART, RLENGTH - 12)
+        rest = substr(rest, RSTART + RLENGTH)
+      }
     }
-  }' "$1"
+  ' "$1"
+}
+
+is_a_script() {
+  test "$(head -c 2 "$1")" = '#!'
 }
 
 for install in debian/*.install; do
@@ -48,16 +57,12 @@ for install in debian/*.install; do
 
   uses=$(
     while read -r src _; do
-      if [ -f "$src" ]; then
-        every_contract_named_on_a_line "$src"
+      if [ -f "$src" ] && is_a_script "$src"; then
+        every_package_a_file_names "$src"
       fi
     done < "$install"
   )
-  needs=$(
-    printf '%s\n' "$uses" \
-      | awk 'NF { print "gettoken-" $1; sub(/\.schema\.json$/, "", $2); print "gettoken-contract-" $2 }' \
-      | sort -u | tr '\n' ' '
-  )
+  needs=$(printf '%s\n' "$uses" | awk 'NF' | sort -u | tr '\n' ' ')
   printf '%s %s\n' "$package" "$needs" >> "$speaks"
 done
 

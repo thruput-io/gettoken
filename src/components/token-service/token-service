@@ -1,27 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-exchangers=${EXCHANGER_DIR:-/usr/lib/gettoken/exchangers}
-
-fields=$(parse token-request.schema.json who wants)
-who='' wants=''
-eval "$fields"
-
-exchanger="$exchangers/${wants%%/*}"
-
-if [ ! -f "$exchanger" ] || [ ! -x "$exchanger" ]; then
-  echo "token-service: no exchanger serves $wants" >&2
-  exit 1
-fi
-
-export who wants
-exchange=$(format exchange-request.schema.json who wants)
-response=$(printf '%s' "$exchange" | "$exchanger") || {
-  failed=$?
-  echo "token-service: the exchanger serving $wants failed" >&2
-  exit "$failed"
-}
-
-printf '%s' "$response" | parse token-response.schema.json
-
-printf '%s\n' "$response"
+exec serve \
+  --request token-request.schema.json \
+  --response token-response.schema.json \
+  --answers "$0.answers" \
+  -- "$@"
