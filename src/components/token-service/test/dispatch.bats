@@ -20,12 +20,12 @@ wanting() {
     '{who:"tore",doing:"mac.lan",wants:$wants,signed:"host-privileged"}'
 }
 
-dispatch() { printf '%s' "$1" | token-service; }
+dispatch() { token-service "$1"; }
 
 asking() { dispatch "$(wanting "$1")"; }
 
 @test "the exchanger registered for the first segment is handed the whole capability" {
-  register integrationtest 'eval "$(parse exchange-request.schema.json wants)"; access_token=$wants; expires_in=120; export access_token expires_in; format token-response.schema.json access_token expires_in'
+  register integrationtest 'eval "$(printf %s "$1" | parse exchange-request.schema.json wants)"; access_token=$wants; expires_in=120; export access_token expires_in; format token-response.schema.json access_token expires_in'
   run -0 --separate-stderr asking integrationtest/ci/run
   [ "$(printf '%s' "$output" | jq -r '.access_token')" = "integrationtest/ci/run" ]
   [ "$(printf '%s' "$output" | jq -r '.expires_in')" = "120" ]

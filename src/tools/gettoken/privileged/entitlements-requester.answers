@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+
+who=$(id -un)
+doing=$(hostname)
+signed=host-privileged
+export who doing signed
+
+request=$(format entitlements-request.schema.json who doing signed)
+
+entitlements "$request"

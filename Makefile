@@ -14,7 +14,7 @@ setup:            build/setup.txt
 unit:             build/unit.txt
 build:            build/publish.txt
 test:             build/integration-test.tap
-contract:         build/bin/parse build/bin/format
+contract:         build/bin/parse build/bin/format build/bin/serve
 signing-key:      build/signing-key.asc
 lint:             build/lint.checked
 no-branching:     build/no-branching.checked
@@ -55,7 +55,7 @@ build/setup.txt: build/config-sources
 build/signing-key.asc: build/setup.txt
 	scripts/signing-key.sh $@
 
-build/bin/parse build/bin/format: build/go-sources build/setup.txt
+build/bin/parse build/bin/format build/bin/serve: build/go-sources build/setup.txt
 	src/components/contract/build.sh build/bin
 
 build/lint.xml: build/sources build/setup.txt
@@ -66,7 +66,7 @@ build/check-readme.txt: build/sources README.md build/setup.txt
 	@mkdir -p $(@D)
 	scripts/readme.sh . --check > $@
 
-build/bash-unit-test.tap: build/sources build/bin/parse build/bin/format build/setup.txt
+build/bash-unit-test.tap: build/sources build/bin/parse build/bin/format build/bin/serve build/setup.txt
 	@mkdir -p $(@D)
 	set +e; PATH="$$PWD/build/bin:$$PATH" \
 	  bats --recursive --timing --print-output-on-failure \
@@ -74,7 +74,7 @@ build/bash-unit-test.tap: build/sources build/bin/parse build/bin/format build/s
 	  src scripts > /dev/null; said=$$?; set -e; \
 	  mv build/report.tap $@; test "$$said" -le 1
 
-build/bash-coverage.json: build/sources build/bin/parse build/bin/format build/setup.txt
+build/bash-coverage.json: build/sources build/bin/parse build/bin/format build/bin/serve build/setup.txt
 	@mkdir -p $(@D)
 	PATH="$$PWD/build/bin:$$PATH" \
 	  kcov --include-path=src,scripts \

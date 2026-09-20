@@ -22,3 +22,4 @@ go test -mod=vendor ./...
 
 go build -mod=vendor -buildvcs=false -o "$into/parse" ./cmd/parse
 go build -mod=vendor -buildvcs=false -o "$into/format" ./cmd/format
+go build -mod=vendor -buildvcs=false -o "$into/serve" ./cmd/serve

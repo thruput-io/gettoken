@@ -2,7 +2,7 @@
 set -euo pipefail
 
 exec serve \
-  --request entitlements-request.schema.json \
+  --request agent-list-request.schema.json \
   --response entitlements-response.schema.json \
   --answers "$0.answers" \
   -- "$@"

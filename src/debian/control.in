@@ -33,6 +33,26 @@ Description: token broker for AI agents - writes a document through its contract
  .
  It carries no contract of its own, for the same reason parse does not.
 
+Package: gettoken-serve
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends}@CONTRACTS@:gettoken-serve
+Description: token broker for AI agents - the door a component answers at
+ serve is how every component is reached and the only way anything leaves one.
+ It takes the ask as an argument or from standard input, holds it to the
+ contract the component says it takes, runs the component with nothing but the
+ document, holds what comes back to the contract the component says it gives,
+ and writes that to standard output or to a file closed to everyone but its
+ owner. Nothing is written until the answer has been admitted.
+ .
+ It carries no contract of its own, for the same reason parse and format do
+ not. What a component says it speaks is the contract packages it depends on.
+ .
+ A component behind a door reads one document and writes one, and is told
+ nothing about how it was reached. What carries the document can therefore be
+ replaced - a socket, a listener on the privileged side of a boundary - without
+ the component being touched.
+
 Package: gettoken
 Architecture: all
 Depends: ${misc:Depends},
@@ -55,10 +75,15 @@ Depends: ${misc:Depends},
 Description: token broker for AI agents - the privileged half
  token-requester is what runs once the agent's ask has crossed over. It says who
  is asking and what they are doing from the kernel rather than from anything the
- agent can set, signs the request, and hands it to token-service.
+ agent can set, signs the request, and hands it to token-service. It answers
+ with the token alone: how long that token lasts is not the agent's to be told.
  .
- It is not a name on a public PATH. An agent reaches it by invoking gettoken,
- which is the only public name the components claim, and never by naming this.
+ Beside it stands entitlements-requester, which does the same for the ask that
+ names no capability and hands that one to entitlements. One door per ask, so
+ neither has to work out which of two things it was asked.
+ .
+ Neither is a name on a public PATH. An agent reaches them by invoking gettoken,
+ which is the only public name the components claim, and never by naming these.
 
 Package: gettoken-token-service
 Architecture: all

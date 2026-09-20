@@ -45,8 +45,8 @@ Fixed faces (name + concern). The implementation of each evolves left to right.
 
 | # | Component | Concern | Beginning | Future |
 |---|-----------|---------|-----------|--------|
-| 1 | `gettoken` | agent's entry point; `--list` and `<capability>` | forwarder | stable |
-| 2 | `token-requester` | privileged half; builds the request | local root/dev | gh app signing → orchestrator/container id |
+| 1 | `gettoken` | agent's entry point; `--list` and `<capability>`, either written to a file with `-f` | forwarder | stable |
+| 2 | `token-requester` | privileged half; builds the request. `entitlements-requester` beside it does the same for the ask that names no capability | local root/dev | gh app signing → orchestrator/container id |
 | 3 | `token-service` | authenticate, resolve, hand the capability to an exchanger | transitive trust, as-is | verify `signed` → off-the-shelf OAuth2 STS |
 | 4 | `notifier` | summon a human to renew | beep + shell | 2FA/phone → mostly automated |
 | 5 | `auth-canvas` | surface the human acts on | prepped shell (`gh auth login`) | mobile/web |
@@ -90,7 +90,8 @@ flowchart TD
   end
 
   subgraph PRIV["privileged half · kernel is the trust root"]
-    TR["token-requester"]
+    TR["token-requester · hands over the token alone"]
+    ER["entitlements-requester"]
     EN["entitlements · baked-in capability list"]
     TS["token-service · dispatches on the first segment"]
     EX["exchanger · trades the super-token for a narrow one"]
@@ -99,13 +100,16 @@ flowchart TD
 
   AG -->|"gettoken --list"| GT
   AG -->|"gettoken capability"| GT
-  GT -->|"exec"| TR
-  TR -->|"exec, when --list"| EN
-  TR -->|"who, doing, wants, signed · stdin"| TS
+  GT -->|"query · argument"| ER
+  GT -->|"wants · argument"| TR
+  ER -->|"who, doing, signed"| EN
+  TR -->|"who, doing, wants, signed"| TS
   TS -->|"capability"| EX
   EX -->|"read super-token"| SM
-  EN -->|"capability list · stdout"| AG
-  TS -->|"response · stdout"| AG
+  EN -->|"capability list"| ER
+  ER -->|"capability list · stdout"| AG
+  TS -->|"response"| TR
+  TR -->|"access_token · stdout"| AG
   AG -->|"narrow token · environment"| TL
 
   NF["notifier"] -.->|"super-token expired"| AC["auth-canvas"]
@@ -150,11 +154,67 @@ segment of **`doing`**, and the deployment is where that key is put.
 
 An exchanger is a component like any other, so contracts govern both ends of it.
 `token-service` finds it in `/usr/lib/gettoken/exchangers`, named for the first
-segment of the capability, hands it an `exchange-request` on standard input and
-reads a `token-response` back. It is told who is asking and what for, and neither
+segment of the capability, hands it an `exchange-request` and reads a
+`token-response` back. It is told who is asking and what for, and neither
 the signature the request was signed with nor what the agent was doing, because
 those are not an exchanger's to see. It is looked up in that one directory rather
 than on `PATH`, because it is run with the super-token in reach.
+
+## Reaching a component
+
+Every component is reached the same way, and that way is the whole of what a
+caller may say:
+
+```sh
+secret-get '{"key":"host-privileged/integrationtest"}'
+secret-get --stdin < ask.json
+secret-get -f held.json '{"key":"host-privileged/integrationtest"}'
+```
+
+The ask is an argument, so a component can be exercised from a shell, or from a
+test, without building a pipeline around it. `--stdin` takes it from standard
+input instead, for an ask too large or too private to put on a command line.
+`-f` writes the answer to a file created closed to everyone but its owner rather
+than to standard output, which is how a token reaches a caller without passing
+through one.
+
+What answers is a file beside the command and named for it — `secret-get` is
+answered by `secret-get.answers`. It reads one document on standard input and
+writes one on standard output, and is told nothing about how it was reached. The
+command itself is the door, and says nothing but what the component is:
+
+```bash
+exec serve \
+  --request secret-get-request.schema.json \
+  --request secret-get-request-version.schema.json \
+  --response secret-get-response.schema.json \
+  --answers "$0.answers" \
+  -- "$@"
+```
+
+`serve` holds the ask to the contracts the door takes, and what comes back to
+the one it gives. A component is never told something its contract refuses, and
+can never answer with something its contract does not admit. Nothing is
+written until the answer has been admitted, so a failure leaves standard output
+empty and the named file untouched; a component that fails says why itself, and
+the status it failed with is what the caller gets.
+
+A door takes as many shapes as it has asks and names the one that admitted in
+`REQUEST_CONTRACT`, which is why nothing carries a switch of its own: asking the
+store for one particular version is a different document, not a different flag.
+`--field` names the one value a door hands over as text in place of the document
+it came in — `token-requester` hands over `access_token` and nothing else, so
+the response document stops at the privilege boundary and the agent is never
+told when its token expires.
+
+Everything left of `--` is the component talking about itself, and everything
+right of it is the caller's. Nothing on the right reaches the left, so a caller
+cannot name what runs or what governs it.
+
+That split is also where this goes next. What answers holds no socket, no
+process of its own and no idea who reached it, so the door can become a listener
+on the privileged side of a boundary, or a web server, and the component does
+not notice.
 
 ## Install it
 
@@ -178,9 +238,9 @@ sudo apt-get update
 sudo apt-get install integration-test-tool
 ```
 
-Asking for that one package installs twenty-two: the tool, `gettoken`, the
-privileged half behind it, the store, the dispatcher, the two programs that carry
-a document through a contract, and one package per contract. Nothing else is
+Asking for that one package installs twenty-three: the tool, `gettoken`, the
+privileged half behind it, the store, the dispatcher, the three programs that
+carry a document through a contract, and one package per contract. Nothing else is
 named, and nothing else arrives. Purging it takes them all with it, and the store
 with them.
 
@@ -243,9 +303,11 @@ on neither the token nor the entitlements contracts, because those belong to the
 privileged half it hands the ask to. An exchanger that has no business seeing a
 signature does not depend on the contract carrying one.
 
-`parse` and `format` are separate packages carrying no contract of their own, so a
-component that only ever reads a document does not install the program that writes
-one — `gettoken` depends on `gettoken-format` alone.
+`parse`, `format` and `serve` are separate packages carrying no contract of their
+own, so a component that only ever reads a document does not install the program
+that writes one — `gettoken` depends on `gettoken-format` alone, and on neither
+of the other two, because it is the one face that is reached with a capability
+rather than with a document.
 
 `/usr/bin` carries the agent's entry point and nothing else. Everything on the
 privileged side lives in `/usr/lib/gettoken`, which `gettoken` puts on `PATH`
@@ -349,6 +411,7 @@ src/
       cmd/
         format/
         parse/
+        serve/
       test/
     entitlements/
       test/
