@@ -36,6 +36,6 @@ provision:
     #!/bin/sh
     echo "mr-priviligied ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/50_lima
     chmod 0440 /etc/sudoers.d/50_lima
-    if ! id mr-unpriviliged >/dev/null 2>&1; then
+    if ! id mr-unpriviliged; then
       sysadminctl -addUser mr-unpriviliged -fullName "mr-unpriviliged" -password "-"
     fi

@@ -20,7 +20,7 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 LIMA_HOME=$HOME/.lima
 export HOME PATH LIMA_HOME
 
-if limactl list -q | grep -x "$instance" >/dev/null; then
+if limactl list -q | grep -qx "$instance"; then
   limactl delete -f "$instance"
 fi
 

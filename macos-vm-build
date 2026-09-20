@@ -25,14 +25,14 @@ if [ -f "$keychain" ]; then
   security unlock-keychain -p '' "$keychain"
 fi
 
-if limactl list -q | grep -x "$golden" >/dev/null; then
+if limactl list -q | grep -qx "$golden"; then
   limactl unprotect "$golden"
   limactl delete -f "$golden"
 fi
 
 limactl start --tty=false --name="$golden" "$template"
 
-if ! limactl shell "$golden" -- command -v brew >/dev/null 2>&1; then
+if ! limactl shell "$golden" -- command -v brew; then
   limactl shell "$golden" -- /bin/bash -c "NONINTERACTIVE=1 /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
 fi
 
