@@ -129,7 +129,7 @@ build/archive.txt: build/dist/deb/packages build/signing-key.asc
 	scripts/archive.sh build/dist/deb build/site/apt "$$BRANCH" build/signing-key.asc > $@
 	scripts/sources.sh build/site/apt "$$BRANCH" "$$SITE_URL/apt" >> $@
 
-build/package.txt: build/archive.txt
+build/package.txt: build/archive.txt build/dist/brew/gettoken.rb
 	cat $^ > $@
 	cat $@
 
