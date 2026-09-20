@@ -4,27 +4,27 @@ Hash: SHA512
 Architectures: amd64
 Codename: tore/publish-and-promote
 Components: main
-Date: Fri, 18 Sep 2026 11:48:02 +0000
+Date: Sun, 20 Sep 2026 07:45:04 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/publish-and-promote
 MD5Sum:
- f32e779a7c5062f4cba7546a01ae90ff            24796 main/binary-amd64/Packages
- e2d0851b8fe4942cf429465bf327c1f6             7782 main/binary-amd64/Packages.gz
+ f7bd59d4971362771121802beb572ae4            24796 main/binary-amd64/Packages
+ 99f79111e70bb15549ece926e9eb38bc             7790 main/binary-amd64/Packages.gz
 SHA1:
- b3e1608761922fe9d3d40c3b505430e08e4cea6c            24796 main/binary-amd64/Packages
- ffece6ff2a74bd4837212c5681a38f8bfb5f9ce7             7782 main/binary-amd64/Packages.gz
+ 5b5e45a1010b65ba135f03ea056a72aff836c955            24796 main/binary-amd64/Packages
+ 156d7b0d92725e4dd7a371680c381143cc97354b             7790 main/binary-amd64/Packages.gz
 SHA256:
- 24408660a899fbfe6041f03b5123261b89af45402a83679018d6538c7fc647cf            24796 main/binary-amd64/Packages
- dc1897bd9f7c0686ec6884517c0d9366ac44185e926d45f3fb06c59cbcc53bf4             7782 main/binary-amd64/Packages.gz
+ 967bc11e42007e7e79c2a2af63c605296c79161017b2e707db4311097add6828            24796 main/binary-amd64/Packages
+ 3ebbf3d7f41547bcf6aad5c2aa90c52f98369118a4bd2d439bbecd8be93ecc90             7790 main/binary-amd64/Packages.gz
 SHA512:
- 98ef8c267af2159defc32b8d76dd9bd1c583cf2915c59e63c13fc49c166bebfad263bafdf0405b9705aa513bbf31ffe0c24e32563c87e00756ddd469429f8726            24796 main/binary-amd64/Packages
- ee9e44960070b328217da9ccd175def1aed36a684fcf4dcf161dc0c9519c507045837d44b0970e1ea73a7ec75c28921498f636ae24976318c40c5af60142fb04             7782 main/binary-amd64/Packages.gz
+ 0355ba184c0445a2c9b9a298ba9aa06506e22976927263573bf4368fefe4f9f708ee78a8e86dfcff045adf6335a25362bbfd57d9f63a118a4c143b26c13d3de9            24796 main/binary-amd64/Packages
+ 5effef118bec40197bb1d0dae9f0d88b369cf2ca1b64b0800e545cb4b3f10085eba2fe05405c7b0d4de9fd0cbd9c0c1d058ca418f04a3e1f6d2afa00b31cf2f7             7790 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCaq0k8gAKCRDDrTt86Qtc
-+mQnAP9ZisNCiENGCgcTYQ3IX5aqD/GicUmvfurn+K06tC0k+wEAvaY3o0x4i6pn
-xENu7QIX9c5LMpc742Pl6qSbxfafxAQ=
-=GrJk
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCaq+PAAAKCRDDrTt86Qtc
++khYAQCbPvFXFRURkzWKYfepWX1V7IyQjDwK7H+iTUlBVhE3QQD/b6qX/GAtXJMS
+K0qz8eg4d2iEniFv330cI/hnXn+KvgQ=
+=p5sj
 -----END PGP SIGNATURE-----

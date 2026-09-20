@@ -297,13 +297,13 @@ Maintainer: Johan Granlund <johan.granlund@thruput.se>
 Installed-Size: 2548
 Depends: gettoken-format (= 0.1.0)
 Filename: pool/tore/publish-and-promote/gettoken-format-dbgsym_0.1.0_amd64.deb
-Size: 1137664
-MD5sum: f40dda890d1e0e415f69928d82eb5b32
-SHA1: 575fbc73f83f8df8e3a18961e50c8c2e045d0e9c
-SHA256: c87573d54b17348a9b7f9e7cfa6ab52c389395db89aeb51f10c3ad293578f3e0
-SHA512: 4fa6b42b1b68f7ebaf5fb25f38b8bc82c003b405282465c4877e24b5ce2b6ddff6a7e493de4385e17811f3197a69607feef5967fc986f9081f5cf70da730385f
+Size: 1137656
+MD5sum: 3c1f35b8586eb2887ffbc5b424c945ca
+SHA1: bc612330902f99c35bfabaeea1a326b9d5cffa59
+SHA256: 7e5bbfabc95fe7c101e9eee3cf77f6688ea14c505481e60abaa8606644d8d1bd
+SHA512: 7da21796c32271e9017af2fb3595518fa2cf81747ec448a72e29a11dcb95934ec130405b4183a7499d1dc0608cfe838d439268d26f6335236003325b10b7d9b1
 Description: debug symbols for gettoken-format
-Build-Ids: 2c36d4b6087aed5d53a41507e27ea8c8591068d4
+Build-Ids: 25502edae5c056bc2343fec8fd10c61212cd7154
 
 Package: gettoken-format
 Architecture: amd64
@@ -315,11 +315,11 @@ Maintainer: Johan Granlund <johan.granlund@thruput.se>
 Installed-Size: 3281
 Depends: libc6 (>= 2.34)
 Filename: pool/tore/publish-and-promote/gettoken-format_0.1.0_amd64.deb
-Size: 1083292
-MD5sum: 090f75c2cbcabe931e635bc97b4d3ee2
-SHA1: 44c893065013439a77ea83e17e131d2bae8b4b7d
-SHA256: b672fc3a9b48eb52fa6b7cda75e0ab05a4ffec0bd6e7a8060c350e2249ea93dc
-SHA512: 5f5a1cac25debb853e0bce1ed39867c039eebdf76b7ca0bb92b1f19b7e361702cda12432d0d347bdc4499ec72fcc9d55d9e96f061ce305cd979ec0a89de08b7d
+Size: 1084848
+MD5sum: eb5f2e738bd76d2ee362a3070eb75ea6
+SHA1: 08f39a2734d95be67a7dc90bc66103876fab904a
+SHA256: a06f4311ef7b4ff34409f292bf7128490e921c54385206fe5c67baf55fb7b12c
+SHA512: 3875d71181015880fc939bcfa6c3d845b471c1c3f1e3a39ce6d526383c63d4b61653244a296138590d80ffe5cf0e91ffad43e09fc3daff41829072f2a58c6a03
 Homepage: https://github.com/thruput-io/gettoken
 Description: token broker for AI agents - writes a document through its contract
  format takes the fields named on its command line from the environment, writes
@@ -339,13 +339,13 @@ Maintainer: Johan Granlund <johan.granlund@thruput.se>
 Installed-Size: 2552
 Depends: gettoken-parse (= 0.1.0)
 Filename: pool/tore/publish-and-promote/gettoken-parse-dbgsym_0.1.0_amd64.deb
-Size: 1140144
-MD5sum: 21662d8400a2b8c5d1cd4e4d86236d53
-SHA1: f37755b4d4f4fd1bb44da30f3dddaaf2cde38da3
-SHA256: 9475296430247c429d10a3e725d525ea1bec174c2d0de25dc37f2a08689781c3
-SHA512: e5d2eea165e0512512bb08ebb56375639642244400b1033a34e224c49dec334454e4e604bb8fdc2f4c213df8644fad63a2892913e098fe2563a2062409b21c2b
+Size: 1140184
+MD5sum: b75f3a3c240fa5238a93e363128e98f5
+SHA1: 0cad6963dcafa935e7debbff3e0adf8581c15473
+SHA256: 44c92c6ed848b483b785779703f997e8f9020572d06c6fcb3b4ecbcb37ce7dbe
+SHA512: 28c4e3e8685f0c10db6d29bd8f010566ce66193a5dba29808e978e27cc6bd4d56259d3799f0444132619e67c373966d2ff4ded43ecd5297b7138c4da3730dcb0
 Description: debug symbols for gettoken-parse
-Build-Ids: 70019eee283a644da64d6205f0ec840c06700461
+Build-Ids: ffda0d8cd9e5fe1be33d2ad8dcbba8439757933e
 
 Package: gettoken-parse
 Architecture: amd64
@@ -357,11 +357,11 @@ Maintainer: Johan Granlund <johan.granlund@thruput.se>
 Installed-Size: 3289
 Depends: libc6 (>= 2.34)
 Filename: pool/tore/publish-and-promote/gettoken-parse_0.1.0_amd64.deb
-Size: 1085960
-MD5sum: 807886cf793c4a68284b727de0117384
-SHA1: 35fa8bd88e2b674c3da909a99273b47a2fe21517
-SHA256: f114735d131d185960d0ea4cc2414023b0e36f40b07ab8f57252ed3b31728c67
-SHA512: 6edeb94d69baa3d8767bbb35872405c878f7bb5f9cfbd066ca2f2d8e43538e8c3334f16ccdc3890e22d628557f5858201ca48d64f753a311dbed5af04f61c1e4
+Size: 1086352
+MD5sum: ef737b51c862c7fa616e276a26f212ad
+SHA1: f1aef83d57d39886188e129cb140964aacde0882
+SHA256: 3fedadbd1c3a2c7af72f97d8004151dadc3245fbcbcb676df63bf3675852c043
+SHA512: 79fbcbf4e77d6c90dd78bd605f76b76cec5c1365b4dba69fc9f3d611e79c31463d57e92f4d94f57b0cb4f96b758fb5407941846f442511e8e5c8080f391b2c4e
 Homepage: https://github.com/thruput-io/gettoken
 Description: token broker for AI agents - reads a document through its contract
  parse reads one document on standard input, checks it against the contract
