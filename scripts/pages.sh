@@ -1,4 +1,5 @@
 # shellcheck shell=bash
+set -euo pipefail
 
 pages_branch=gh-pages
 pages_served_from=docs
