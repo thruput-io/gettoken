@@ -6,7 +6,9 @@ include config.sh
 .PHONY: setup unit build test contract signing-key \
         lint check-readme bash-unit-test bash-coverage go-unit-test go-coverage \
         package archive publish unpublish \
-        integration-test readme clean
+        integration-test readme clean diagrams
+
+diagrams:          build/diagrams.txt
 
 setup:            build/setup.txt
 unit:             build/unit.txt
@@ -140,6 +142,11 @@ build/integration-test.tap: build/config-sources
 	sh -ec "$$INSTALL_COMMAND $$TEST_DEPS"
 	src/integration-test/test.sh "$$INSTALL_COMMAND" > $@
 	prove --exec cat $@
+
+build/diagrams.txt: build/sources README.md scripts/mermaid.sh
+	@mkdir -p $(@D)
+	scripts/mermaid.sh > $@
+	cat $@
 
 readme:
 	scripts/readme.sh . --write
