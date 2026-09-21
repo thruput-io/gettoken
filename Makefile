@@ -7,7 +7,7 @@ diagrams:          build/diagrams.txt
 setup:            build/setup.txt
 unit:             build/unit.txt
 build:            build/publish.txt
-test:             build/integration-test.tap
+test:             build/integration-test.checked
 contract:         build/bin/parse build/bin/format
 signing-key:      build/signing-key.asc
 lint:             build/lint.checked
@@ -21,7 +21,7 @@ package:          build/package.txt
 package-brew:     build/dist/brew/gettoken.rb
 archive:          build/archive.txt
 publish:          build/publish.txt
-integration-test: build/integration-test.tap
+integration-test: build/integration-test.checked
 
 build/sources:
 	@mkdir -p $(@D)
@@ -124,10 +124,9 @@ build/publish.txt: build/package.txt
 	scripts/publish.sh build/site/apt "$$BRANCH" "$$SITE_URL" > $@
 	cat $@
 
-build/integration-test.tap: config.sh
+build/integration-test.checked: config.sh
 	@mkdir -p $(@D)
 	src/integration-test/test.sh "$$INSTALL_COMMAND" > $@
-	prove --exec cat $@
 
 build/diagrams.txt: build/sources README.md scripts/mermaid.sh
 	@mkdir -p $(@D)

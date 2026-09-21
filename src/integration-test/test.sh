@@ -15,7 +15,4 @@ INTEGRATIONTEST_TOKEN=$(gettoken integrationtest/ci/run)
 export INTEGRATIONTEST_TOKEN
 ran_on=$(integration-test-tool)
 
-echo "TAP version 13"
-echo "1..1"
 test "$ran_on" = "$carried"
-echo "ok 1 $carried went in as a super-token and came back out of the tool"
