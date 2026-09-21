@@ -47,17 +47,12 @@ jobs:
           - node:26-slim
     steps:
       - uses: actions/checkout@v4
-      - name: point this machine at the archive it installs from
+      - name: run integration test
         env:
           SITE_URL: https://thruput.se/gettoken
           BRANCH: ${{ github.head_ref || github.ref_name }}
-        run: |
-          scripts/bootstrap.sh
-          apt-get install -y --no-install-recommends curl ca-certificates
-          curl -fsS "$SITE_URL/apt/dists/$BRANCH/gettoken.sources" \
-            -o /etc/apt/sources.list.d/gettoken.sources
-          apt-get update -o APT::Update::Error-Mode=any
-      - run: make test
+          INSTALL_COMMAND: apt-get update && apt-get install -y --no-install-recommends
+        run: bash src/integration-test/test.sh
 
   macos:
     name: macos-26

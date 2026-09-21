@@ -13,13 +13,6 @@ gone() { docker ps -aq -f "name=^$1\$" | xargs -r docker rm -f > /dev/null; }
 
 the_tree() { COPYFILE_DISABLE=1 git ls-files -z | COPYFILE_DISABLE=1 tar --null --files-from - -cf -; }
 
-reaches_the_archive='
-  sh scripts/bootstrap.sh > /dev/null
-  apt-get install -y -qq --no-install-recommends curl ca-certificates > /dev/null
-  curl -fsS http://archive/apt/dists/'"$branch"'/gettoken.sources -o /etc/apt/sources.list.d/gettoken.sources
-  apt-get update -o APT::Update::Error-Mode=any
-'
-
 gone gettoken-builder
 docker ps -aq --filter "volume=$site" | xargs -r docker rm -f > /dev/null
 docker volume rm -f "$site" > /dev/null
@@ -43,16 +36,14 @@ say "test on a clean ubuntu"
 the_tree | bash scripts/served.sh "$site" -i ubuntu:26.04 sh -ec "
     mkdir -p /work && cd /work && tar xf -
     chmod +x scripts/*.sh src/components/contract/build.sh src/components/entitlements/entitlements src/components/secret-manager/secret-put src/components/secret-manager/secret-get src/components/token-service/token-service src/tools/gettoken/bin/gettoken src/tools/gettoken/privileged/token-requester src/tools/integration-test-tool/privileged/exchangers/integrationtest src/tools/integration-test-tool/bin/integration-test-tool src/integration-test/test.sh src/debian/rules 2>/dev/null || true
-    $reaches_the_archive
     ln -sf config.local.sh.ubuntu.example config.local.sh
-    make test"
+    SITE_URL=http://archive BRANCH=$branch INSTALL_COMMAND=\"apt-get update && apt-get install -y --no-install-recommends\" bash src/integration-test/test.sh"
 
 say "test on a clean node slim"
 the_tree | bash scripts/served.sh "$site" -i node:26-slim sh -ec "
     mkdir -p /work && cd /work && tar xf -
     chmod +x scripts/*.sh src/components/contract/build.sh src/components/entitlements/entitlements src/components/secret-manager/secret-put src/components/secret-manager/secret-get src/components/token-service/token-service src/tools/gettoken/bin/gettoken src/tools/gettoken/privileged/token-requester src/tools/integration-test-tool/privileged/exchangers/integrationtest src/tools/integration-test-tool/bin/integration-test-tool src/integration-test/test.sh src/debian/rules 2>/dev/null || true
-    $reaches_the_archive
     ln -sf config.local.sh.ubuntu.example config.local.sh
-    make test"
+    SITE_URL=http://archive BRANCH=$branch INSTALL_COMMAND=\"apt-get update && apt-get install -y --no-install-recommends\" bash src/integration-test/test.sh"
 
 say "everything the pipeline does, done here"
