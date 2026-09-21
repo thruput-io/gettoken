@@ -13,7 +13,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - run: apt-get update && apt-get install -y --no-install-recommends git ca-certificates
+      - run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
       - uses: actions/checkout@v4
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: make build BRANCH="${{ github.head_ref || github.ref_name }}" SITE_URL="https://thruput.se/gettoken"
