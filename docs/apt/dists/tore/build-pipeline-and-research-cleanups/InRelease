@@ -4,27 +4,27 @@ Hash: SHA512
 Architectures: amd64
 Codename: tore/build-pipeline-and-research-cleanups
 Components: main
-Date: Mon, 21 Sep 2026 21:40:28 +0000
+Date: Mon, 21 Sep 2026 22:20:11 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/build-pipeline-and-research-cleanups
 MD5Sum:
  3dd5d87d811ca27be8ef6b7bb90f95d4            25204 main/binary-amd64/Packages
- 88576702f1dd6019427d4723227e00ed             7816 main/binary-amd64/Packages.gz
+ 794777d106a74a080d9e6e24560a559e             7816 main/binary-amd64/Packages.gz
 SHA1:
  7c8c3f1f8955ee393db19c9f96672a676653faf9            25204 main/binary-amd64/Packages
- 0f467a46c18d78f33673426e8bbbca06e573f647             7816 main/binary-amd64/Packages.gz
+ 80827c7b90b68231a11845084d84cab348e4d36c             7816 main/binary-amd64/Packages.gz
 SHA256:
  1a901b1fe573fcf09e5b1974e5004b43265bb5d42a0a3df7fc69de6214b9c7e2            25204 main/binary-amd64/Packages
- f3b14f4da7ccae01bd3be5ceca142edf4c3171b175fff7347184e5029ddbc805             7816 main/binary-amd64/Packages.gz
+ 01bfa7fea849d553c7f1bdd1f60f5edd5e6c8352c376b6ed50aa56348f1d5a91             7816 main/binary-amd64/Packages.gz
 SHA512:
  83a783d0122679f55788ce2376c31e21f8d6c6e32db62115ca088ef4a8a93a2c2368ee14b6c4cace6846f4b39b6fdbaf9c85a11ce49124521fcf4de60f76693e            25204 main/binary-amd64/Packages
- 6a282d6ccfaaf80cb65614576d17440c389f614b1965eade3d4da7b052fbb0c3ad35ea539fdbfa909db6e722ef76e46dd6625ff493432fbd74fd33e5b682939e             7816 main/binary-amd64/Packages.gz
+ ec490ad6282257f8ad3dc7d3fdecc2cafa1c80365db471b8278dc2fb76e3f7c3491547f237561550edce9c0f4aba7a3c7e3a7eff50bccf7386d01f6d6690a741             7816 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarGkTAAKCRDDrTt86Qtc
-+gRcAP0akjv2GSS5HDRisLDJMJzrTyv+T/bAHtKvcSUPN0mJlwEAlMZM6WxjWysH
-ViJGik3tM3Jx0MbNgMQH4ukfRi1diQE=
-=qd4U
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarGtmwAKCRDDrTt86Qtc
++jPrAP9cJgEylaoIWE5RI8Ox1fhhDuB0unwHMWAZ1BzIsA6KkQEAlRte72YiBdXM
+nTk/Cno2jBxMnqGkC7JVbFQCDOqt3AI=
+=4xVd
 -----END PGP SIGNATURE-----
