@@ -4,27 +4,27 @@ Hash: SHA512
 Architectures: amd64
 Codename: tore/build-pipeline-and-research-cleanups
 Components: main
-Date: Mon, 21 Sep 2026 23:00:40 +0000
+Date: Mon, 21 Sep 2026 23:14:54 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/build-pipeline-and-research-cleanups
 MD5Sum:
  3dd5d87d811ca27be8ef6b7bb90f95d4            25204 main/binary-amd64/Packages
- f9dfb512c51a88b294c32dfa9208e433             7816 main/binary-amd64/Packages.gz
+ f4044825618dd1685d28af3dc75486aa             7816 main/binary-amd64/Packages.gz
 SHA1:
  7c8c3f1f8955ee393db19c9f96672a676653faf9            25204 main/binary-amd64/Packages
- 6353f20e28e21826b04c11ca8e1e2d426eb34d10             7816 main/binary-amd64/Packages.gz
+ 01e92cac4c35cb508805d6443acd2efd8cdb5a19             7816 main/binary-amd64/Packages.gz
 SHA256:
  1a901b1fe573fcf09e5b1974e5004b43265bb5d42a0a3df7fc69de6214b9c7e2            25204 main/binary-amd64/Packages
- 569398d8eeb4f5423bb2e5a194d0807926fb68ddbc2ea8650ecf43d854c6251f             7816 main/binary-amd64/Packages.gz
+ 78330f36dcc7b60e8767755b1db15079617cbc7ded2c8ed39fb8e3e95110a84e             7816 main/binary-amd64/Packages.gz
 SHA512:
  83a783d0122679f55788ce2376c31e21f8d6c6e32db62115ca088ef4a8a93a2c2368ee14b6c4cace6846f4b39b6fdbaf9c85a11ce49124521fcf4de60f76693e            25204 main/binary-amd64/Packages
- 6239fc53ed8ea42c0f817d3272f9129a89b280593330644971341807ea2fad7cf7de6003c335c7599b24a7aeaabb8e47380835b683c611121a04bc64dc25f723             7816 main/binary-amd64/Packages.gz
+ 7cd975b8f7bf6b225f80a111bc66732a1cb6856b34d8de8a4bbb96024622f5de2d70d1f6ff10a58bbc42a9792a8eac060b66442243c43b48756f4f67a1145197             7816 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarG3GAAKCRDDrTt86Qtc
-+q+zAP0XiU/6avlP03t1c8rbA5NdV+OS1x+9aB3djbSvpbwhqwD+NDdZWrhotY6d
-ShCWLZcG816apDm42IH68ejEcVLp8wo=
-=XrOW
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarG6bgAKCRDDrTt86Qtc
++ptJAQC0VgklM5hm27hxlaROB0wJgnU2A56n5pD/n/09y5FJFAEA6swilXdIpla8
+Sx9ETf4clUKi4SQqkCquNRkDWTTnJAc=
+=MSk3
 -----END PGP SIGNATURE-----
