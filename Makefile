@@ -1,12 +1,6 @@
 .DELETE_ON_ERROR:
 
 include config.sh
--include config.local.sh
-
-.PHONY: setup unit build test contract signing-key \
-        lint check-readme bash-unit-test bash-coverage go-unit-test go-coverage \
-        package archive publish unpublish \
-        integration-test readme clean diagrams
 
 diagrams:          build/diagrams.txt
 
@@ -29,25 +23,18 @@ archive:          build/archive.txt
 publish:          build/publish.txt
 integration-test: build/integration-test.tap
 
-FORCE:
-
-build/sources: FORCE
+build/sources:
 	@mkdir -p $(@D)
 	@find src scripts -type f -exec sha256sum {} + | sort -k 2 > $@.new
 	@cmp -s $@.new $@ && rm $@.new || mv $@.new $@
 
-build/go-sources: FORCE
+build/go-sources:
 	@mkdir -p $(@D)
 	@find src/components/contract -type f \( -name '*.go' -o -name 'go.mod' -o -name 'go.sum' \) \
 	  -exec sha256sum {} + | sort -k 2 > $@.new
 	@cmp -s $@.new $@ && rm $@.new || mv $@.new $@
 
-build/config-sources: FORCE
-	@mkdir -p $(@D)
-	@sha256sum config.sh > $@.new
-	@cmp -s $@.new $@ && rm $@.new || mv $@.new $@
-
-build/setup.txt: build/config-sources
+build/setup.txt: config.sh
 	@mkdir -p $(@D)
 	sh -ec "$$INSTALL_COMMAND $$BUILD_DEPS"
 	echo "$$BUILD_DEPS" > $@
@@ -98,7 +85,7 @@ build/go-coverage.json: build/go-unit-test.json
 build/lint.checked: build/lint.xml thresholds.json
 	scripts/check-lint.sh $< thresholds.json > $@
 
-build/no-branching.checked: build/sources build/config-sources thresholds.json build/setup.txt
+build/no-branching.checked: build/sources config.sh thresholds.json build/setup.txt
 	scripts/check-branching.sh . thresholds.json > $@
 
 build/bash-unit-test.checked: build/bash-unit-test.tap
@@ -137,13 +124,13 @@ build/publish.txt: build/package.txt
 	scripts/publish.sh build/site/apt "$$BRANCH" "$$SITE_URL" > $@
 	cat $@
 
-build/integration-test.tap: build/config-sources
+build/integration-test.tap: config.sh
 	@mkdir -p $(@D)
 	sh -ec "$$INSTALL_COMMAND $$TEST_DEPS"
 	src/integration-test/test.sh "$$INSTALL_COMMAND" > $@
 	prove --exec cat $@
 
-build/diagrams.txt: build/sources README.md scripts/mermaid.sh
+build/diagrams.txt: build/sources README.md scripts/mermaid.sh build/setup.txt
 	@mkdir -p $(@D)
 	scripts/mermaid.sh > $@
 	cat $@

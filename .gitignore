@@ -11,3 +11,4 @@ src/debian/gettoken-*/
 src/debian/gettoken-contract-*.install
 src/debian/integration-test-tool/
 build/
+config.local.sh
