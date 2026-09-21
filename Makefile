@@ -1,5 +1,7 @@
 .DELETE_ON_ERROR:
 
+ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
 export PATH := build/bin:$(PATH)
 
 -include build/config.mk
@@ -79,11 +81,11 @@ build/bash-coverage.json: build/sources build/bin/parse build/bin/format build/s
 build/go-unit-test.json: build/go-sources build/setup.txt
 	@mkdir -p $(@D)
 	go test -C src/components/contract -json -mod=vendor \
-	  -coverprofile=../../../build/go.coverprofile ./... > $@
+	  -coverprofile=$(ROOT_DIR)/build/go.coverprofile ./... > $@
 
 build/go-coverage.json: build/go-unit-test.json
 	go -C src/components/contract tool cover \
-	  -func=../../../build/go.coverprofile > build/go-coverage.txt
+	  -func=$(ROOT_DIR)/build/go.coverprofile > build/go-coverage.txt
 	awk 'END { sub(/%/, "", $$3); printf "{\"percent\":%s}\n", $$3 }' \
 	  build/go-coverage.txt > $@
 
