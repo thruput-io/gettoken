@@ -1,5 +1,7 @@
 .DELETE_ON_ERROR:
 
+export PATH := build/bin:$(PATH)
+
 -include build/config.mk
 
 diagrams:          build/diagrams.txt
@@ -60,16 +62,14 @@ build/check-readme.txt: build/sources README.md build/setup.txt
 
 build/bash-unit-test.tap: build/sources build/bin/parse build/bin/format build/setup.txt
 	@mkdir -p $(@D)
-	set +e; PATH="build/bin:$$PATH" \
-	  bats --recursive --timing --print-output-on-failure \
+	set +e; bats --recursive --timing --print-output-on-failure \
 	  --formatter tap13 --report-formatter tap13 --output build \
 	  src scripts > /dev/null; said=$$?; set -e; \
 	  mv build/report.tap $@; test "$$said" -le 1
 
 build/bash-coverage.json: build/sources build/bin/parse build/bin/format build/setup.txt
 	@mkdir -p $(@D)
-	PATH="build/bin:$$PATH" \
-	  kcov --include-path=src,scripts \
+	kcov --include-path=src,scripts \
 	  --bash-parse-files-in-dir=src,scripts \
 	  --exclude-pattern=.bats \
 	  build/kcov bats --recursive src scripts > /dev/null
