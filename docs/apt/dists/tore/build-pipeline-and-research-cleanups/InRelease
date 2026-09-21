@@ -4,27 +4,27 @@ Hash: SHA512
 Architectures: amd64
 Codename: tore/build-pipeline-and-research-cleanups
 Components: main
-Date: Mon, 21 Sep 2026 22:29:54 +0000
+Date: Mon, 21 Sep 2026 22:57:43 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/build-pipeline-and-research-cleanups
 MD5Sum:
  3dd5d87d811ca27be8ef6b7bb90f95d4            25204 main/binary-amd64/Packages
- 86d066c741484a89faa85ebed9e439fb             7816 main/binary-amd64/Packages.gz
+ 4a28ca69f63e1c5b55fe3177038e0d7f             7816 main/binary-amd64/Packages.gz
 SHA1:
  7c8c3f1f8955ee393db19c9f96672a676653faf9            25204 main/binary-amd64/Packages
- ebba502f9357f1887ec956c43c1279e38b46cfe1             7816 main/binary-amd64/Packages.gz
+ edc4519f5b719d052cd44208050dc652e73ec3f3             7816 main/binary-amd64/Packages.gz
 SHA256:
  1a901b1fe573fcf09e5b1974e5004b43265bb5d42a0a3df7fc69de6214b9c7e2            25204 main/binary-amd64/Packages
- 106231c9e0526637262a39265ec3cd44f4542e007511e999a7f4cfc1b52479f5             7816 main/binary-amd64/Packages.gz
+ 104a53ab2ff3c7bf316a4e6f3382910f498149c8ad584191ea9149dde521cc71             7816 main/binary-amd64/Packages.gz
 SHA512:
  83a783d0122679f55788ce2376c31e21f8d6c6e32db62115ca088ef4a8a93a2c2368ee14b6c4cace6846f4b39b6fdbaf9c85a11ce49124521fcf4de60f76693e            25204 main/binary-amd64/Packages
- f6b42c09cd5be0444634c48d8d3e913b6587f560f63b07ad6e9591a5cd9e35f23f21bb2c54c47aa9bb3fda5e3602f929f3a0104c7b5a2f92b0d3385d935487fc             7816 main/binary-amd64/Packages.gz
+ 032dd8ab049c9d3bcb3dfca69d7269ac473d4c3a37b4bc6da5386f6809218bcc2c8a93fa0748f5b6d3c3f563fe04e0d1a272df2972377093f9aeb51be95e753e             7816 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarGv4gAKCRDDrTt86Qtc
-+jJKAP4rQ+xUi9spm5Cz+WursXG9IB5v3x/P0HQlgPQxa1YzZQD/UVVeny0A2QoL
-Cxin80V+0SeeB39h4gR1+DOBjSPxxgM=
-=Awlr
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarG2ZwAKCRDDrTt86Qtc
++lapAQCoS3XEpuGOzUmHPTgatjtxO3J65ZE4gR73KQ4eO6jrVwEAtp0E7W8YCLqf
+ywlQOfahEqBZ61FZJjNwdwVeyIEURg0=
+=R804
 -----END PGP SIGNATURE-----
