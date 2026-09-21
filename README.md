@@ -337,6 +337,11 @@ source tree.
   workflows/
 docs/
   adrs/
+  plans/
+    containers/
+      research/
+    virtual-macos/
+      research/
 scripts/
   docker/
   fixtures/
