@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+env:
+  BRANCH: ${{ github.head_ref || github.ref_name }}
+  SITE_URL: https://thruput.se/gettoken
+
 jobs:
   build:
     name: build
@@ -15,12 +19,11 @@ jobs:
     steps:
       - run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
       - uses: actions/checkout@v4
-      - run: cat config.env >> $GITHUB_ENV
-      - run: echo "BRANCH=${{ github.head_ref || github.ref_name }}" >> $GITHUB_ENV
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - run: make build BRANCH="$BRANCH" SITE_URL="$PROD_SITE_URL"
+      - run: make build BRANCH="$BRANCH" SITE_URL="$SITE_URL"
         env:
           ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
+          SITE_URL: https://thruput.se/gettoken
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -48,10 +51,11 @@ jobs:
           - node:26-slim
     steps:
       - uses: actions/checkout@v4
-      - run: cat config.env >> $GITHUB_ENV
-      - run: echo "BRANCH=${{ github.head_ref || github.ref_name }}" >> $GITHUB_ENV
       - name: run integration test
-        run: bash src/integration-test/test.sh "$DEBIAN_INSTALL_COMMAND" "$BRANCH" "$PROD_SITE_URL"
+        run: bash src/integration-test/test.sh "$INSTALL_COMMAND" "$BRANCH" "$SITE_URL"
+        env:
+          INSTALL_COMMAND: "apt-get update && apt-get install -y --no-install-recommends"
+          SITE_URL: https://thruput.se/gettoken
 
   macos:
     name: macos-26
@@ -60,7 +64,8 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
-      - run: cat config.env >> $GITHUB_ENV
-      - run: echo "BRANCH=${{ github.head_ref || github.ref_name }}" >> $GITHUB_ENV
       - name: run integration test
-        run: bash src/integration-test/test.sh "$MAC_INSTALL_COMMAND" "$BRANCH" "$PROD_SITE_URL"
+        run: bash src/integration-test/test.sh "$INSTALL_COMMAND" "$BRANCH" "$SITE_URL"
+        env:
+          INSTALL_COMMAND: "brew install --no-ask"
+          SITE_URL: https://thruput.se/gettoken
