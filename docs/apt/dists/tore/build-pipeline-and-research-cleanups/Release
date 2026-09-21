@@ -1,0 +1,20 @@
+Architectures: amd64
+Codename: tore/build-pipeline-and-research-cleanups
+Components: main
+Date: Mon, 21 Sep 2026 06:46:08 +0000
+Description: token broker for AI agents
+Label: gettoken
+Origin: gettoken
+Suite: tore/build-pipeline-and-research-cleanups
+MD5Sum:
+ 3dd5d87d811ca27be8ef6b7bb90f95d4            25204 main/binary-amd64/Packages
+ 45adfee7d406fd944a241affd02b3a29             7816 main/binary-amd64/Packages.gz
+SHA1:
+ 7c8c3f1f8955ee393db19c9f96672a676653faf9            25204 main/binary-amd64/Packages
+ 8049be79607ccf42a8eb75c3abbf9d7995edc193             7816 main/binary-amd64/Packages.gz
+SHA256:
+ 1a901b1fe573fcf09e5b1974e5004b43265bb5d42a0a3df7fc69de6214b9c7e2            25204 main/binary-amd64/Packages
+ 82405804704fb5cc0c336c8b924d6084213a85d707d1681e7a00ae1c3ce508d6             7816 main/binary-amd64/Packages.gz
+SHA512:
+ 83a783d0122679f55788ce2376c31e21f8d6c6e32db62115ca088ef4a8a93a2c2368ee14b6c4cace6846f4b39b6fdbaf9c85a11ce49124521fcf4de60f76693e            25204 main/binary-amd64/Packages
+ 21dd99ed8359a8a787c5e6ebe75e80d89829e543d977a735ea7ecb399534db2cf311cee1d62ad0f6f749671ffd877ebc41d0a38b3fb2741608d248a5e60cf4e0             7816 main/binary-amd64/Packages.gz

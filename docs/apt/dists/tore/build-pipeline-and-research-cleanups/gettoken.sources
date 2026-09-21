@@ -1,0 +1,18 @@
+Types: deb
+URIs: https://thruput.se/gettoken/apt
+Suites: tore/build-pipeline-and-research-cleanups
+Components: main
+Signed-By:
+ -----BEGIN PGP PUBLIC KEY BLOCK-----
+ .
+ mDMEaqNJSBYJKwYBBAHaRw8BAQdACMR7i2UBZDIhbLwxSXeaAiiQBWw4cV/5SOi3
+ EP+BGLe0LGdldHRva2VuIGFyY2hpdmUgPGpvaGFuLmdyYW5sdW5kQHRocnVwdXQu
+ c2U+iJMEExYKADsWIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCaqNJSAIbAwULCQgH
+ AgIiAgYVCgkICwIEFgIDAQIeBwIXgAAKCRDDrTt86Qtc+pR8AQCREPEtiKhoTDQx
+ +kOk+to765hXCd5lPB81yXGqVn3K9wEAqDdI3FuqfN+zuUCj5oBi5Xc/OU/124YX
+ bK/2hQNnlw24OARqo0lIEgorBgEEAZdVAQUBAQdAxSvTaaDC4RvaOS9ZpDg5IT9H
+ nW89nSbfUfubfQKRJBoDAQgHiHgEGBYKACAWIQSS5lqNqbM+UR7oI87DrTt86Qtc
+ +gUCaqNJSAIbDAAKCRDDrTt86Qtc+oAoAP9eF+FEgqmB8hiG0Wps55u6pPd4Ry7r
+ T7h1Kb1WOloJYwEA5yx+14e4g6kWliaZ//7n0SJ/hVT+KHdJB7m+GzQDBQ4=
+ =EPgo
+ -----END PGP PUBLIC KEY BLOCK-----
