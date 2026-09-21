@@ -24,7 +24,7 @@ publish:          build/publish.txt
 integration-test: build/integration-test.checked
 
 
-build/config.mk:
+build/config.mk: dynamic.sh constants.env
 	@mkdir -p $(@D)
 	bash dynamic.sh > $@
 
@@ -83,7 +83,7 @@ build/go-unit-test.json: build/go-sources build/setup.txt
 
 build/go-coverage.json: build/go-unit-test.json
 	go -C src/components/contract tool cover \
-	  -func=$$PWD/build/go.coverprofile > build/go-coverage.txt
+	  -func=$$PWD/build/go-coverage.txt > build/go-coverage.txt
 	awk 'END { sub(/%/, "", $$3); printf "{\"percent\":%s}\n", $$3 }' \
 	  build/go-coverage.txt > $@
 
