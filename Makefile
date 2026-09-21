@@ -40,18 +40,18 @@ build/setup.txt: config.sh
 	echo "$$BUILD_DEPS" > $@
 
 build/signing-key.asc: build/setup.txt
-	scripts/signing-key.sh $@
+	bash scripts/signing-key.sh $@
 
 build/bin/parse build/bin/format: build/go-sources build/setup.txt
-	src/components/contract/build.sh build/bin
+	bash src/components/contract/build.sh build/bin
 
 build/lint.xml: build/sources build/setup.txt
 	@mkdir -p $(@D)
-	scripts/lint.sh . --format=checkstyle > $@
+	bash scripts/lint.sh . --format=checkstyle > $@
 
 build/check-readme.txt: build/sources README.md build/setup.txt
 	@mkdir -p $(@D)
-	scripts/readme.sh . --check > $@
+	bash scripts/readme.sh . --check > $@
 
 build/bash-unit-test.tap: build/sources build/bin/parse build/bin/format build/setup.txt
 	@mkdir -p $(@D)
@@ -83,19 +83,19 @@ build/go-coverage.json: build/go-unit-test.json
 	  build/go-coverage.txt > $@
 
 build/lint.checked: build/lint.xml thresholds.json
-	scripts/check-lint.sh $< thresholds.json > $@
+	bash scripts/check-lint.sh $< thresholds.json > $@
 
 build/no-branching.checked: build/sources config.sh thresholds.json build/setup.txt
-	scripts/check-branching.sh . thresholds.json > $@
+	bash scripts/check-branching.sh . thresholds.json > $@
 
 build/bash-unit-test.checked: build/bash-unit-test.tap
 	prove --exec cat $< > $@
 
 build/bash-coverage.checked: build/bash-coverage.json thresholds.json
-	scripts/check-coverage.sh $< thresholds.json bash-coverage > $@
+	bash scripts/check-coverage.sh $< thresholds.json bash-coverage > $@
 
 build/go-coverage.checked: build/go-coverage.json thresholds.json
-	scripts/check-coverage.sh $< thresholds.json go-coverage > $@
+	bash scripts/check-coverage.sh $< thresholds.json go-coverage > $@
 
 build/unit.txt: build/check-readme.txt build/lint.checked build/no-branching.checked \
                 build/bash-unit-test.checked build/bash-coverage.checked \
@@ -106,27 +106,27 @@ build/unit.txt: build/check-readme.txt build/lint.checked build/no-branching.che
 	cat $@
 
 build/dist/deb/packages: build/unit.txt src/debian src/contracts
-	scripts/deliver-deb.sh build/dist/deb
+	bash scripts/deliver-deb.sh build/dist/deb
 	@touch $@
 
 build/dist/brew/gettoken.rb: build/unit.txt src/debian/changelog
-	scripts/deliver-brew.sh build/dist/brew
+	bash scripts/deliver-brew.sh build/dist/brew
 
 build/archive.txt: build/dist/deb/packages build/signing-key.asc
-	scripts/archive.sh build/dist/deb build/site/apt "$$BRANCH" build/signing-key.asc > $@
-	scripts/sources.sh build/site/apt "$$BRANCH" "$$SITE_URL/apt" >> $@
+	bash scripts/archive.sh build/dist/deb build/site/apt "$$BRANCH" build/signing-key.asc > $@
+	bash scripts/sources.sh build/site/apt "$$BRANCH" "$$SITE_URL/apt" >> $@
 
 build/package.txt: build/archive.txt build/dist/brew/gettoken.rb
 	cat $^ > $@
 	cat $@
 
 build/publish.txt: build/package.txt
-	scripts/publish.sh build/site/apt "$$BRANCH" "$$SITE_URL" > $@
+	bash scripts/publish.sh build/site/apt "$$BRANCH" "$$SITE_URL" > $@
 	cat $@
 
 build/integration-test.checked: config.sh
 	@mkdir -p $(@D)
-	src/integration-test/test.sh "$$INSTALL_COMMAND" > $@
+	bash src/integration-test/test.sh "$$INSTALL_COMMAND" > $@
 
 build/diagrams.txt: build/sources README.md scripts/mermaid.sh
 	@mkdir -p $(@D)
