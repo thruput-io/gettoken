@@ -60,7 +60,7 @@ build/check-readme.txt: build/sources README.md build/setup.txt
 
 build/bash-unit-test.tap: build/sources build/bin/parse build/bin/format build/setup.txt
 	@mkdir -p $(@D)
-	set +e; PATH="$$PWD/build/bin:$$PATH" \
+	set +e; PATH="build/bin:$$PATH" \
 	  bats --recursive --timing --print-output-on-failure \
 	  --formatter tap13 --report-formatter tap13 --output build \
 	  src scripts > /dev/null; said=$$?; set -e; \
@@ -68,7 +68,7 @@ build/bash-unit-test.tap: build/sources build/bin/parse build/bin/format build/s
 
 build/bash-coverage.json: build/sources build/bin/parse build/bin/format build/setup.txt
 	@mkdir -p $(@D)
-	PATH="$$PWD/build/bin:$$PATH" \
+	PATH="build/bin:$$PATH" \
 	  kcov --include-path=src,scripts \
 	  --bash-parse-files-in-dir=src,scripts \
 	  --exclude-pattern=.bats \
@@ -79,11 +79,11 @@ build/bash-coverage.json: build/sources build/bin/parse build/bin/format build/s
 build/go-unit-test.json: build/go-sources build/setup.txt
 	@mkdir -p $(@D)
 	go test -C src/components/contract -json -mod=vendor \
-	  -coverprofile=$$PWD/build/go.coverprofile ./... > $@
+	  -coverprofile=../../../build/go.coverprofile ./... > $@
 
 build/go-coverage.json: build/go-unit-test.json
 	go -C src/components/contract tool cover \
-	  -func=$$PWD/build/go-coverage.txt > build/go-coverage.txt
+	  -func=../../../build/go.coverprofile > build/go-coverage.txt
 	awk 'END { sub(/%/, "", $$3); printf "{\"percent\":%s}\n", $$3 }' \
 	  build/go-coverage.txt > $@
 
