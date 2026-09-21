@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+env:
+  BRANCH: ${{ github.head_ref || github.ref_name }}
+  SITE_URL: https://thruput.se/gettoken
+
 jobs:
   build:
     name: build
@@ -16,7 +20,7 @@ jobs:
       - run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
       - uses: actions/checkout@v4
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - run: make build BRANCH="${{ github.head_ref || github.ref_name }}" SITE_URL="https://thruput.se/gettoken"
+      - run: make build BRANCH="$BRANCH" SITE_URL="$SITE_URL"
         env:
           ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
       - if: always()
@@ -47,7 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: run integration test
-        run: bash src/integration-test/test.sh "apt-get update && apt-get install -y --no-install-recommends" "${{ github.head_ref || github.ref_name }}" "https://thruput.se/gettoken"
+        run: bash src/integration-test/test.sh "apt-get update && apt-get install -y --no-install-recommends" "$BRANCH" "$SITE_URL"
 
   macos:
     name: macos-26
@@ -57,4 +61,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: run integration test
-        run: bash src/integration-test/test.sh "brew install --no-ask" "${{ github.head_ref || github.ref_name }}" "https://thruput.se/gettoken"
+        run: bash src/integration-test/test.sh "brew install --no-ask" "$BRANCH" "$SITE_URL"
