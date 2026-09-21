@@ -17,9 +17,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
+      - run: apt-get update && apt-get install -y --no-install-recommends make
       - uses: actions/checkout@v4
-      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: make build BRANCH="$BRANCH" SITE_URL="$SITE_URL"
         env:
           ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
