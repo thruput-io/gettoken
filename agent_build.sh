@@ -40,6 +40,6 @@ the_tree | docker run -i --name gettoken-builder --network host \
 say "test on a clean node slim"
 the_tree | bash scripts/served.sh "$site" -i node:26-slim sh -ec "
     mkdir -p /work && cd /work && tar xf -
-    bash src/integration-test/test.sh \"$DEBIAN_INSTALL_COMMAND\" \"$branch\" \"$SITE_URL\""
+    bash src/integration-test/test.sh \"$INSTALL_COMMAND\" \"$branch\" \"$SITE_URL\""
 
 say "everything the pipeline does, done here"
