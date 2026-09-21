@@ -8,6 +8,10 @@ on:
 env:
   BRANCH: ${{ github.head_ref || github.ref_name }}
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
     name: build
