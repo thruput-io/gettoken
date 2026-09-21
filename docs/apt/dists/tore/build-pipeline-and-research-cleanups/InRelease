@@ -4,27 +4,27 @@ Hash: SHA512
 Architectures: amd64
 Codename: tore/build-pipeline-and-research-cleanups
 Components: main
-Date: Mon, 21 Sep 2026 19:33:58 +0000
+Date: Mon, 21 Sep 2026 19:36:17 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/build-pipeline-and-research-cleanups
 MD5Sum:
  3dd5d87d811ca27be8ef6b7bb90f95d4            25204 main/binary-amd64/Packages
- e19b2583f4d644fbe1012f230e696dda             7816 main/binary-amd64/Packages.gz
+ 31c97608908ff3670b757ad0f60f96e8             7816 main/binary-amd64/Packages.gz
 SHA1:
  7c8c3f1f8955ee393db19c9f96672a676653faf9            25204 main/binary-amd64/Packages
- 816a4797c88327c66bdba264ff7b40a3324bee5f             7816 main/binary-amd64/Packages.gz
+ 96a6dddb94933032b7ec151289cb0a1590282287             7816 main/binary-amd64/Packages.gz
 SHA256:
  1a901b1fe573fcf09e5b1974e5004b43265bb5d42a0a3df7fc69de6214b9c7e2            25204 main/binary-amd64/Packages
- 38a426cbb78e5262104ae760345af1d6482b0d82f71bb55d8ea79ae20f7940d3             7816 main/binary-amd64/Packages.gz
+ 3d37cac08cc815e1c55798144e9f298e5955bc667a53ec588a50c2cf7482aadc             7816 main/binary-amd64/Packages.gz
 SHA512:
  83a783d0122679f55788ce2376c31e21f8d6c6e32db62115ca088ef4a8a93a2c2368ee14b6c4cace6846f4b39b6fdbaf9c85a11ce49124521fcf4de60f76693e            25204 main/binary-amd64/Packages
- 8400c61ecd322ef647d1ef6b910d3c781bc65446ad2fb5369bcdd3a13d5608d39cdc861e53db66c3a8679da1bcaa9fbf746b984a728638d72c4700afccf6f621             7816 main/binary-amd64/Packages.gz
+ 76a5817188c450a35f8d0890ecd11f566d6c3e009e07fd79687de1a1761632c067a563005d70839c92704437b365b16acf9c3d28ca5f9ac015857599840640de             7816 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarGGpgAKCRDDrTt86Qtc
-+tOOAQCEvY42x1vF/myKC4ReFavfBbGP7olx52coXauShVrk3gEAzWNKTMiSPpSV
-a6jbpIYptFQm/A7jDKXXoH9LJZje/Aw=
-=vi+A
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarGHMQAKCRDDrTt86Qtc
++ufoAQD9igz+Y/hwh9vGH7e/E29rywdUrNjK5fM3GFrC3VY71wEAxXZnAOol62mV
+L+5nIMDQH3o1QJOk0DpIvWD1dOcVmQk=
+=RSKd
 -----END PGP SIGNATURE-----
