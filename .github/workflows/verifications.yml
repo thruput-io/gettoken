@@ -7,7 +7,6 @@ on:
 
 env:
   BRANCH: ${{ github.head_ref || github.ref_name }}
-  SITE_URL: https://thruput.se/gettoken
 
 jobs:
   build:
@@ -20,10 +19,11 @@ jobs:
       - run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
       - uses: actions/checkout@v4
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - run: make build BRANCH="$BRANCH" SITE_URL="$SITE_URL"
+      - run: |
+          source dynamic.sh
+          make build
         env:
           ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
-          SITE_URL: https://thruput.se/gettoken
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -52,10 +52,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: run integration test
-        run: bash src/integration-test/test.sh "$INSTALL_COMMAND" "$BRANCH" "$SITE_URL"
-        env:
-          INSTALL_COMMAND: "apt-get update && apt-get install -y --no-install-recommends"
-          SITE_URL: https://thruput.se/gettoken
+        run: |
+          source dynamic.sh
+          bash src/integration-test/test.sh
 
   macos:
     name: macos-26
@@ -65,7 +64,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: run integration test
-        run: bash src/integration-test/test.sh "$INSTALL_COMMAND" "$BRANCH" "$SITE_URL"
-        env:
-          INSTALL_COMMAND: "brew install --no-ask"
-          SITE_URL: https://thruput.se/gettoken
+        run: |
+          source dynamic.sh
+          bash src/integration-test/test.sh
