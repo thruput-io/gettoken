@@ -49,10 +49,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: run integration test
         env:
-          SITE_URL: https://thruput.se/gettoken
           BRANCH: ${{ github.head_ref || github.ref_name }}
-          INSTALL_COMMAND: apt-get update && apt-get install -y --no-install-recommends
-        run: bash src/integration-test/test.sh
+        run: |
+          INSTALL_COMMAND=$(sed -n 's/^export INSTALL_COMMAND = //p' config.sh)
+          SITE_URL=$(sed -n 's/^export SITE_URL = //p' config.sh)
+          INSTALL_COMMAND="$INSTALL_COMMAND" SITE_URL="$SITE_URL" bash src/integration-test/test.sh "$INSTALL_COMMAND"
 
   macos:
     name: macos-26
@@ -61,6 +62,9 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
-      - run: echo "nothing points a Mac at an apt archive; issue #44 says what would"
-      - run: ln -sf config.local.sh.mac.example config.local.sh
-      - run: make test
+      - name: run integration test
+        env:
+          SITE_URL: https://thruput.se/gettoken
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+          INSTALL_COMMAND: apt-get update && apt-get install -y --no-install-recommends
+        run: bash src/integration-test/test.sh
