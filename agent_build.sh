@@ -35,8 +35,8 @@ say "test on a clean node slim"
 the_tree | bash scripts/served.sh "$site" -i node:26-slim sh -ec '
     mkdir -p /work && cd /work && tar xf -
     chmod +x scripts/*.sh src/components/contract/build.sh src/components/entitlements/entitlements src/components/secret-manager/secret-put src/components/secret-manager/secret-get src/components/token-service/token-service src/tools/gettoken/bin/gettoken src/tools/gettoken/privileged/token-requester src/tools/integration-test-tool/privileged/exchangers/integrationtest src/tools/integration-test-tool/bin/integration-test-tool src/integration-test/test.sh src/debian/rules dynamic.sh 2>/dev/null || true
-    apt-get update && apt-get install -y -qq --no-install-recommends git ca-certificates > /dev/null
+    apt-get update && apt-get install -y -qq --no-install-recommends make git ca-certificates > /dev/null
     git config --global --add safe.directory "*"
-    bash src/integration-test/test.sh'
+    make test'
 
 say "everything the pipeline does, done here"

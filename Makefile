@@ -133,7 +133,7 @@ build/publish.txt: build/package.txt
 
 build/integration-test.checked: build/config.mk
 	@mkdir -p $(@D)
-	bash src/integration-test/test.sh > $@
+	INSTALL_COMMAND="$(INSTALL_COMMAND)" SITE_URL="$(SITE_URL)" BRANCH="$(BRANCH)" bash src/integration-test/test.sh > $@
 
 build/diagrams.txt: build/sources README.md scripts/mermaid.sh
 	@mkdir -p $(@D)
