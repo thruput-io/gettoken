@@ -4,27 +4,27 @@ Hash: SHA512
 Architectures: amd64
 Codename: tore/build-pipeline-and-research-cleanups
 Components: main
-Date: Mon, 21 Sep 2026 19:14:32 +0000
+Date: Mon, 21 Sep 2026 19:17:46 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/build-pipeline-and-research-cleanups
 MD5Sum:
  3dd5d87d811ca27be8ef6b7bb90f95d4            25204 main/binary-amd64/Packages
- 79871e705b5da435d6e9d95de1a1aa18             7816 main/binary-amd64/Packages.gz
+ 49c7fa2799d49310dd69756a21ff6e7f             7816 main/binary-amd64/Packages.gz
 SHA1:
  7c8c3f1f8955ee393db19c9f96672a676653faf9            25204 main/binary-amd64/Packages
- 653078ae9978cb3fd65ee5e5255bd534f1fa10c6             7816 main/binary-amd64/Packages.gz
+ a0186c5727ded75781d762d48a4f5db6bc44f424             7816 main/binary-amd64/Packages.gz
 SHA256:
  1a901b1fe573fcf09e5b1974e5004b43265bb5d42a0a3df7fc69de6214b9c7e2            25204 main/binary-amd64/Packages
- 22a75c1fdfb3b1120f6c1795eb611649d2816e86aff7b94c2c177a6823770e3f             7816 main/binary-amd64/Packages.gz
+ d61bd628b9e27fb43ce763a61675fde2504a72bb7be0339c930df72160e62bfb             7816 main/binary-amd64/Packages.gz
 SHA512:
  83a783d0122679f55788ce2376c31e21f8d6c6e32db62115ca088ef4a8a93a2c2368ee14b6c4cace6846f4b39b6fdbaf9c85a11ce49124521fcf4de60f76693e            25204 main/binary-amd64/Packages
- b94a03c20a9ba6e4a73ec32e6bc721b0c714a7dd9853c2d654292f4bb9acfca9dd7f7e3cf8b2cdf15bf0a5ef7c73eae49e2f646e1e2d595e405289d833f46b50             7816 main/binary-amd64/Packages.gz
+ 61c9445db129be816b89deb5f3620312ae2e2269721b49aa894ed0905156d9d8bd383ffaf5e5fdd196fdf17837310dced5650b63059fcd4c46241163144a96f7             7816 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarGCGAAKCRDDrTt86Qtc
-+ufqAQDoEdCsUxoLK1gcmUMUvpc3lQI5afhKEAWRxVS1rSZi6gEA3TBGMEjiefnc
-JvSxjiqvAr/BBFNCqXnpVbeOfMVL0QY=
-=ZpbY
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarGC2gAKCRDDrTt86Qtc
++rJYAP0Wf7jqhUNJD8KWC3+2s6oZkSMRQQmKIeeKKmE0ihaScQD/Ytyz1CyVNp4y
+uM0+T+PUboWVETjVxqWCBJ9X93Lw5w8=
+=oDZu
 -----END PGP SIGNATURE-----
