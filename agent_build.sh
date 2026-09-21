@@ -4,9 +4,9 @@ set -euo pipefail
 root=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 cd "$root"
 
-set -a
-source config.env
-set +a
+while read -r line; do
+  [[ -n "$line" && "$line" != \#* ]] && export "${line?}"
+done < config.env
 
 branch=local
 site=gettoken-site
