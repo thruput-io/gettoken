@@ -4,27 +4,27 @@ Hash: SHA512
 Architectures: amd64
 Codename: tore/build-pipeline-and-research-cleanups
 Components: main
-Date: Mon, 21 Sep 2026 08:56:21 +0000
+Date: Mon, 21 Sep 2026 09:04:46 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/build-pipeline-and-research-cleanups
 MD5Sum:
  3dd5d87d811ca27be8ef6b7bb90f95d4            25204 main/binary-amd64/Packages
- 699779542d8cd165b85733e2aa8511fb             7816 main/binary-amd64/Packages.gz
+ deb5a6648becba6a56e44d99296ae42b             7816 main/binary-amd64/Packages.gz
 SHA1:
  7c8c3f1f8955ee393db19c9f96672a676653faf9            25204 main/binary-amd64/Packages
- bb0137cd1ca7d5d621e529b6e2b8bc1487fa8675             7816 main/binary-amd64/Packages.gz
+ aad7fdcc9e66f86eda7847ac8fe5fdee979f2789             7816 main/binary-amd64/Packages.gz
 SHA256:
  1a901b1fe573fcf09e5b1974e5004b43265bb5d42a0a3df7fc69de6214b9c7e2            25204 main/binary-amd64/Packages
- a772bb77c034ddc76566d49f9b8e036330986ec86182ea70c8c2407436aa110f             7816 main/binary-amd64/Packages.gz
+ 75f67aa5987a584d84c10e7ad0b329346248a8fd21e8a304d1e7cca4fe45d9ea             7816 main/binary-amd64/Packages.gz
 SHA512:
  83a783d0122679f55788ce2376c31e21f8d6c6e32db62115ca088ef4a8a93a2c2368ee14b6c4cace6846f4b39b6fdbaf9c85a11ce49124521fcf4de60f76693e            25204 main/binary-amd64/Packages
- bb1e763dfbafa03522c011398c3f86d05c53f9fb44ea0f3c374b44a1a3944eaa3c3affa5e856d658e2ae9fdee5a87b2f518a336f7ff554a17afbc165dee61a70             7816 main/binary-amd64/Packages.gz
+ 2c16ac37cd2a9bb41d13635c84c2235df84c8bb38e2480564300b50f8b8f2fc750b7b925affadc29300a8023a6dbe7dff4d772d52b559f53402c52615ab55d4c             7816 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarDxNQAKCRDDrTt86Qtc
-+n+0APwJ9s0EtLWiUJBBWxO5+Lv9JIE5sYTJQgU53gvbfncZqAEA5I+agyPs+yfF
-A5rSW+VXyRtAuXwird+GBtZv1zcNnQs=
-=tk2Y
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarDzLgAKCRDDrTt86Qtc
++jIMAQDx9BruAsRqn2z5ZerTd1P4d/6rPC+0mv87bgJnKoN4xQEA7IHV/2BseI++
+CS3nTvFguFjP8swAnDEZfFkk2SdZKg8=
+=CZ3J
 -----END PGP SIGNATURE-----
