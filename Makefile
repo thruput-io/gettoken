@@ -1,6 +1,6 @@
 .DELETE_ON_ERROR:
 
-include config.sh
+include config.mk
 
 diagrams:          build/diagrams.txt
 
@@ -19,7 +19,6 @@ go-unit-test:     build/go-unit-test.json
 go-coverage:      build/go-coverage.checked
 package:          build/package.txt
 package-brew:     build/dist/brew/gettoken.rb
-archive:          build/archive.txt
 publish:          build/publish.txt
 integration-test: build/integration-test.checked
 
@@ -34,10 +33,10 @@ build/go-sources:
 	  -exec sha256sum {} + | sort -k 2 > $@.new
 	@cmp -s $@.new $@ && rm $@.new || mv $@.new $@
 
-build/setup.txt: config.sh
+build/setup.txt: config.mk
 	@mkdir -p $(@D)
-	sh -ec "$$INSTALL_COMMAND $$BUILD_DEPS"
-	echo "$$BUILD_DEPS" > $@
+	sh -ec "$(INSTALL_COMMAND) $(BUILD_DEPS)"
+	echo "$(BUILD_DEPS)" > $@
 
 build/signing-key.asc: build/setup.txt
 	bash scripts/signing-key.sh $@
@@ -85,7 +84,7 @@ build/go-coverage.json: build/go-unit-test.json
 build/lint.checked: build/lint.xml thresholds.json
 	bash scripts/check-lint.sh $< thresholds.json > $@
 
-build/no-branching.checked: build/sources config.sh thresholds.json build/setup.txt
+build/no-branching.checked: build/sources config.mk thresholds.json build/setup.txt
 	bash scripts/check-branching.sh . thresholds.json > $@
 
 build/bash-unit-test.checked: build/bash-unit-test.tap
@@ -113,20 +112,20 @@ build/dist/brew/gettoken.rb: build/unit.txt src/debian/changelog
 	bash scripts/deliver-brew.sh build/dist/brew
 
 build/archive.txt: build/dist/deb/packages build/signing-key.asc
-	bash scripts/archive.sh build/dist/deb build/site/apt "$$BRANCH" build/signing-key.asc > $@
-	bash scripts/sources.sh build/site/apt "$$BRANCH" "$$SITE_URL/apt" >> $@
+	bash scripts/archive.sh build/dist/deb build/site/apt "$(BRANCH)" build/signing-key.asc > $@
+	bash scripts/sources.sh build/site/apt "$(BRANCH)" "$(SITE_URL)/apt" >> $@
 
 build/package.txt: build/archive.txt build/dist/brew/gettoken.rb
 	cat $^ > $@
 	cat $@
 
 build/publish.txt: build/package.txt
-	bash scripts/publish.sh build/site/apt "$$BRANCH" "$$SITE_URL" > $@
+	bash scripts/publish.sh build/site/apt "$(BRANCH)" "$(SITE_URL)" > $@
 	cat $@
 
-build/integration-test.checked: config.sh
+build/integration-test.checked: config.mk
 	@mkdir -p $(@D)
-	bash src/integration-test/test.sh "$$INSTALL_COMMAND" > $@
+	bash src/integration-test/test.sh "$(INSTALL_COMMAND)" "$(BRANCH)" "$(SITE_URL)" > $@
 
 build/diagrams.txt: build/sources README.md scripts/mermaid.sh
 	@mkdir -p $(@D)
