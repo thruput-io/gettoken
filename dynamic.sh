@@ -13,7 +13,7 @@ required() {
 source constants.env
 
 if [ "${CI:-}" = "true" ]; then
-  required BRANCH ARCHIVE_SIGNING_KEY
+  required BRANCH
   SITE_URL=$PROD_SITE_URL
 else
   BRANCH=$(git rev-parse --abbrev-ref HEAD)
