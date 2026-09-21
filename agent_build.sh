@@ -32,7 +32,7 @@ the_tree | docker run -i --name gettoken-builder --network host \
   --volume "$site:/work/build/site" debian:testing-slim sh -ec '
     mkdir -p /work && cd /work && tar xf -
     printf "%s" "$ARCHIVE_SIGNING_KEY" > "$HOME/.gettoken-archive-key.asc"
-    cp config.local.sh.ubuntu.example config.local.sh
+    ln -sf config.local.sh.ubuntu.example config.local.sh
     scripts/bootstrap.sh > /dev/null
     export GOFLAGS=-buildvcs=false
     make archive BRANCH="$branch"'
@@ -42,14 +42,14 @@ say "test on a clean ubuntu"
 the_tree | scripts/served.sh "$site" -i ubuntu:26.04 sh -ec "
     mkdir -p /work && cd /work && tar xf -
     $reaches_the_archive
-    cp config.local.sh.ubuntu.example config.local.sh
+    ln -sf config.local.sh.ubuntu.example config.local.sh
     make test"
 
 say "test on a clean node slim"
 the_tree | scripts/served.sh "$site" -i node:26-slim sh -ec "
     mkdir -p /work && cd /work && tar xf -
     $reaches_the_archive
-    cp config.local.sh.ubuntu.example config.local.sh
+    ln -sf config.local.sh.ubuntu.example config.local.sh
     make test"
 
 say "everything the pipeline does, done here"

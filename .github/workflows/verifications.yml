@@ -6,15 +6,20 @@ on:
     branches: [main]
 
 jobs:
-  unit:
-    name: unit
+  build:
+    name: build
     runs-on: ubuntu-latest
     container: debian:testing-slim
+    permissions:
+      contents: write
     steps:
+      - run: apt-get update && apt-get install -y --no-install-recommends git ca-certificates
       - uses: actions/checkout@v4
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: scripts/bootstrap.sh
-      - run: make setup
-      - run: make unit
+      - run: make build BRANCH="${{ github.head_ref || github.ref_name }}"
+        env:
+          ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -25,23 +30,6 @@ jobs:
             build/*.json
             build/*.checked
             build/*.txt
-
-  build:
-    name: build
-    needs: unit
-    runs-on: ubuntu-latest
-    container: debian:testing-slim
-    permissions:
-      contents: write
-    steps:
-      - run: apt-get update && apt-get install -y --no-install-recommends git ca-certificates
-      - uses: actions/checkout@v4
-      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - run: scripts/bootstrap.sh
-      - run: make setup
-      - run: make build BRANCH="${{ github.head_ref || github.ref_name }}"
-        env:
-          ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
       - uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -79,5 +67,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: echo "nothing points a Mac at an apt archive; issue #44 says what would"
-      - run: cp config.local.sh.mac.example config.local.sh
+      - run: ln -sf config.local.sh.mac.example config.local.sh
       - run: make test
