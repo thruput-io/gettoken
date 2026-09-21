@@ -130,7 +130,7 @@ build/integration-test.tap: config.sh
 	src/integration-test/test.sh "$$INSTALL_COMMAND" > $@
 	prove --exec cat $@
 
-build/diagrams.txt: build/sources README.md scripts/mermaid.sh build/setup.txt
+build/diagrams.txt: build/sources README.md scripts/mermaid.sh
 	@mkdir -p $(@D)
 	scripts/mermaid.sh > $@
 	cat $@
