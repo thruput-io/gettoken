@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2034,SC2163
 set -euo pipefail
 
 required() {
@@ -7,6 +8,15 @@ required() {
       echo "Error: Environment variable '$var_name' is required but unset or empty." >&2
       exit 1
     fi
+  done
+}
+
+expose() {
+  echo "# Generated from dynamic.sh"
+
+  for var_name in "$@"; do
+    export "$var_name"
+    printf '%s := %s\n' "$var_name" "${!var_name}"
   done
 }
 
@@ -35,4 +45,4 @@ else
   exit 1
 fi
 
-export BRANCH SITE_URL PACKAGE_FORMATS INSTALL_COMMAND BUILD_DEPS
+expose BRANCH SITE_URL PACKAGE_FORMATS INSTALL_COMMAND BUILD_DEPS

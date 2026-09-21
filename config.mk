@@ -1,5 +1,0 @@
-BRANCH ?= $(shell bash -c 'source ./dynamic.sh >/dev/null 2>&1 && printf "%s" "$$BRANCH"')
-SITE_URL ?= $(shell bash -c 'source ./dynamic.sh >/dev/null 2>&1 && printf "%s" "$$SITE_URL"')
-PACKAGE_FORMATS ?= $(shell bash -c 'source ./dynamic.sh >/dev/null 2>&1 && printf "%s" "$$PACKAGE_FORMATS"')
-INSTALL_COMMAND ?= $(shell bash -c 'source ./dynamic.sh >/dev/null 2>&1 && printf "%s" "$$INSTALL_COMMAND"')
-BUILD_DEPS ?= $(shell bash -c 'source ./dynamic.sh >/dev/null 2>&1 && printf "%s" "$$BUILD_DEPS"')

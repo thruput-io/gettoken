@@ -1,9 +1,10 @@
 .DELETE_ON_ERROR:
 
-include config.mk
+-include build/config.mk
 
 diagrams:          build/diagrams.txt
 
+config:           build/config.mk
 setup:            build/setup.txt
 unit:             build/unit.txt
 build:            build/publish.txt
@@ -22,6 +23,11 @@ package-brew:     build/dist/brew/gettoken.rb
 publish:          build/publish.txt
 integration-test: build/integration-test.checked
 
+
+build/config.mk:
+	@mkdir -p $(@D)
+	bash dynamic.sh > $@
+
 build/sources:
 	@mkdir -p $(@D)
 	@find src scripts -type f -exec sha256sum {} + | sort -k 2 > $@.new
@@ -33,9 +39,9 @@ build/go-sources:
 	  -exec sha256sum {} + | sort -k 2 > $@.new
 	@cmp -s $@.new $@ && rm $@.new || mv $@.new $@
 
-build/setup.txt: config.mk
+build/setup.txt: build/config.mk
 	@mkdir -p $(@D)
-	sh -ec "$(INSTALL_COMMAND) $(BUILD_DEPS)"
+	bash -ec "$(INSTALL_COMMAND) $(BUILD_DEPS)"
 	echo "$(BUILD_DEPS)" > $@
 
 build/signing-key.asc: build/setup.txt
@@ -84,7 +90,7 @@ build/go-coverage.json: build/go-unit-test.json
 build/lint.checked: build/lint.xml thresholds.json
 	bash scripts/check-lint.sh $< thresholds.json > $@
 
-build/no-branching.checked: build/sources config.mk thresholds.json build/setup.txt
+build/no-branching.checked: build/sources build/config.mk thresholds.json build/setup.txt
 	bash scripts/check-branching.sh . thresholds.json > $@
 
 build/bash-unit-test.checked: build/bash-unit-test.tap
@@ -123,7 +129,7 @@ build/publish.txt: build/package.txt
 	bash scripts/publish.sh build/site/apt "$(BRANCH)" "$(SITE_URL)" > $@
 	cat $@
 
-build/integration-test.checked: config.mk
+build/integration-test.checked: build/config.mk
 	@mkdir -p $(@D)
 	bash src/integration-test/test.sh > $@
 
