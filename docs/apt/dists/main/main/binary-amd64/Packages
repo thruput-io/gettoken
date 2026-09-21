@@ -456,11 +456,11 @@ Maintainer: Johan Granlund <johan.granlund@thruput.se>
 Installed-Size: 20
 Depends: gettoken-token-requester, gettoken-contract-agent-capability-request, gettoken-contract-agent-list-request, gettoken-format
 Filename: pool/main/gettoken_0.1.0_all.deb
-Size: 9756
-MD5sum: 3947ba5b22eb6e4a8f7f91bd01c3b92e
-SHA1: 9a488b53fb740e4bb20ac2141a52f24500ea7222
-SHA256: b24181ea178a6c59f603f7ee072fde8aecc53152b02c7c62d7f37893ba396eb4
-SHA512: ba7fe6473369a1ae54cd4a4f0d62c0aca6dda9ee8122b08e2418f353826149623aa2ed1e81d4b703dc3f5079ead4418c34b7ba235e1c23f8e14a9fe5c2dd5535
+Size: 9780
+MD5sum: e8cc850ebb902a0f292c819a9ffc8d48
+SHA1: bd6244b1a20186e6aaef8e31f3de5e4316120d05
+SHA256: 3813082e868e14bc11cf4693861cd7f445c70b5b817a32d6871bda7b81feccbc
+SHA512: 6d3dc820dee1d369e7eeef6e526dfcaa500e2c7107cbb12c89c9059fae75719e43b39beb37530df21b40bc316f4861f7d2e364c3fcfc4a42caa22a7ae4642816
 Homepage: https://github.com/thruput-io/gettoken
 Description: token broker for AI agents
  An agent that holds a long-lived credential holds whatever authority that

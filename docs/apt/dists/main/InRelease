@@ -4,27 +4,27 @@ Hash: SHA512
 Architectures: amd64
 Codename: main
 Components: main
-Date: Sun, 20 Sep 2026 15:18:32 +0000
+Date: Mon, 21 Sep 2026 23:33:17 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: main
 MD5Sum:
- 69a47554d1bac0c5d3008d3e5585e764            24316 main/binary-amd64/Packages
- 7f4f196f491c7fe2d5a55f0bb904083e             7765 main/binary-amd64/Packages.gz
+ a375089f86b46e50129026e5f89d7465            24316 main/binary-amd64/Packages
+ 9fe3e65186037bca63809681eac3db0b             7772 main/binary-amd64/Packages.gz
 SHA1:
- 330bf62f80435ac73b5397e7847605cb72303b25            24316 main/binary-amd64/Packages
- 23128a5bc7132b443935ed5d53025fb6f4e15700             7765 main/binary-amd64/Packages.gz
+ 0cd2090a9d2923e4f234367d6882f272b909e7e5            24316 main/binary-amd64/Packages
+ 974e2867f4e4e2d1f2af721119d3920f4f8de181             7772 main/binary-amd64/Packages.gz
 SHA256:
- 463ff919a2f89959897e94492268faa6c6299188c71b87b6629f8d150ece7053            24316 main/binary-amd64/Packages
- ecd10137e00616a5bebcad6dbe2b28dd00cddb72032ed61bade7bc389cc16009             7765 main/binary-amd64/Packages.gz
+ 09a0f0b92200c212a1afb8f8dac9cb4ef179c4645fbd00a774c07383cb9938b2            24316 main/binary-amd64/Packages
+ 8609712384131b158c72c818c86b1d635bb71191c0003947c5cd9643351433fd             7772 main/binary-amd64/Packages.gz
 SHA512:
- efe72d28f9d547f3df7777bfb1fad002ed3cf6a64aa046526eb6239551724238d7a18c2ea56d2a7f9cfb6fa990f1c31b214177cce9a63555b8d5622ac90dee52            24316 main/binary-amd64/Packages
- ea272f21ec728e45108f903b035bc3cb46fed8dd0ce1f1f94f5b1134b685aefc61bda6948d5a482df5774788e59839d96131fa5da8e8765caebd7d4b7e2e0fc0             7765 main/binary-amd64/Packages.gz
+ 8ad486dd8c2b676bbc9acee4d86bccef859e2ebb31ee2f13916c4437e255f9542b9731531dce9c5e9415f5d252c05dbcf45380fa8d479ec1a5c72da06cfec0d0            24316 main/binary-amd64/Packages
+ 4e483a601d25266849681c24e9f5631a4f0b362e9e59777ceedf3f73fced0f7ea03ecc1afeb0f385a4d1a254ed4dc60b19bd9671fa6af4cee0bfcd18d58ddc69             7772 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCaq/5SAAKCRDDrTt86Qtc
-+h/4AP4j85gn/jbq7SGB943ly3YQy65dhhQBeHFA1JGWI+KeOAEAreHNbqKo/Saa
-qft/CqtuyaBZhCZUuzOSZRqRRXz1/AI=
-=qJ/b
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarG+vQAKCRDDrTt86Qtc
++odlAQCiRye56zBe8GQ1VR3zQd55wniucY2KN/YofyqdUHQAjgEAq7NtMGi6JDxb
+V/czLP750liE/+lltQDpYm/DCMPIpgU=
+=+tL8
 -----END PGP SIGNATURE-----
