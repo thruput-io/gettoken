@@ -16,8 +16,7 @@ jobs:
       - run: apt-get update && apt-get install -y --no-install-recommends git ca-certificates
       - uses: actions/checkout@v4
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - run: scripts/bootstrap.sh
-      - run: make build BRANCH="${{ github.head_ref || github.ref_name }}"
+      - run: make build BRANCH="${{ github.head_ref || github.ref_name }}" SITE_URL="https://thruput.se/gettoken"
         env:
           ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
       - if: always()
@@ -48,12 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: run integration test
-        env:
-          BRANCH: ${{ github.head_ref || github.ref_name }}
-        run: |
-          INSTALL_COMMAND=$(sed -n 's/^export INSTALL_COMMAND = //p' config.sh)
-          SITE_URL=$(sed -n 's/^export SITE_URL = //p' config.sh)
-          INSTALL_COMMAND="$INSTALL_COMMAND" SITE_URL="$SITE_URL" bash src/integration-test/test.sh "$INSTALL_COMMAND"
+        run: bash src/integration-test/test.sh "apt-get update && apt-get install -y --no-install-recommends" "${{ github.head_ref || github.ref_name }}" "https://thruput.se/gettoken"
 
   macos:
     name: macos-26
@@ -63,8 +57,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: run integration test
-        env:
-          SITE_URL: https://thruput.se/gettoken
-          BRANCH: ${{ github.head_ref || github.ref_name }}
-          INSTALL_COMMAND: apt-get update && apt-get install -y --no-install-recommends
-        run: bash src/integration-test/test.sh
+        run: bash src/integration-test/test.sh "brew install --no-ask" "${{ github.head_ref || github.ref_name }}" "https://thruput.se/gettoken"

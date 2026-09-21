@@ -26,20 +26,13 @@ the_tree | docker run -i --name gettoken-builder --network host \
     mkdir -p /work && cd /work && tar xf -
     chmod +x scripts/*.sh src/components/contract/build.sh src/components/entitlements/entitlements src/components/secret-manager/secret-put src/components/secret-manager/secret-get src/components/token-service/token-service src/tools/gettoken/bin/gettoken src/tools/gettoken/privileged/token-requester src/tools/integration-test-tool/privileged/exchangers/integrationtest src/tools/integration-test-tool/bin/integration-test-tool src/integration-test/test.sh src/debian/rules 2>/dev/null || true
     printf "%s" "$ARCHIVE_SIGNING_KEY" > "$HOME/.gettoken-archive-key.asc"
-    ln -sf config.local.sh.ubuntu.example config.local.sh
-    bash scripts/bootstrap.sh > /dev/null
+    apt-get update && apt-get install -y -qq --no-install-recommends make > /dev/null
     export GOFLAGS=-buildvcs=false
-    make archive BRANCH="$branch"'
-
-
-say "test on a clean ubuntu"
-the_tree | bash scripts/served.sh "$site" -i ubuntu:26.04 sh -ec "
-    mkdir -p /work && cd /work && tar xf -
-    SITE_URL=http://archive BRANCH=$branch INSTALL_COMMAND=\"apt-get update && apt-get install -y --no-install-recommends\" bash src/integration-test/test.sh"
+    make package BRANCH="$branch" SITE_URL="http://archive"'
 
 say "test on a clean node slim"
 the_tree | bash scripts/served.sh "$site" -i node:26-slim sh -ec "
     mkdir -p /work && cd /work && tar xf -
-    SITE_URL=http://archive BRANCH=$branch INSTALL_COMMAND=\"apt-get update && apt-get install -y --no-install-recommends\" bash src/integration-test/test.sh"
+    bash src/integration-test/test.sh \"apt-get update && apt-get install -y --no-install-recommends\" \"$branch\" \"http://archive\""
 
 say "everything the pipeline does, done here"
