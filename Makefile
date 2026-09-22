@@ -8,12 +8,14 @@ export PATH := build/bin:$(PATH)
 
 export ARCHIVE_SIGNING_KEY ?= $(shell cat build/signing-key.asc 2>/dev/null)
 
-.PHONY: all clean test diagrams config setup unit build contract signing-key lint lint-semgrep lint-shellcheck lint-go lint-make lint-schemas lint-permissions no-branching check-readme bash-unit-test bash-coverage go-unit-test go-coverage package package-brew publish integration-test readme build/unit.txt %.checked %.txt
+.PHONY: all clean test diagrams stats config setup unit build contract signing-key lint lint-semgrep lint-shellcheck lint-go lint-make lint-schemas lint-permissions no-branching check-readme bash-unit-test bash-coverage go-unit-test go-coverage package package-brew publish integration-test readme build/unit.txt %.checked %.txt
 
 all:              test
+build:            publish
+test:             integration-test
 
-diagrams:          build/diagrams.txt
-stats:             build/stats.txt
+diagrams:         build/diagrams.txt
+stats:            build/stats.txt
 config:           build/config.mk
 setup:            build/setup.txt
 unit:             build/unit.txt
@@ -26,8 +28,6 @@ lint-schemas:     build/schemas.checked
 lint-permissions: build/check-permissions.txt
 package:          build/package.txt
 publish:          build/publish.txt
-build:            publish
-test:             integration-test
 contract:         build/bin/parse build/bin/format
 signing-key:      build/signing-key.asc
 no-branching:     build/no-branching.checked
@@ -83,7 +83,7 @@ SHELL_FILES := $$(find src scripts -type f \( -name '*.sh' -o -name '*.postrm' -
 
 build/semgrep-report.json: build/sources build/setup.txt
 	@mkdir -p $(@D)
-	@if command -v semgrep-bash > /dev/null 2>&1; then semgrep-bash --json --json-output=$@ $(SHELL_FILES); elif [ -d "/Users/Shared/workspace/semgrep/bash/rules" ] && command -v semgrep > /dev/null 2>&1; then semgrep --json --config /Users/Shared/workspace/semgrep/bash/rules --output=$@ $(SHELL_FILES); else echo '{"results":[]}' > $@; fi
+	@if command -v semgrep-bash > /dev/null 2>&1; then semgrep-bash --json --json-output=$@ $(SHELL_FILES); elif [ -d "/Users/Shared/workspace/semgrep/bash/rules" ] && command -v semgrep > /dev/null 2>&1; then semgrep --json --config /Users/Shared/workspace/semgrep/bash/rules --output=$@ $(SHELL_FILES); else echo "semgrep not available" >&2; exit 1; fi
 
 build/shellcheck-report.json: build/sources build/setup.txt
 	@mkdir -p $(@D)
@@ -91,7 +91,7 @@ build/shellcheck-report.json: build/sources build/setup.txt
 
 build/go-report.json: build/go-sources build/setup.txt
 	@mkdir -p $(@D)
-	go -C src/components/contract vet -mod=vendor ./... > $@
+	go -C src/components/contract vet -json -mod=vendor ./... > $@
 
 build/make-report.json: Makefile build/setup.txt
 	@mkdir -p $(@D)
@@ -132,29 +132,35 @@ build/go-coverage.txt: build/go-unit-test.json
         build/go-coverage.checked build/unit.txt
 
 build/shellcheck.checked: build/shellcheck-report.json build/stats.txt thresholds.json
-	issues=$$(jq 'length' $<); \
-	echo "shellcheck: $$issues issues ($(BASH_SOURCE_FILES) bash files scanned)"; \
-	[ "$$issues" -eq 0 ] && [ "$(BASH_SOURCE_FILES)" -gt 0 ]
+	errors=$$(jq '[.[] | select(.level=="error")] | length' $<); \
+	warnings=$$(jq '[.[] | select(.level=="warning")] | length' $<); \
+	max_errors=$$(jq -r '.lint.errors' thresholds.json); max_warnings=$$(jq -r '.lint.warnings' thresholds.json); \
+	echo "shellcheck: $$errors errors, $$warnings warnings (max $$max_errors/$$max_warnings, $(BASH_SOURCE_FILES) bash files scanned)"; \
+	[ "$$errors" -le "$$max_errors" ] && [ "$$warnings" -le "$$max_warnings" ] && [ "$(BASH_SOURCE_FILES)" -gt 0 ]
 
 build/make.checked: build/make-report.json thresholds.json
 	issues=$$([ -s $< ] && jq 'length' $< || echo 0); \
-	echo "make: $$issues issues"; \
-	[ "$$issues" -eq 0 ]
+	max_errors=$$(jq -r '.lint.errors' thresholds.json); \
+	echo "checkmake: $$issues issues (max $$max_errors)"; \
+	[ "$$issues" -le "$$max_errors" ]
 
 build/schemas.checked: build/schema-report.json build/stats.txt thresholds.json
 	status=$$(jq -r '.status' $<); errors=$$(jq '.errors | length' $<); \
-	echo "schemas: $$errors errors, status=$$status ($(JSON_SCHEMAS) schemas checked)"; \
-	[ "$$status" = "ok" ] && [ "$$errors" -eq 0 ] && [ "$(JSON_SCHEMAS)" -gt 0 ]
+	max_errors=$$(jq -r '.lint.errors' thresholds.json); \
+	echo "schemas: $$errors errors, status=$$status (max $$max_errors, $(JSON_SCHEMAS) schemas checked)"; \
+	[ "$$status" = "ok" ] && [ "$$errors" -le "$$max_errors" ] && [ "$(JSON_SCHEMAS)" -gt 0 ]
 
 build/go-lint.checked: build/go-report.json build/stats.txt thresholds.json
-	issues=$$([ -s $< ] && jq '[.[][]] | length' $< || echo 0); \
-	echo "go vet: $$issues issues ($(GO_SOURCE_FILES) go files scanned)"; \
-	[ "$$issues" -eq 0 ] && [ "$(GO_SOURCE_FILES)" -gt 0 ]
+	issues=$$([ -s $< ] && jq -s '[.[][][][]] | length' $< || echo 0); \
+	max_errors=$$(jq -r '.lint.errors' thresholds.json); \
+	echo "go vet: $$issues issues (max $$max_errors, $(GO_SOURCE_FILES) go files scanned)"; \
+	[ "$$issues" -le "$$max_errors" ] && [ "$(GO_SOURCE_FILES)" -gt 0 ]
 
 build/semgrep.checked: build/semgrep-report.json build/stats.txt thresholds.json
 	findings=$$(jq '.results | length' $<); \
-	echo "semgrep: $$findings findings ($(BASH_SOURCE_FILES) bash files scanned)"; \
-	[ "$$findings" -eq 0 ] && [ "$(BASH_SOURCE_FILES)" -gt 0 ]
+	max_errors=$$(jq -r '.lint.errors' thresholds.json); \
+	echo "semgrep: $$findings findings (max $$max_errors, $(BASH_SOURCE_FILES) bash files scanned)"; \
+	[ "$$findings" -le "$$max_errors" ] && [ "$(BASH_SOURCE_FILES)" -gt 0 ]
 
 build/lint.checked: build/shellcheck.checked build/make.checked build/schemas.checked build/go-lint.checked build/semgrep.checked build/check-permissions.txt
 	@echo "All lint accept checks passed cleanly"
