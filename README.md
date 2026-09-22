@@ -366,6 +366,7 @@ src/
   debian/
     source/
   integration-test/
+    test/
   tools/
     gettoken/
       bin/

@@ -5,7 +5,7 @@ report=$1
 thresholds=$2
 name=$3
 
-measured=$(jq -r '.percent' "$report")
+measured=$(jq -r '.percent_covered // .percent' "$report")
 floor=$(jq -r ".\"$name\".percent" "$thresholds")
 
 echo "$name: $measured% covered, floor $floor%"
