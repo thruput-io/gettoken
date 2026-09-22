@@ -1,0 +1,110 @@
+Package: gettoken-contract-agent-capability-request
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-contract-agent-capability-request_0.1.0_all.deb
+
+Package: gettoken-contract-agent-list-request
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-contract-agent-list-request_0.1.0_all.deb
+
+Package: gettoken-contract-defs
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-contract-defs_0.1.0_all.deb
+
+Package: gettoken-contract-entitlements-request
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-contract-entitlements-request_0.1.0_all.deb
+
+Package: gettoken-contract-entitlements-response
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-contract-entitlements-response_0.1.0_all.deb
+
+Package: gettoken-contract-exchange-request
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-contract-exchange-request_0.1.0_all.deb
+
+Package: gettoken-contract-secret-get-request-version
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-contract-secret-get-request-version_0.1.0_all.deb
+
+Package: gettoken-contract-secret-get-request
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-contract-secret-get-request_0.1.0_all.deb
+
+Package: gettoken-contract-secret-get-response
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-contract-secret-get-response_0.1.0_all.deb
+
+Package: gettoken-contract-secret-put-request
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-contract-secret-put-request_0.1.0_all.deb
+
+Package: gettoken-contract-secret-put-response
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-contract-secret-put-response_0.1.0_all.deb
+
+Package: gettoken-contract-token-request
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-contract-token-request_0.1.0_all.deb
+
+Package: gettoken-contract-token-response
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-contract-token-response_0.1.0_all.deb
+
+Package: gettoken-entitlements
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-entitlements_0.1.0_all.deb
+
+Package: gettoken-format
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-format_0.1.0_all.deb
+
+Package: gettoken-parse
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-parse_0.1.0_all.deb
+
+Package: gettoken-secret-manager
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-secret-manager_0.1.0_all.deb
+
+Package: gettoken-token-requester
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-token-requester_0.1.0_all.deb
+
+Package: gettoken-token-service
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken-token-service_0.1.0_all.deb
+
+Package: gettoken
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/gettoken_0.1.0_all.deb
+
+Package: integration-test-tool-exchanger
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/integration-test-tool-exchanger_0.1.0_all.deb
+
+Package: integration-test-tool
+Version: 0.1.0
+Architecture: all
+Filename: pool/tore/build-pipeline-and-research-cleanups/integration-test-tool_0.1.0_all.deb
+
