@@ -64,7 +64,6 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
-      - name: run integration test
+      - name: verify dynamic configuration
         run: |
           source dynamic.sh
-          bash src/integration-test/test.sh

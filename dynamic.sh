@@ -46,11 +46,7 @@ expose() {
 }
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]:-${0}}")" && pwd)
-if [ -f "$script_dir/constants.env" ]; then
-  source "$script_dir/constants.env"
-elif [ -f "./constants.env" ]; then
-  source "./constants.env"
-fi
+source "$script_dir/constants.env"
 
 if [ "${CI:-}" = "true" ]; then
   required BRANCH ARCHIVE_SIGNING_KEY

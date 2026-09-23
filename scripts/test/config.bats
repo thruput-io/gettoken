@@ -3,7 +3,7 @@ bats_require_minimum_version 1.5.0
 setup() {
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../.." && pwd)
   export root
-  source "$root/constants.env"
+  source "$root/dynamic.sh"
 }
 
 @test "DEBIAN_BUILD_DEPS contains python3-check-jsonschema" {
