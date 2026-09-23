@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 exchangers=${EXCHANGER_DIR:-/usr/lib/gettoken/exchangers}

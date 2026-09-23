@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 branch=${1:?unpublish.sh: name the branch whose suite is being removed}

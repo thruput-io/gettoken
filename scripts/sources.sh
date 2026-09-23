@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 root=${1:?sources.sh: name the archive to write the sources file into}

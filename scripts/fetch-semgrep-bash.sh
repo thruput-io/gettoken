@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 outdir=${1:?fetch-semgrep-bash.sh: name the directory to install into}

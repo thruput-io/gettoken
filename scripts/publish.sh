@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 archive=${1:?publish.sh: name the archive to publish}
@@ -15,35 +15,52 @@ corner_of_the_site_that_is_debian=apt
 pages_open
 trap pages_close EXIT
 
-apt=$pages/$corner_of_the_site_that_is_debian
-url=$site/$corner_of_the_site_that_is_debian
+for fmt in ${PACKAGE_FORMATS:-deb}; do
+  case "$fmt" in
+    deb)
+      if [ -d "$archive" ]; then
+        corner_of_the_site_that_is_debian=apt
+        apt=$pages/$corner_of_the_site_that_is_debian
+        url=$site/$corner_of_the_site_that_is_debian
 
-rm -rf "$apt/dists/$branch" "$apt/pool/$branch"
-mkdir -p "$apt/dists/$branch" "$apt/pool/$branch"
-cp -a "$archive/dists/$branch/." "$apt/dists/$branch/"
-cp -a "$archive/pool/$branch/." "$apt/pool/$branch/"
-cp "$archive/gettoken-archive-keyring.asc" "$apt/gettoken-archive-keyring.asc"
-: > "$pages/.nojekyll"
+        rm -rf "$apt/dists/$branch" "$apt/pool/$branch"
+        mkdir -p "$apt/dists/$branch" "$apt/pool/$branch"
+        cp -a "$archive/dists/$branch/." "$apt/dists/$branch/"
+        cp -a "$archive/pool/$branch/." "$apt/pool/$branch/"
+        cp "$archive/gettoken-archive-keyring.asc" "$apt/gettoken-archive-keyring.asc"
+        : > "$pages/.nojekyll"
 
-"$root/scripts/sources.sh" "$apt" "$branch" "$url"
+        "$root/scripts/sources.sh" "$apt" "$branch" "$url"
 
-pages_push "Publish $branch"
+        pages_push "Publish $branch"
 
-served=$(mktemp)
-trap 'rm -f "$served"; pages_close' EXIT
+        served=$(mktemp)
+        trap 'rm -f "$served"; pages_close' EXIT
 
-suite=$branch
-pushed=$(sha256sum < "$archive/dists/$suite/InRelease" | cut -d' ' -f1)
-served_now=""
+        suite=$branch
+        pushed=$(sha256sum < "$archive/dists/$suite/InRelease" | cut -d' ' -f1)
+        served_now=""
 
-attempt=0
-while [ "$attempt" -lt 60 ] && [ "$served_now" != "$pushed" ]; do
-  curl --fail --silent --show-error --location \
-    "$url/dists/$suite/InRelease" --output "$served"
-  served_now=$(sha256sum < "$served" | cut -d' ' -f1)
-  attempt=$((attempt + 1))
-  sleep 10
+        attempt=0
+        while [ "$attempt" -lt 60 ] && [ "$served_now" != "$pushed" ]; do
+          curl --fail --silent --show-error --location \
+            "$url/dists/$suite/InRelease" --output "$served"
+          served_now=$(sha256sum < "$served" | cut -d' ' -f1)
+          attempt=$((attempt + 1))
+          sleep 10
+        done
+
+        test "$served_now" = "$pushed"
+        echo "ok: $url serves the $suite that was just pushed"
+      fi
+      ;;
+    brew)
+      mkdir -p "$pages/brew"
+      : > "$pages/.nojekyll"
+      if [ -f "build/dist/brew/gettoken.rb" ]; then
+        cp "build/dist/brew/gettoken.rb" "$pages/brew/gettoken.rb"
+      fi
+      echo "ok: brew formula published"
+      ;;
+  esac
 done
-
-test "$served_now" = "$pushed"
-echo "ok: $url serves the $suite that was just pushed"
