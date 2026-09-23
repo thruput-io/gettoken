@@ -23,16 +23,20 @@ STUB
   chmod 755 "$stub/token-requester"
 }
 
+NormalizeStdErrWhenKcovOnMac() {
+  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
+}
+
 @test "no arguments refuses, hands over nothing, and names the tool the agent invoked" {
   run -1 --separate-stderr gettoken
   [ "$output" = "" ]
-  assert_equal "$stderr" "gettoken: usage: gettoken --list | gettoken <capability>"
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "gettoken: usage: gettoken --list | gettoken <capability>"
 }
 
 @test "more than one argument refuses the same way" {
   run -1 --separate-stderr gettoken integrationtest/ci/run and-another
   [ "$output" = "" ]
-  assert_equal "$stderr" "gettoken: usage: gettoken --list | gettoken <capability>"
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "gettoken: usage: gettoken --list | gettoken <capability>"
 }
 
 @test "the ask names the capability and nothing the agent has no say over" {

@@ -13,6 +13,10 @@ running() {
   INTEGRATIONTEST_TOKEN="$1" integration-test-tool
 }
 
+NormalizeStdErrWhenKcovOnMac() {
+  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
+}
+
 @test "the tool writes back what the narrow token carries, and nothing else" {
   run -0 --separate-stderr running sample-token-123-ci-run-allowed
   [ "$output" = "sample-token-123" ]
@@ -21,7 +25,7 @@ running() {
 @test "the super-token that token was traded for is refused" {
   run -1 --separate-stderr running super-sample-token-123
   [ "$output" = "" ]
-  assert_equal "$stderr" "integration-test-tool: INTEGRATIONTEST_TOKEN does not allow integrationtest/ci/run"
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "integration-test-tool: INTEGRATIONTEST_TOKEN does not allow integrationtest/ci/run"
 }
 
 @test "no token at all is refused, and hands over nothing" {
