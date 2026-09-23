@@ -64,8 +64,7 @@ build/schema-sources:
 build/setup.txt: build/config.mk
 	@mkdir -p $(@D)
 	bash -ec "$(INSTALL_COMMAND) $(BUILD_DEPS)"
-	bash scripts/fetch-semgrep-bash.sh build
-	bash scripts/setup-apt-ftparchive.sh build
+	bash scripts/fetch-semgrep-bash.sh build && bash scripts/setup-apt-ftparchive.sh build
 	bash -c "source dynamic.sh && ensure_bash5"
 	echo "$(BUILD_DEPS)" > $@
 
