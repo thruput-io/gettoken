@@ -2,7 +2,6 @@
 set -euo pipefail
 
 root=$1
-thresholds=$2
 
 branching=$(mktemp)
 trap 'rm -f "$branching"' EXIT
