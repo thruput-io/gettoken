@@ -67,5 +67,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: run integration test
         run: |
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
           source dynamic.sh
           bash src/integration-test/test.sh
