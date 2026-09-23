@@ -19,7 +19,13 @@ xargs -0 awk '
 ' < "$branching.files" | sort -u > "$branching"
 
 found=$(wc -l < "$branching" | tr -d ' ')
-allowed=$(jq -r '."no-branching".sites' "$thresholds")
+if [[ "$thresholds" == *.mk ]]; then
+  allowed=$(grep '^NO_BRANCHING_MAX' "$thresholds" | cut -d'=' -f2 | tr -d ' ')
+elif [[ "$thresholds" == *.json ]]; then
+  allowed=$(jq -r '."no-branching".sites' "$thresholds")
+else
+  allowed=$thresholds
+fi
 
 cat "$branching"
 echo "no-branching: $found sites branch or default in tests or configuration (allowed $allowed)"
