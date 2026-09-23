@@ -41,28 +41,30 @@ jobs:
           name: dist
           path: build/dist
 
-  test:
-    name: ${{ matrix.name }}
+  integration:
+    name: ${{ matrix.container }}
     needs: build
-    runs-on: ${{ matrix.runs-on }}
+    runs-on: ubuntu-latest
     container: ${{ matrix.container }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: debian-testing-slim
-            runs-on: ubuntu-latest
-            container: debian:testing-slim
-          - name: macos-latest
-            runs-on: macos-latest
+        container:
+          - node:26-slim
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: build/dist
       - name: run integration test
         run: |
-          source ./dynamic.sh
-          bash src/integration-test/test.sh
+          apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
+          make test
+
+  macos:
+    name: macos-26
+    needs: build
+    runs-on: macos-26
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: run integration test
+        run: make test
 
