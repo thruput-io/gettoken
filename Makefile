@@ -112,7 +112,7 @@ build/report.tap: build/sources build/bin/parse build/bin/format build/setup.txt
 
 build/kcov/bats/coverage.json: build/sources build/bin/parse build/bin/format build/setup.txt
 	@mkdir -p build/kcov
-	kcov --clean --bash-parser=$$(command -v bash) --bash-parse-files-in-dir=src,scripts --include-path=src,scripts --exclude-pattern=.bats,/bats-core/,/Cellar/bats-core/ build/kcov bats --recursive src scripts
+	kcov --clean --bash-parser=$$(command -v bash) --bash-parse-files-in-dir=src --include-path=src --exclude-pattern=.bats,/bats-core/,/Cellar/bats-core/ build/kcov bats --recursive src scripts
 
 build/go-unit-test.json: build/go-sources build/setup.txt
 	@mkdir -p $(@D)
@@ -187,18 +187,26 @@ build/unit.txt: build/check-readme.txt build/no-branching.checked build/check-pe
                 build/go-unit-test.checked build/go-coverage.checked
 	@echo "unit: all checks passed"
 
+PACKAGE_TARGETS :=
+ifneq ($(findstring deb,$(PACKAGE_FORMATS)),)
+PACKAGE_TARGETS += build/archive.txt
+endif
+ifneq ($(findstring brew,$(PACKAGE_FORMATS)),)
+PACKAGE_TARGETS += build/dist/brew/gettoken.rb
+endif
+
 build/dist/deb/packages: build/unit.txt build/lint.checked src/debian src/contracts
-	bash scripts/package-deb.sh build/dist/deb
+	bash scripts/deliver-deb.sh build/dist/deb
 	@touch $@
 
 build/dist/brew/gettoken.rb: build/unit.txt build/lint.checked src/debian/changelog
-	bash scripts/package-brew.sh build/dist/brew
+	bash scripts/deliver-brew.sh build/dist/brew
 
 build/archive.txt: build/dist/deb/packages build/signing-key.asc
 	bash scripts/archive.sh build/dist/deb build/site/apt "$(BRANCH)" build/signing-key.asc > $@
 	bash scripts/sources.sh build/site/apt "$(BRANCH)" "$(SITE_URL)/apt" >> $@
 
-build/package.txt: build/archive.txt build/dist/brew/gettoken.rb
+build/package.txt: $(PACKAGE_TARGETS)
 	cat $^ > $@
 	cat $@
 

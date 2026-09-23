@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 outdir=${1:?setup-apt-ftparchive.sh: name the directory to install into}
 
-if command -v apt-ftparchive > /dev/null 2>&1; then
+if command -v apt-ftparchive > /dev/null; then
   exit 0
 fi
 
@@ -45,7 +45,7 @@ while [ $# -gt 0 ]; do
         echo "Filename: $deb"
         size=$(wc -c < "$deb" | tr -d ' ')
         echo "Size: $size"
-        if command -v sha256sum > /dev/null 2>&1; then
+        if command -v sha256sum > /dev/null; then
           sha=$(sha256sum "$deb" | cut -d' ' -f1)
         else
           sha=$(shasum -a 256 "$deb" | cut -d' ' -f1)
@@ -71,7 +71,7 @@ while [ $# -gt 0 ]; do
         rel_path="${rel_file#./}"
         abs_file="$dist_dir/$rel_path"
         size=$(wc -c < "$abs_file" | tr -d ' ')
-        if command -v sha256sum > /dev/null 2>&1; then
+        if command -v sha256sum > /dev/null; then
           sha=$(sha256sum "$abs_file" | cut -d' ' -f1)
         else
           sha=$(shasum -a 256 "$abs_file" | cut -d' ' -f1)

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 root=$1
@@ -12,7 +12,7 @@ find "$root" -path "$root/.git" -prune -o -path "$root/build" -prune -o -type f 
 
 declares_bash_on_its_first_line() {
   case $(head -n 1 "$1") in
-    '#!/bin/bash'|'# shellcheck shell=bash') return 0 ;;
+    '#!/bin/bash'|'#!/usr/bin/env bash'|'# shellcheck shell=bash') return 0 ;;
   esac
   return 1
 }

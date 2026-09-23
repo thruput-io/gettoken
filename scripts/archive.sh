@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 PATH="build/bin:$(dirname "$0")/../build/bin:$PATH"
 export PATH

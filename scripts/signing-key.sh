@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 into=${1:?signing-key.sh: name the file to write the key to}

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 into=${1:?deliver-brew.sh: name a directory to deliver the formula into}

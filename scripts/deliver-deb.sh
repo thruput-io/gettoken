@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 into=${1:?deliver-deb.sh: name a directory to deliver the packages into}
