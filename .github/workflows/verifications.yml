@@ -41,30 +41,25 @@ jobs:
           name: dist
           path: build/dist
 
-  integration:
-    name: ${{ matrix.container }}
+  test:
+    name: ${{ matrix.name }}
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runs-on }}
     container: ${{ matrix.container }}
     strategy:
       fail-fast: false
       matrix:
-        container:
-          - debian:testing-slim
+        include:
+          - name: debian-testing-slim
+            runs-on: ubuntu-latest
+            container: debian:testing-slim
+          - name: macos-latest
+            runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: run integration test
-        run: |
-          apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
-          make test
-
-  macos:
-    name: macos-latest
-    needs: build
-    runs-on: macos-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
+      - name: install dependencies
+        if: runner.os == 'Linux'
+        run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
       - name: run integration test
         run: make test
 
