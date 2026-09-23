@@ -46,9 +46,9 @@ The tool runs and its native output lands at `build/<platform>/<tool>-report.<ex
 
 ### 2. Threshold
 
-`thresholds.json` declares, per tool, the permitted `errors` and `warnings`, `min_tests`, `min_coverage`. `min_files`
+`thresholds.mk` declares, per tool, the permitted threshold variables (`LINT_ERRORS_MAX`, `LINT_WARNINGS_MAX`, `BATS_TESTS_MIN`, `BASH_COVERAGE_MIN`, `GO_TESTS_MIN`, `GO_COVERAGE_MIN`, `NO_BRANCHING_MAX`).
 
-1. Thresholds **MUST** live in `thresholds.json`, never in a recipe or a flag.
+1. Thresholds **MUST** live in `thresholds.mk`, included by Makefile, never hardcoded in a recipe or a flag.
 2. A threshold **MUST NOT** be raised to make a build pass. Raising one is a reviewable change to
    the repository's quality bar.
 

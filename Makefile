@@ -3,6 +3,7 @@ ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 export PATH := build/bin:$(PATH)
 
 -include build/config.mk
+-include thresholds.mk
 
 export ARCHIVE_SIGNING_KEY ?= $(shell cat build/signing-key.asc 2>/dev/null)
 
@@ -129,68 +130,59 @@ build/go-coverage.txt: build/go-unit-test.json
         build/bash-unit-test.checked build/bash-coverage.checked build/go-unit-test.checked \
         build/go-coverage.checked build/unit.txt
 
-build/shellcheck.checked: build/shellcheck-report.json build/stats.txt thresholds.json
+build/shellcheck.checked: build/shellcheck-report.json build/stats.txt thresholds.mk
 	errors=$$(jq '[.[] | select(.level=="error")] | length' $<); \
 	warnings=$$(jq '[.[] | select(.level=="warning")] | length' $<); \
-	max_errors=$$(jq -r '.lint.errors' thresholds.json); max_warnings=$$(jq -r '.lint.warnings' thresholds.json); \
-	echo "shellcheck: $$errors errors, $$warnings warnings (max $$max_errors/$$max_warnings, $(BASH_SOURCE_FILES) bash files scanned)"; \
-	[ "$$errors" -le "$$max_errors" ] && [ "$$warnings" -le "$$max_warnings" ] && [ "$(BASH_SOURCE_FILES)" -gt 0 ]
+	echo "shellcheck: $$errors errors, $$warnings warnings (max $(LINT_ERRORS_MAX)/$(LINT_WARNINGS_MAX), $(BASH_SOURCE_FILES) bash files scanned)"; \
+	[ "$$errors" -le "$(LINT_ERRORS_MAX)" ] && [ "$$warnings" -le "$(LINT_WARNINGS_MAX)" ] && [ "$(BASH_SOURCE_FILES)" -gt 0 ]
 
-build/make.checked: build/make-report.json thresholds.json
+build/make.checked: build/make-report.json thresholds.mk
 	issues=$$([ -s $< ] && jq 'length' $< || echo 0); \
-	max_errors=$$(jq -r '.lint.errors' thresholds.json); \
-	echo "checkmake: $$issues issues (max $$max_errors)"; \
-	[ "$$issues" -le "$$max_errors" ] && [ 0 -eq $$max_errors ]
+	echo "checkmake: $$issues issues (max $(LINT_ERRORS_MAX))"; \
+	[ "$$issues" -le "$(LINT_ERRORS_MAX)" ] && [ 0 -eq $(LINT_ERRORS_MAX) ]
 
-build/schemas.checked: build/schema-report.json build/stats.txt thresholds.json
+build/schemas.checked: build/schema-report.json build/stats.txt thresholds.mk
 	status=$$(jq -r '.status' $<); errors=$$(jq '.errors | length' $<); \
-	max_errors=$$(jq -r '.lint.errors' thresholds.json); \
-	echo "schemas: $$errors errors, status=$$status (max $$max_errors, $(JSON_SCHEMAS) schemas checked)"; \
-	[ "$$status" = "ok" ] && [ "$$errors" -le "$$max_errors" ] && [ "$(JSON_SCHEMAS)" -gt 0 ]
+	echo "schemas: $$errors errors, status=$$status (max $(LINT_ERRORS_MAX), $(JSON_SCHEMAS) schemas checked)"; \
+	[ "$$status" = "ok" ] && [ "$$errors" -le "$(LINT_ERRORS_MAX)" ] && [ "$(JSON_SCHEMAS)" -gt 0 ]
 
-build/go-lint.checked: build/go-report.json build/stats.txt thresholds.json
+build/go-lint.checked: build/go-report.json build/stats.txt thresholds.mk
 	issues=$$([ -s $< ] && jq -s '[.[][][][]] | length' $< || echo 0); \
-	max_errors=$$(jq -r '.lint.errors' thresholds.json); \
-	echo "go vet: $$issues issues (max $$max_errors, $(GO_SOURCE_FILES) go files scanned)"; \
-	[ "$$issues" -le "$$max_errors" ] && [ "$(GO_SOURCE_FILES)" -gt 0 ]
+	echo "go vet: $$issues issues (max $(LINT_ERRORS_MAX), $(GO_SOURCE_FILES) go files scanned)"; \
+	[ "$$issues" -le "$(LINT_ERRORS_MAX)" ] && [ "$(GO_SOURCE_FILES)" -gt 0 ]
 
-build/semgrep.checked: build/semgrep-report.json build/stats.txt thresholds.json
+build/semgrep.checked: build/semgrep-report.json build/stats.txt thresholds.mk
 	findings=$$(jq '.results | length' $<); \
-	max_errors=$$(jq -r '.lint.errors' thresholds.json); \
-	echo "semgrep: $$findings findings (max $$max_errors, $(BASH_SOURCE_FILES) bash files scanned)"; \
-	[ "$$findings" -le "$$max_errors" ] && [ "$(BASH_SOURCE_FILES)" -gt 0 ]
+	echo "semgrep: $$findings findings (max $(LINT_ERRORS_MAX), $(BASH_SOURCE_FILES) bash files scanned)"; \
+	[ "$$findings" -le "$(LINT_ERRORS_MAX)" ] && [ "$(BASH_SOURCE_FILES)" -gt 0 ]
 
 build/lint.checked: build/shellcheck.checked build/make.checked build/schemas.checked build/go-lint.checked build/semgrep.checked build/check-permissions.txt
 	@echo "All lint accept checks passed cleanly"
 
-build/no-branching.checked: build/sources build/config.mk thresholds.json build/setup.txt
-	bash scripts/check-branching.sh . thresholds.json
+build/no-branching.checked: build/sources build/config.mk thresholds.mk build/setup.txt
+	bash scripts/check-branching.sh . thresholds.mk
 
-build/bash-unit-test.checked: build/report.tap build/stats.txt thresholds.json
+build/bash-unit-test.checked: build/report.tap build/stats.txt thresholds.mk
 	pass=$$(grep -c -- '^ok ' $<); fail=$$(grep -c -- '^not ok ' $<); \
-	min=$$(jq -r '."bash-unit-test".min_tests' thresholds.json); \
-	echo "bats: $$pass passed, $$fail failed (min $$min, stat $(BATS_TESTS))"; \
-	[ "$$fail" -eq 0 ] && [ "$$pass" -gt "$$min" ] && [ "$$(( $$pass + $$fail ))" -eq "$(BATS_TESTS)" ]
+	echo "bats: $$pass passed, $$fail failed (min $(BATS_TESTS_MIN), stat $(BATS_TESTS))"; \
+	[ "$$fail" -eq 0 ] && [ "$$pass" -gt "$(BATS_TESTS_MIN)" ] && [ "$$(( $$pass + $$fail ))" -eq "$(BATS_TESTS)" ]
 
-build/bash-coverage.checked: build/kcov/bats/coverage.json build/stats.txt thresholds.json
+build/bash-coverage.checked: build/kcov/bats/coverage.json build/stats.txt thresholds.mk
 	percent=$$(jq -r '.percent_covered' $<); \
 	files=$$(jq -r '.files | length' $<); \
-	floor=$$(jq -r '."bash-coverage".percent' thresholds.json); \
-	echo "bash-coverage: $$percent% covered, floor $$floor%, $$files files (stat $(BASH_SOURCE_FILES))"; \
-	[ "$${percent%.*}" -ge "$$floor" ] && [ "$$files" -eq "$(BASH_SOURCE_FILES)" ]
+	echo "bash-coverage: $$percent% covered, floor $(BASH_COVERAGE_MIN)%, $$files files (stat $(BASH_SOURCE_FILES))"; \
+	[ "$${percent%.*}" -ge "$(BASH_COVERAGE_MIN)" ] && [ "$$files" -eq "$(BASH_SOURCE_FILES)" ]
 
-build/go-coverage.checked: build/go-coverage.txt build/stats.txt thresholds.json
+build/go-coverage.checked: build/go-coverage.txt build/stats.txt thresholds.mk
 	percent=$$(grep '^total:' $< | grep -oE '[0-9.]+%$$' | tr -d '%'); \
 	files=$$(grep -v '^total:' $< | cut -d: -f1 | sort -u | wc -l); \
-	floor=$$(jq -r '."go-coverage".percent' thresholds.json); \
-	echo "go-coverage: $$percent% covered, floor $$floor%, $$files files (stat $(GO_SOURCE_FILES))"; \
-	[ "$${percent%.*}" -ge "$$floor" ] && [ "$$files" -eq "$(GO_SOURCE_FILES)" ] && [ $$floor -gt 50 ]
+	echo "go-coverage: $$percent% covered, floor $(GO_COVERAGE_MIN)%, $$files files (stat $(GO_SOURCE_FILES))"; \
+	[ "$${percent%.*}" -ge "$(GO_COVERAGE_MIN)" ] && [ "$$files" -eq "$(GO_SOURCE_FILES)" ] && [ $(GO_COVERAGE_MIN) -gt 50 ]
 
-build/go-unit-test.checked: build/go-unit-test.json build/stats.txt thresholds.json
+build/go-unit-test.checked: build/go-unit-test.json build/stats.txt thresholds.mk
 	pass=$$(grep -c -- '--- PASS:' $<); fail=$$(grep -c -- '--- FAIL:' $<); ran=$$(grep -c -- '=== RUN' $<); \
-	min=$$(jq -r '."go-unit-test".min_tests' thresholds.json); \
-	echo "go test: $$pass passed, $$fail failed, $$ran run (min $$min, stat $(GO_TESTS))"; \
-	[ "$$fail" -eq 0 ] && [ "$$pass" -gt "$$min" ] && [ "$$ran" -eq "$$(($$pass + $$fail))" ] && [ "$$ran" -eq "$(GO_TESTS)" ]
+	echo "go test: $$pass passed, $$fail failed, $$ran run (min $(GO_TESTS_MIN), stat $(GO_TESTS))"; \
+	[ "$$fail" -eq 0 ] && [ "$$pass" -gt "$(GO_TESTS_MIN)" ] && [ "$$ran" -eq "$$(($$pass + $$fail))" ] && [ "$$ran" -eq "$(GO_TESTS)" ]
 
 build/unit.txt: build/check-readme.txt build/no-branching.checked build/check-permissions.txt \
                 build/bash-unit-test.checked build/bash-coverage.checked \
