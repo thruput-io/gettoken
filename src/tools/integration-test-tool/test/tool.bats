@@ -10,7 +10,11 @@ setup() {
 }
 
 assert_stderr_contains() {
-  assert_regex "$stderr" "$1"
+  if command -v assert_regex >/dev/null 2>&1; then
+    assert_regex "$stderr" "$1"
+  else
+    [[ "$stderr" == *"$1"* ]]
+  fi
 }
 
 running() {
