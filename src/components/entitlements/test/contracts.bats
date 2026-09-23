@@ -26,26 +26,30 @@ admits() { printf '%s' "$2" | parse "$1"; }
   run -1 --separate-stderr admits entitlements-response.schema.json \
     '{"entitlements":[{"capability":"integrationtest/ci/run","variables":[]}]}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy entitlements-response.schema.json"* ]]
+  expected=$(printf 'parse: the document does not satisfy entitlements-response.schema.json\nvalidating https://thruput.io/gettoken/entitlements-response.schema.json: validating /properties/entitlements: validating /properties/entitlements/items: required: missing properties: ["description"]')
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
 }
 
 @test "an entitlement that leaves its variables unlisted is refused" {
   run -1 --separate-stderr admits entitlements-response.schema.json \
     '{"entitlements":[{"capability":"github/{org}/{repo}/pr/create","description":"Open a pull request."}]}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy entitlements-response.schema.json"* ]]
+  expected=$(printf 'parse: the document does not satisfy entitlements-response.schema.json\nvalidating https://thruput.io/gettoken/entitlements-response.schema.json: validating /properties/entitlements: validating /properties/entitlements/items: required: missing properties: ["variables"]')
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
 }
 
 @test "a variable that is not named and explained is refused" {
   run -1 --separate-stderr admits entitlements-response.schema.json \
     '{"entitlements":[{"capability":"github/{org}/{repo}/pr/create","description":"Open a pull request.","variables":[{"name":"org"}]}]}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy entitlements-response.schema.json"* ]]
+  expected=$(printf 'parse: the document does not satisfy entitlements-response.schema.json\nvalidating https://thruput.io/gettoken/entitlements-response.schema.json: validating /properties/entitlements: validating /properties/entitlements/items: validating /properties/entitlements/items/properties/variables: validating /properties/entitlements/items/properties/variables/items: required: missing properties: ["description"]')
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
 }
 
 @test "an entitlements request carries no capability, because none is being asked for" {
   run -1 --separate-stderr admits entitlements-request.schema.json \
     '{"who":"tore","doing":"mac.lan","signed":"host-privileged","wants":"integrationtest/ci/run"}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy entitlements-request.schema.json"* ]]
+  expected=$(printf 'parse: the document does not satisfy entitlements-request.schema.json\nvalidating https://thruput.io/gettoken/entitlements-request.schema.json: unexpected additional properties ["wants"]')
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
 }

@@ -1,10 +1,17 @@
 bats_require_minimum_version 1.5.0
 
 setup() {
+  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
+  bats_load_library bats-support
+  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   PATH="$root/build/bin:$PATH"
   CONTRACTS_DIR="$root/src/contracts"
   export PATH CONTRACTS_DIR
+}
+
+NormalizeStdErrWhenKcovOnMac() {
+  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
 }
 
 admits() { printf '%s' "$2" | parse "$1"; }
@@ -22,5 +29,6 @@ admits() { printf '%s' "$2" | parse "$1"; }
   run -1 --separate-stderr admits dialect.schema.json '{"paid":true}'
   rm -rf "$probe"
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy dialect.schema.json"* ]]
+  expected=$(printf 'parse: the document does not satisfy dialect.schema.json\nvalidating https://thruput.io/gettoken/dialect.schema.json: dependentRequired["paid"]: missing properties ["method"]')
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
 }

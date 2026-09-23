@@ -13,6 +13,10 @@ setup() {
 
 teardown() { rm -rf "$(dirname "$SECRET_DIR")"; }
 
+NormalizeStdErrWhenKcovOnMac() {
+  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked|version|who|doing|signed)=)/d'
+}
+
 putting() {
   key=$1 value=$2
   export key value
@@ -30,29 +34,24 @@ getting_version() {
   export key version
   format secret-get-request-version.schema.json key version | secret-get
 }
-
-NormalizeStdErrWhenKcovOnMac() {
-  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
-}
-
 @test "storing a secret answers with version and value" {
-  run -0 --separate-stderr putting johans-laptop/github super-1
-  [ "$output" = '{"value":"super-1","version":0}' ]
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" ""
+  key=johans-laptop/github value=super-1
+  export key value
+  document=$(format secret-put-request.schema.json key value | secret-put)
+  [ "$(printf '%s' "$document" | jq -r '.version')" = "0" ]
+  [ "$(printf '%s' "$document" | jq -r '.value')" = "super-1" ]
 }
 
 @test "the first secret stored under a key is version zero" {
   putting johans-laptop/github super-1
-  run -0 --separate-stderr getting johans-laptop/github
-  [ "$(printf '%s' "$output" | jq -r '.version')" = "0" ]
+  run -0 --separate-stderr getting_version johans-laptop/github 0
   [ "$(printf '%s' "$output" | jq -r '.value')" = "super-1" ]
 }
 
 @test "the store gives each secret the next version, so no caller chooses one" {
   putting johans-laptop/github super-1
   putting johans-laptop/github super-2
-  run -0 --separate-stderr getting johans-laptop/github
-  [ "$(printf '%s' "$output" | jq -r '.version')" = "1" ]
+  run -0 --separate-stderr getting_version johans-laptop/github 1
   [ "$(printf '%s' "$output" | jq -r '.value')" = "super-2" ]
 }
 
@@ -67,7 +66,7 @@ NormalizeStdErrWhenKcovOnMac() {
   putting johans-laptop/github super-1
   run -1 --separate-stderr getting_version johans-laptop/github 1
   [ "$output" = "" ]
-  [[ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" == *"johans-laptop/github has no version 1"* ]]
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "secret-get: johans-laptop/github has no version 1"
 }
 
 @test "what secret-get emits is the secret and the version it is" {
@@ -85,21 +84,23 @@ NormalizeStdErrWhenKcovOnMac() {
 @test "nothing stored under a key is a failure, not an empty answer" {
   run -1 --separate-stderr getting nobody/nothing
   [ "$output" = "" ]
-  [[ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" == *"nothing is stored under nobody/nothing"* ]]
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "secret-get: nothing is stored under nobody/nothing"
 }
 
 @test "a key the contract does not admit is refused" {
   run -1 --separate-stderr sh -c \
     'printf %s "{\"key\":\"Johans-Laptop\",\"value\":\"super-1\"}" | secret-put'
   [ "$output" = "" ]
-  [[ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" == *"does not satisfy secret-put-request.schema.json"* ]]
+  expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: "Johans-Laptop" does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"')
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
 }
 
 @test "a key climbing out of the store is refused, because a key carries no dots" {
   run -1 --separate-stderr sh -c \
     'printf %s "{\"key\":\"..\",\"value\":\"super-1\"}" | secret-put'
   [ "$output" = "" ]
-  [[ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" == *"does not satisfy secret-put-request.schema.json"* ]]
+  expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: ".." does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"')
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
   [ ! -e "$(dirname "$SECRET_DIR")/github" ]
 }
 
@@ -107,13 +108,15 @@ NormalizeStdErrWhenKcovOnMac() {
   run -1 --separate-stderr sh -c \
     'printf %s "{\"key\":\"johans-laptop/github\",\"value\":\"\"}" | secret-put'
   [ "$output" = "" ]
-  [[ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" == *"does not satisfy secret-put-request.schema.json"* ]]
+  expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/value: validating /$defs/Secret: minLength: "" contains 0 Unicode code points, fewer than 1')
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
 }
 
 @test "asking with no key at all is refused" {
   run -1 --separate-stderr sh -c 'printf %s "{}" | secret-get --with-key'
   [ "$output" = "" ]
-  [[ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" == *"does not satisfy secret-get-request.schema.json"* ]]
+  expected=$(printf 'parse: the document does not satisfy secret-get-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: required: missing properties: ["key"]')
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
 }
 
 @test "every directory the store is made of is closed to everyone but its owner" {
