@@ -4,27 +4,27 @@ Hash: SHA512
 Architectures: amd64
 Codename: tore/adr-28-build-system
 Components: main
-Date: Wed, 23 Sep 2026 15:15:09 +0000
+Date: Wed, 23 Sep 2026 15:18:57 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/adr-28-build-system
 MD5Sum:
  761b0599cd99eea3fa1d85acb9ca4143            24847 main/binary-amd64/Packages
- 21a932d8b1f3c6eaeb432bdff62b0d28             7807 main/binary-amd64/Packages.gz
+ a35b89d23387d5c6cdb330146a46ab21             7807 main/binary-amd64/Packages.gz
 SHA1:
  563285b8443ef73a1e5312525210959fa4664ee3            24847 main/binary-amd64/Packages
- 9e382e1102d85788d8e3b73612f4d88649e0fb32             7807 main/binary-amd64/Packages.gz
+ 3ae458e1d7da8b889a905b20111fe8aba5cd823f             7807 main/binary-amd64/Packages.gz
 SHA256:
  a0905c78be2dbf9ac50a1bcd12d57946c06b3450952087f36f27c7201b79e0a8            24847 main/binary-amd64/Packages
- 32c7dee719116dafa4c90b627a9f71af22b9154f3e4e33568a2a1f069ddc250e             7807 main/binary-amd64/Packages.gz
+ 2df48e2d27f3db577f1f361cd89460bf0c61b62db8bb7558a7c3e8bfb41976e4             7807 main/binary-amd64/Packages.gz
 SHA512:
  86e05c9de8a9b4c4a2ec3e3141c360be0755762e61f65309346d21a787345395de88f521f93d0b16968759beca6508b6aee33b74476b2dcd279b33b62f5ea636            24847 main/binary-amd64/Packages
- fa846dfd927de1e9cacf93a29d026338ef7bc6571a81282e7ffb353a79ed2fb2ee1f5b1e83ffa63ba08b5fa49670c99f8aa5328bae81fdfdfe478313c3a5c297             7807 main/binary-amd64/Packages.gz
+ ef07a8ad8d3ec15e6490f9ffded37c0af0f89ec827fa925b4fdd731750031e41a039460c25c466bbf522d8db68be25f4de2d0b39448e50fc856fcca6d4a08c83             7807 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarPs/QAKCRDDrTt86Qtc
-+l2fAPwMZHfx1pZRJ/571/7ri2JV+18Oga31zp4BSHYLIHg7yQD/V+SaWzUkdlGo
-0lwfJfCX+7sSo8HvLtgRnh5IMCGVLQs=
-=vDRo
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarPt4QAKCRDDrTt86Qtc
++mVZAQCnWSEDaIfIdzlOJygGKJ0vH2AJAeikTNE7lCyLfnB1AQEA0Vb06PWuJr3U
+v/+L4/XpIPmEH+02hGJdXG0Of6PmcQM=
+=d0/n
 -----END PGP SIGNATURE-----
