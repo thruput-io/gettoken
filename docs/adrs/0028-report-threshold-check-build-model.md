@@ -46,9 +46,9 @@ The tool runs and its native output lands at `build/<platform>/<tool>-report.<ex
 
 ### 2. Threshold
 
-`thresholds.mk` declares, per tool, the permitted threshold variables (`LINT_ERRORS_MAX`, `LINT_WARNINGS_MAX`, `BATS_TESTS_MIN`, `BASH_COVERAGE_MIN`, `GO_TESTS_MIN`, `GO_COVERAGE_MIN`, `NO_BRANCHING_MAX`).
+Threshold constants are hardcoded directly inside each target's `.checked` check recipe where they are evaluated.
 
-1. Thresholds **MUST** live in `thresholds.mk`, included by Makefile, never hardcoded in a recipe or a flag.
+1. Threshold values (e.g. max 0 lint errors, min 10 tests, floor 22% bash coverage) **MUST** be explicitly written directly in the check assertion recipe.
 2. A threshold **MUST NOT** be raised to make a build pass. Raising one is a reviewable change to
    the repository's quality bar.
 
