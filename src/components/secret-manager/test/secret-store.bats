@@ -1,6 +1,9 @@
 bats_require_minimum_version 1.5.0
 
 setup() {
+  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
+  bats_load_library bats-support
+  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   PATH="$root/src/components/secret-manager:$root/build/bin:$PATH"
   SECRET_DIR="$(mktemp -d)/secrets"
@@ -35,7 +38,7 @@ NormalizeStdErrWhenKcovOnMac() {
 @test "storing a secret answers with version and value" {
   run -0 --separate-stderr putting johans-laptop/github super-1
   [ "$output" = '{"value":"super-1","version":0}' ]
-  [ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" = "" ]
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" ""
 }
 
 @test "the first secret stored under a key is version zero" {
@@ -76,7 +79,7 @@ NormalizeStdErrWhenKcovOnMac() {
 @test "the secret never appears on stderr" {
   putting johans-laptop/github super-1
   run -0 --separate-stderr getting johans-laptop/github
-  [ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" = "" ]
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" ""
 }
 
 @test "nothing stored under a key is a failure, not an empty answer" {

@@ -1,6 +1,9 @@
 bats_require_minimum_version 1.5.0
 
 setup() {
+  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
+  bats_load_library bats-support
+  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   PATH="$root/build/bin:$root/src/components/entitlements:$PATH"
   CONTRACTS_DIR="$root/src/contracts"
@@ -18,7 +21,7 @@ NormalizeStdErrWhenKcovOnMac() {
 @test "the capability the integrated tool is asked for is one the agent may equip" {
   run -0 --separate-stderr asking
   [ "$(printf '%s' "$output" | jq -r '.entitlements[] | select(.capability == "integrationtest/ci/run") | .capability')" = "integrationtest/ci/run" ]
-  [ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" = "" ]
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" ""
 }
 
 @test "every capability listed says what it is for" {
