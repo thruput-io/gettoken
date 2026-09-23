@@ -43,11 +43,14 @@ for fmt in ${PACKAGE_FORMATS:-deb}; do
 
         attempt=0
         while [ "$attempt" -lt 60 ] && [ "$served_now" != "$pushed" ]; do
-          curl --fail --silent --show-error --location \
-            "$url/dists/$suite/InRelease" --output "$served"
-          served_now=$(sha256sum < "$served" | cut -d' ' -f1)
+          if curl --fail --silent --show-error --location \
+            "$url/dists/$suite/InRelease" --output "$served"; then
+            served_now=$(sha256sum < "$served" | cut -d' ' -f1)
+          fi
           attempt=$((attempt + 1))
-          sleep 10
+          if [ "$served_now" != "$pushed" ] && [ "$attempt" -lt 60 ]; then
+            sleep 10
+          fi
         done
 
         test "$served_now" = "$pushed"
