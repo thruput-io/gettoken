@@ -68,6 +68,7 @@ build/schema-sources:
 build/setup.txt: build/config.mk
 	@mkdir -p $(@D)
 	bash -ec "$(INSTALL_COMMAND) $(BUILD_DEPS)"
+	bash scripts/fetch-semgrep-bash.sh build
 	echo "$(BUILD_DEPS)" > $@
 
 build/signing-key.asc: build/setup.txt
@@ -83,11 +84,11 @@ SHELL_FILES := $$(find src scripts -type f \( -name '*.sh' -o -name '*.postrm' -
 
 build/semgrep-report.json: build/sources build/setup.txt
 	@mkdir -p $(@D)
-	@if command -v semgrep-bash > /dev/null 2>&1; then semgrep-bash --json --json-output=$@ $(SHELL_FILES); elif [ -d "/Users/Shared/workspace/semgrep/bash/rules" ] && command -v semgrep > /dev/null 2>&1; then semgrep --json --config /Users/Shared/workspace/semgrep/bash/rules --output=$@ $(SHELL_FILES); else echo "semgrep not available" >&2; exit 1; fi
+	@if command -v semgrep-bash > /dev/null 2>&1; then semgrep-bash --json --json-output=$@ $$(find src scripts -type f \( -name '*.sh' -o -name '*.postrm' -o -name 'entitlements' -o -name 'secret-*' -o -name 'token-*' -o -name 'gettoken' -o -name 'integration-test*' \) | grep -v -E '\.(json|1|manpages|install|bats)$$'); elif [ -d "/Users/Shared/workspace/semgrep/bash/rules" ] && command -v semgrep > /dev/null 2>&1; then semgrep --json --config /Users/Shared/workspace/semgrep/bash/rules --output=$@ $$(find src scripts -type f \( -name '*.sh' -o -name '*.postrm' -o -name 'entitlements' -o -name 'secret-*' -o -name 'token-*' -o -name 'gettoken' -o -name 'integration-test*' \) | grep -v -E '\.(json|1|manpages|install|bats)$$'); else echo "semgrep not available" >&2; exit 1; fi
 
 build/shellcheck-report.json: build/sources build/setup.txt
 	@mkdir -p $(@D)
-	shellcheck -s bash -x -f json $(SHELL_FILES) > $@
+	shellcheck -s bash -x -f json $$(find src scripts -type f \( -name '*.sh' -o -name '*.postrm' -o -name 'entitlements' -o -name 'secret-*' -o -name 'token-*' -o -name 'gettoken' -o -name 'integration-test*' \) | grep -v -E '\.(json|1|manpages|install|bats)$$') > $@
 
 build/go-report.json: build/go-sources build/setup.txt
 	@mkdir -p $(@D)
@@ -142,7 +143,7 @@ build/make.checked: build/make-report.json thresholds.json
 	issues=$$([ -s $< ] && jq 'length' $< || echo 0); \
 	max_errors=$$(jq -r '.lint.errors' thresholds.json); \
 	echo "checkmake: $$issues issues (max $$max_errors)"; \
-	[ "$$issues" -le "$$max_errors" ]
+	[ "$$issues" -le "$$max_errors" ] && [ 0 -eq $$max_errors ]
 
 build/schemas.checked: build/schema-report.json build/stats.txt thresholds.json
 	status=$$(jq -r '.status' $<); errors=$$(jq '.errors | length' $<); \

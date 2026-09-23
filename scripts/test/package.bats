@@ -6,7 +6,7 @@ setup() {
 }
 
 @test "delivering with nowhere to put the packages is refused before anything is removed" {
-  run "$root/scripts/deliver-deb.sh" ""
+  run "$root/scripts/package-deb.sh" ""
   [ "$status" -ne 0 ]
   [[ "$output" == *"name a directory to deliver the packages into"* ]]
 }

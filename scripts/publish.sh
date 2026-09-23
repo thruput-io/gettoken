@@ -38,12 +38,8 @@ served_now=""
 
 attempt=0
 while [ "$attempt" -lt 60 ] && [ "$served_now" != "$pushed" ]; do
-  set +e
   curl --fail --silent --show-error --location \
     "$url/dists/$suite/InRelease" --output "$served"
-  reached=$?
-  set -e
-  test "$reached" -le 22
   served_now=$(sha256sum < "$served" | cut -d' ' -f1)
   attempt=$((attempt + 1))
   sleep 10

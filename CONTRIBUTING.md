@@ -76,6 +76,6 @@ holding a Go toolchain, debhelper and lintian cannot show what installing a
 package brought. That is why the official image, which nobody built, is where the
 use-case runs.
 
-`scripts/deliver-deb.sh` has `lintian` read the source and every package as it
+`scripts/package-deb.sh` has `lintian` read the source and every package as it
 builds them, down to pedantic, so what the packaging says of itself is checked
 where it is written rather than after it is installed.

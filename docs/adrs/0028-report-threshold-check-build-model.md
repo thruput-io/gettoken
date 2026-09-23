@@ -31,7 +31,7 @@ Invocation **MUST** must be as simple and clear as possible, never any indirecti
 test: test-tool -R src/test > build/linux/test-report.json (good)
 
 #### Bad
-test: test-tool $(params) ($SOURCES) | jg 'result' > build/linux/test-report.json (bad)
+test: test-tool $(params) ($SOURCES) | jg 'result' > build/test-module/test-report.json (bad)
 
 ### 1. Report
 

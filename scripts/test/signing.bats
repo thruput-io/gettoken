@@ -27,6 +27,7 @@ teardown() { rm -rf "$work"; }
 the_key() { "$root/scripts/signing-key.sh" "$work/key.asc" > /dev/null; }
 
 an_archive() {
+  command -v apt-ftparchive > /dev/null 2>&1 || skip "apt-ftparchive is not available"
   the_key
   "$root/scripts/archive.sh" "$packages" "$work/site" "$suite" "$work/key.asc" > /dev/null
 }

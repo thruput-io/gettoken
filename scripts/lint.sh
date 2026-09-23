@@ -28,12 +28,25 @@ while IFS= read -r shell_file; do
   shell_files+=("$shell_file")
 done < "$selected"
 
-set +e
-shellcheck -s bash -x "$format" "${shell_files[@]}"
-reported=$?
+reported=0
+shellcheck -s bash -x "$format" "${shell_files[@]}" || reported=$?
+
+semgrep_reported=0
+if command -v semgrep-bash > /dev/null; then
+  semgrep-bash "${shell_files[@]}" >&2 || semgrep_reported=$?
+elif [ -d "/Users/Shared/workspace/semgrep/bash/rules" ] && command -v semgrep > /dev/null; then
+  semgrep --error --config /Users/Shared/workspace/semgrep/bash/rules "${shell_files[@]}" >&2 || semgrep_reported=$?
+fi
+
 set -e
 
 if [ "$reported" -gt 1 ]; then
   echo "lint.sh: shellcheck could not run, exit $reported" >&2
   exit "$reported"
 fi
+
+if [ "$semgrep_reported" -ne 0 ]; then
+  echo "lint.sh: semgrep reported findings, exit $semgrep_reported" >&2
+  exit "$semgrep_reported"
+fi
+

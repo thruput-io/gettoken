@@ -8,6 +8,9 @@ jobs:
     name: Generate the key the archive is signed with
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Generate App Token
         id: generate_token
         uses: actions/create-github-app-token@v1
@@ -21,18 +24,11 @@ jobs:
         run: |
           set -euo pipefail
 
-          GNUPGHOME=$(mktemp -d)
-          export GNUPGHOME
-          chmod 700 "$GNUPGHOME"
+          keyfile=$(mktemp)
+          trap 'rm -f "$keyfile"' EXIT
 
-          gpg --batch --quiet --pinentry-mode loopback --passphrase '' \
-              --quick-generate-key 'gettoken archive <johan.granlund@thruput.se>' \
-              default default never
+          bash scripts/generate-key.sh "$keyfile"
+          test -s "$keyfile"
 
-          key=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec/ { print $5; exit }')
-
-          gpg --batch --quiet --armor --export-secret-keys "$key" > "$GNUPGHOME/secret.asc"
-          test -s "$GNUPGHOME/secret.asc"
-
-          gh secret set ARCHIVE_SIGNING_KEY --repo "$GITHUB_REPOSITORY" < "$GNUPGHOME/secret.asc"
+          gh secret set ARCHIVE_SIGNING_KEY --repo "$GITHUB_REPOSITORY" < "$keyfile"
           gh secret list --repo "$GITHUB_REPOSITORY" | grep -q '^ARCHIVE_SIGNING_KEY[[:space:]]'

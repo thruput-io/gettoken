@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-into=${1:?deliver-deb.sh: name a directory to deliver the packages into}
+into=${1:?package-deb.sh: name a directory to deliver the packages into}
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 

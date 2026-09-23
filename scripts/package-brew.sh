@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-into=${1:?deliver-brew.sh: name a directory to deliver the formula into}
+into=${1:?package-brew.sh: name a directory to deliver the formula into}
 
 mkdir -p "$into"
 into=$(CDPATH='' cd "$into" && pwd)
