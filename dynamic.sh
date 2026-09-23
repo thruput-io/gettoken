@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC2034,SC2163
 set -euo pipefail
 
@@ -45,7 +45,12 @@ expose() {
   done
 }
 
-source constants.env
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]:-${0}}")" && pwd)
+if [ -f "$script_dir/constants.env" ]; then
+  source "$script_dir/constants.env"
+elif [ -f "./constants.env" ]; then
+  source "./constants.env"
+fi
 
 if [ "${CI:-}" = "true" ]; then
   required BRANCH ARCHIVE_SIGNING_KEY
