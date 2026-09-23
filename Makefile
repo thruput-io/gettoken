@@ -66,6 +66,7 @@ build/setup.txt: build/config.mk
 	bash -ec "$(INSTALL_COMMAND) $(BUILD_DEPS)"
 	bash scripts/fetch-semgrep-bash.sh build
 	bash scripts/setup-apt-ftparchive.sh build
+	bash -c "source dynamic.sh && ensure_bash5"
 	echo "$(BUILD_DEPS)" > $@
 
 build/signing-key.asc: build/setup.txt
