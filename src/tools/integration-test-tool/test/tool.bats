@@ -1,20 +1,12 @@
 bats_require_minimum_version 1.5.0
 
 setup() {
-  export BATS_LIB_PATH="/opt/homebrew/lib:/usr/local/lib:/usr/lib"
-  bats_load_library bats-support 2>/dev/null || true
-  bats_load_library bats-assert 2>/dev/null || true
+  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
+  bats_load_library bats-support
+  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   PATH="$root/src/tools/integration-test-tool/bin:$PATH"
   export PATH
-}
-
-assert_stderr_contains() {
-  if command -v assert_regex >/dev/null 2>&1; then
-    assert_regex "$stderr" "$1"
-  else
-    [[ "$stderr" == *"$1"* ]]
-  fi
 }
 
 running() {
@@ -29,7 +21,7 @@ running() {
 @test "the super-token that token was traded for is refused" {
   run -1 --separate-stderr running super-4f2a9c
   [ "$output" = "" ]
-  assert_stderr_contains "integration-test-tool: INTEGRATIONTEST_TOKEN does not allow integrationtest/ci/run"
+  assert_equal "$stderr" "integration-test-tool: INTEGRATIONTEST_TOKEN does not allow integrationtest/ci/run"
 }
 
 @test "no token at all is refused, and hands over nothing" {

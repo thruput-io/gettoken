@@ -1,9 +1,9 @@
 bats_require_minimum_version 1.5.0
 
 setup() {
-  export BATS_LIB_PATH="/opt/homebrew/lib:/usr/local/lib:/usr/lib"
-  bats_load_library bats-support 2>/dev/null || true
-  bats_load_library bats-assert 2>/dev/null || true
+  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
+  bats_load_library bats-support
+  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   STUB_DIR=$(mktemp -d)
   PATH="$STUB_DIR:$root/src/tools/integration-test-tool/privileged/exchangers:$root/build/bin:$PATH"
@@ -11,22 +11,6 @@ setup() {
   ASKED_FILE="$STUB_DIR/asked"
   ARGS_FILE="$STUB_DIR/args"
   export PATH CONTRACTS_DIR ASKED_FILE ARGS_FILE
-}
-
-assert_stderr_contains() {
-  if command -v assert_regex >/dev/null 2>&1; then
-    assert_regex "$stderr" "$1"
-  else
-    [[ "$stderr" == *"$1"* ]]
-  fi
-}
-
-refute_stderr_contains() {
-  if command -v refute_regex >/dev/null 2>&1; then
-    refute_regex "$stderr" "$1"
-  else
-    [[ "$stderr" != *"$1"* ]]
-  fi
 }
 
 teardown() { rm -rf "$STUB_DIR"; }
@@ -55,7 +39,7 @@ trading() {
   holding super-4f2a9c
   run -0 --separate-stderr trading integrationtest/ci/run
   [ "$(printf '%s' "$output" | jq -r '.access_token')" = "4f2a9c-ci-run-allowed" ]
-  refute_stderr_contains "integrationtest:"
+  assert_equal "$stderr" ""
 }
 
 @test "a different super-token yields a different narrow token" {
@@ -81,7 +65,7 @@ trading() {
   holding not-a-super-token
   run -1 --separate-stderr trading integrationtest/ci/run
   [ "$output" = "" ]
-  assert_stderr_contains "integrationtest: the stored super-token is not one this exchanger can trade"
+  assert_equal "$stderr" "integrationtest: the stored super-token is not one this exchanger can trade"
 }
 
 @test "a stored value that is only the prefix is refused" {

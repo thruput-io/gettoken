@@ -1,9 +1,9 @@
 bats_require_minimum_version 1.5.0
 
 setup() {
-  export BATS_LIB_PATH="/opt/homebrew/lib:/usr/local/lib:/usr/lib"
-  bats_load_library bats-support 2>/dev/null || true
-  bats_load_library bats-assert 2>/dev/null || true
+  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
+  bats_load_library bats-support
+  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   PATH="$root/src/components/token-service:$root/build/bin:$PATH"
   EXCHANGER_DIR=$(mktemp -d)
@@ -12,22 +12,6 @@ setup() {
 }
 
 teardown() { rm -rf "$EXCHANGER_DIR"; }
-
-assert_stderr_contains() {
-  if command -v assert_regex >/dev/null 2>&1; then
-    assert_regex "$stderr" "$1"
-  else
-    [[ "$stderr" == *"$1"* ]]
-  fi
-}
-
-refute_stderr_contains() {
-  if command -v refute_regex >/dev/null 2>&1; then
-    refute_regex "$stderr" "$1"
-  else
-    [[ "$stderr" != *"$1"* ]]
-  fi
-}
 
 register() {
   printf '%s\n' '#!/bin/sh' "$2" > "$EXCHANGER_DIR/$1"
@@ -48,71 +32,71 @@ asking() { dispatch "$(wanting "$1")"; }
   run -0 --separate-stderr asking integrationtest/ci/run
   [ "$(printf '%s' "$output" | jq -r '.access_token')" = "integrationtest/ci/run" ]
   [ "$(printf '%s' "$output" | jq -r '.expires_in')" = "120" ]
-  refute_stderr_contains "token-service:"
+  assert_equal "$stderr" ""
 }
 
 @test "an exchanger claiming a lifetime shorter than a minute hands over nothing" {
   register integrationtest 'echo "{\"access_token\":\"narrow-token\",\"expires_in\":1}"'
   run -1 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "" ]
-  assert_stderr_contains "does not satisfy token-response.schema.json"
+  [[ "$stderr" == *"does not satisfy token-response.schema.json"* ]]
 }
 
 @test "an exchanger claiming a lifetime longer than a day hands over nothing" {
   register integrationtest 'echo "{\"access_token\":\"narrow-token\",\"expires_in\":86401}"'
   run -1 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "" ]
-  assert_stderr_contains "does not satisfy token-response.schema.json"
+  [[ "$stderr" == *"does not satisfy token-response.schema.json"* ]]
 }
 
 @test "a request naming no capability is refused by the contract" {
   run -1 --separate-stderr dispatch '{"who":"tore","doing":"mac.lan","signed":"host-privileged"}'
   [ "$output" = "" ]
-  assert_stderr_contains "does not satisfy token-request.schema.json"
+  [[ "$stderr" == *"does not satisfy token-request.schema.json"* ]]
 }
 
 @test "a capability no exchanger serves is refused by the lookup" {
   run -1 --separate-stderr asking nosuch/capability
   [ "$output" = "" ]
-  assert_stderr_contains "token-service: no exchanger serves nosuch/capability"
+  assert_equal "$stderr" "token-service: no exchanger serves nosuch/capability"
 }
 
 @test "a capability whose first segment climbs out of the exchanger directory never reaches the lookup" {
   run -1 --separate-stderr asking ../../bin/sh
   [ "$output" = "" ]
-  assert_stderr_contains "does not satisfy token-request.schema.json"
+  [[ "$stderr" == *"does not satisfy token-request.schema.json"* ]]
 }
 
 @test "a capability whose first segment names the exchanger directory itself never reaches the lookup" {
   run -1 --separate-stderr asking ./ci/run
   [ "$output" = "" ]
-  assert_stderr_contains "does not satisfy token-request.schema.json"
+  [[ "$stderr" == *"does not satisfy token-request.schema.json"* ]]
 }
 
 @test "a capability ending in a newline never reaches the lookup" {
   run -1 --separate-stderr dispatch \
     "$(jq -nc '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run\n",signed:"host-privileged"}')"
   [ "$output" = "" ]
-  assert_stderr_contains "does not satisfy token-request.schema.json"
+  [[ "$stderr" == *"does not satisfy token-request.schema.json"* ]]
 }
 
 @test "an exchanger answering with no lifetime is refused" {
   register integrationtest 'echo "{\"access_token\":\"narrow-token\"}"'
   run -1 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "" ]
-  assert_stderr_contains "does not satisfy token-response.schema.json"
+  [[ "$stderr" == *"does not satisfy token-response.schema.json"* ]]
 }
 
 @test "an exchanger answering with something that is not a document is refused" {
   register integrationtest 'printf "%s\n" narrow-token'
   run -1 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "" ]
-  assert_stderr_contains "is not JSON"
+  [[ "$stderr" == *"not JSON"* ]]
 }
 
 @test "an exchanger that fails takes the request down with it, and says so" {
   register integrationtest 'exit 1'
   run -1 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "" ]
-  assert_stderr_contains "token-service: the exchanger serving integrationtest/ci/run failed"
+  assert_equal "$stderr" "token-service: the exchanger serving integrationtest/ci/run failed"
 }
