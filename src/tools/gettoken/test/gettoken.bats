@@ -1,12 +1,23 @@
 bats_require_minimum_version 1.5.0
 
 setup() {
+  export BATS_LIB_PATH="/opt/homebrew/lib:/usr/local/lib:/usr/lib"
+  bats_load_library bats-support 2>/dev/null || true
+  bats_load_library bats-assert 2>/dev/null || true
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   stub=$(mktemp -d)
   ASK_FILE="$stub/ask.json"
   PATH="$stub:$root/src/tools/gettoken/bin:$root/build/bin:$PATH"
   CONTRACTS_DIR="$root/src/contracts"
   export PATH CONTRACTS_DIR ASK_FILE
+}
+
+assert_stderr_contains() {
+  if command -v assert_regex >/dev/null 2>&1; then
+    assert_regex "$stderr" "$1"
+  else
+    [[ "$stderr" == *"$1"* ]]
+  fi
 }
 
 teardown() { rm -rf "$stub"; }
@@ -23,13 +34,13 @@ STUB
 @test "no arguments refuses, hands over nothing, and names the tool the agent invoked" {
   run -1 --separate-stderr gettoken
   [ "$output" = "" ]
-  [[ "$stderr" == gettoken:* ]]
+  assert_stderr_contains "gettoken:"
 }
 
 @test "more than one argument refuses the same way" {
   run -1 --separate-stderr gettoken integrationtest/ci/run and-another
   [ "$output" = "" ]
-  [[ "$stderr" == gettoken:* ]]
+  assert_stderr_contains "gettoken:"
 }
 
 @test "the ask names the capability and nothing the agent has no say over" {

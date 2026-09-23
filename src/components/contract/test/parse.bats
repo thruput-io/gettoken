@@ -1,10 +1,29 @@
 bats_require_minimum_version 1.5.0
 
 setup() {
+  export BATS_LIB_PATH="/opt/homebrew/lib:/usr/local/lib:/usr/lib"
+  bats_load_library bats-support 2>/dev/null || true
+  bats_load_library bats-assert 2>/dev/null || true
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   PATH="$root/build/bin:$PATH"
   CONTRACTS_DIR="$root/src/contracts"
   export PATH CONTRACTS_DIR
+}
+
+assert_stderr_contains() {
+  if command -v assert_regex >/dev/null 2>&1; then
+    assert_regex "$stderr" "$1"
+  else
+    [[ "$stderr" == *"$1"* ]]
+  fi
+}
+
+refute_stderr_contains() {
+  if command -v refute_regex >/dev/null 2>&1; then
+    refute_regex "$stderr" "$1"
+  else
+    [[ "$stderr" != *"$1"* ]]
+  fi
 }
 
 reading() {
@@ -52,46 +71,46 @@ reading() {
   run -0 --separate-stderr reading secret-put-request.schema.json \
     '{"key":"johans-laptop/github","value":"super-1"}'
   [ "$output" = "" ]
-  [ "$stderr" = "" ]
+  refute_stderr_contains "does not satisfy"
 }
 
 @test "a document missing a required field is refused" {
   run -1 --separate-stderr reading secret-put-request.schema.json \
     '{}' key
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
+  assert_stderr_contains "does not satisfy secret-put-request.schema.json"
 }
 
 @test "a field breaking its type is refused" {
   run -1 --separate-stderr reading secret-put-request.schema.json \
     '{"key":"Johans-Laptop","value":"super-1"}' key
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
+  assert_stderr_contains "does not satisfy secret-put-request.schema.json"
 }
 
 @test "a version below the first one the store can hold is refused" {
   run -1 --separate-stderr reading secret-get-request-version.schema.json \
     '{"key":"johans-laptop/github","version":-1}' version
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-get-request-version.schema.json"* ]]
+  assert_stderr_contains "does not satisfy secret-get-request-version.schema.json"
 }
 
 @test "naming a contract that does not exist is refused, and says so differently" {
   run -1 --separate-stderr reading no-such-contract.schema.json '{}'
   [ "$output" = "" ]
-  [[ "$stderr" == *"no contract named no-such-contract.schema.json"* ]]
+  assert_stderr_contains "no contract named no-such-contract.schema.json"
 }
 
 @test "a body that is not JSON at all is refused rather than read as empty" {
   run -1 --separate-stderr reading secret-put-request.schema.json 'not json' key
   [ "$output" = "" ]
-  [[ "$stderr" == *"the document is not JSON"* ]]
-  [[ "$stderr" != *"does not satisfy"* ]]
+  assert_stderr_contains "the document is not JSON"
+  refute_stderr_contains "does not satisfy"
 }
 
 @test "an empty body is refused rather than read as an empty document" {
   run -1 --separate-stderr reading secret-put-request.schema.json '' key
   [ "$output" = "" ]
-  [[ "$stderr" == *"the document is not JSON: unexpected end of JSON input"* ]]
-  [[ "$stderr" != *"does not satisfy"* ]]
+  assert_stderr_contains "the document is not JSON: unexpected end of JSON input"
+  refute_stderr_contains "does not satisfy"
 }

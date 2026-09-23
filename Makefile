@@ -4,7 +4,6 @@ export PATH := build/bin:$(PATH)
 
 -include build/config.mk
 
-export ARCHIVE_SIGNING_KEY ?= $(shell cat build/signing-key.asc 2>/dev/null)
 
 .PHONY: all clean test diagrams stats config setup unit build contract signing-key lint lint-semgrep lint-shellcheck lint-go lint-make lint-schemas lint-permissions no-branching check-readme bash-unit-test bash-coverage go-unit-test go-coverage package package-brew publish integration-test readme build/unit.txt %.checked %.txt
 
@@ -66,11 +65,11 @@ build/setup.txt: build/config.mk
 	@mkdir -p $(@D)
 	bash -ec "$(INSTALL_COMMAND) $(BUILD_DEPS)"
 	bash scripts/fetch-semgrep-bash.sh build
+	bash scripts/setup-apt-ftparchive.sh build
 	echo "$(BUILD_DEPS)" > $@
 
 build/signing-key.asc: build/setup.txt
-	bash scripts/generate-key.sh $@
-	ARCHIVE_SIGNING_KEY="$$(cat $@)" bash scripts/signing-key.sh $@
+	bash scripts/signing-key.sh $@
 
 build/bin/parse build/bin/format: build/go-sources build/setup.txt
 	bash src/components/contract/build.sh build/bin

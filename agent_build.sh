@@ -1,6 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+if (( BASH_VERSINFO[0] < 5 )); then
+  exec bash "$0" "$@"
+fi
+
 root=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 cd "$root"
 
@@ -26,7 +31,7 @@ the_tree | docker run -i --name gettoken-builder --network host \
     mkdir -p /work && cd /work && tar xf -
     chmod +x scripts/*.sh src/components/contract/build.sh src/components/entitlements/entitlements src/components/secret-manager/secret-put src/components/secret-manager/secret-get src/components/token-service/token-service src/tools/gettoken/bin/gettoken src/tools/gettoken/privileged/token-requester src/tools/integration-test-tool/privileged/exchangers/integrationtest src/tools/integration-test-tool/bin/integration-test-tool src/integration-test/test.sh src/debian/rules dynamic.sh 2>/dev/null || true
     printf "%s" "$ARCHIVE_SIGNING_KEY" > "$HOME/.gettoken-archive-key.asc"
-    apt-get update && apt-get install -y -qq --no-install-recommends make git ca-certificates > /dev/null
+    apt-get update && apt-get install -y -qq --no-install-recommends make git ca-certificates gnupg > /dev/null
     git config --global --add safe.directory "*"
     export GOFLAGS=-buildvcs=false
     make package'
@@ -35,7 +40,7 @@ say "test on a clean node slim"
 the_tree | bash scripts/served.sh "$site" -i node:26-slim sh -ec '
     mkdir -p /work && cd /work && tar xf -
     chmod +x scripts/*.sh src/components/contract/build.sh src/components/entitlements/entitlements src/components/secret-manager/secret-put src/components/secret-manager/secret-get src/components/token-service/token-service src/tools/gettoken/bin/gettoken src/tools/gettoken/privileged/token-requester src/tools/integration-test-tool/privileged/exchangers/integrationtest src/tools/integration-test-tool/bin/integration-test-tool src/integration-test/test.sh src/debian/rules dynamic.sh 2>/dev/null || true
-    apt-get update && apt-get install -y -qq --no-install-recommends make git ca-certificates > /dev/null
+    apt-get update && apt-get install -y -qq --no-install-recommends make git ca-certificates gnupg > /dev/null
     git config --global --add safe.directory "*"
     make test'
 
