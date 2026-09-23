@@ -4,27 +4,27 @@ Hash: SHA512
 Architectures: amd64
 Codename: tore/adr-28-build-system
 Components: main
-Date: Wed, 23 Sep 2026 17:38:48 +0000
+Date: Wed, 23 Sep 2026 17:43:29 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/adr-28-build-system
 MD5Sum:
  761b0599cd99eea3fa1d85acb9ca4143            24847 main/binary-amd64/Packages
- 9ea4bb88ae5f8d28fbaa6721c54162b8             7807 main/binary-amd64/Packages.gz
+ c9f08f16a483f6b4ed3a626a12fef6bf             7807 main/binary-amd64/Packages.gz
 SHA1:
  563285b8443ef73a1e5312525210959fa4664ee3            24847 main/binary-amd64/Packages
- 674cf042f9ae5aa8a256a42cf93aeabd17e18d4b             7807 main/binary-amd64/Packages.gz
+ 02e3389d625dac06ec2cab56598291ba7cc37418             7807 main/binary-amd64/Packages.gz
 SHA256:
  a0905c78be2dbf9ac50a1bcd12d57946c06b3450952087f36f27c7201b79e0a8            24847 main/binary-amd64/Packages
- 43782c3f8f162a854280c539c12723fc349c9a8a46457b9c872723e586c309f7             7807 main/binary-amd64/Packages.gz
+ 044b88f9f0b09237248920194da85dc5a817ae0a0d050f32601e4131bedaae4f             7807 main/binary-amd64/Packages.gz
 SHA512:
  86e05c9de8a9b4c4a2ec3e3141c360be0755762e61f65309346d21a787345395de88f521f93d0b16968759beca6508b6aee33b74476b2dcd279b33b62f5ea636            24847 main/binary-amd64/Packages
- 494e4c7fdfd5bca1d78f2a08e8c21bce814342e427fbe1d408d7feadf07c3d319dded7af7e3eeb8249614bd4d904672a4f03ebdd0b74ada230c87c796d015e69             7807 main/binary-amd64/Packages.gz
+ d83a8e021e7f41809d137dd0649207b0ff69ae53571b1eb4eaa2bcd13dd3b2dc907eb25b68d69d83616dd06c7f82025dd6bc236d7677f770ebdae6d9c48465e2             7807 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarQOqAAKCRDDrTt86Qtc
-+qGsAP9DYV73fGDEKW5A4GNX2GkqhOXJGlb4+y24bq8oPcUiJQEAzYiqEf9QVmFL
-7YNjJyHmrn9a3XGr6SNOMuN3PjB0wQs=
-=aRw9
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarQPwQAKCRDDrTt86Qtc
++jL/AP48KYUMpsyy2AjkxBpau4XqeVVX8UXfi8yM4o+/8gRRVwD/SdPqZYhBF+qn
+Wr6T30zRPnh7rTve7f+o5WjrlSJwsAw=
+=ASj+
 -----END PGP SIGNATURE-----
