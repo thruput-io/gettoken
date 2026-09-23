@@ -1,5 +1,7 @@
 #!/bin/bash
 set -euo pipefail
+PATH="build/bin:$(dirname "$0")/../build/bin:$PATH"
+export PATH
 
 packages=${1:?archive.sh: name the directory holding the packages}
 root=${2:?archive.sh: name the directory to build the archive in}
