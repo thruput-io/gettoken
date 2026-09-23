@@ -14,11 +14,19 @@ setup() {
 }
 
 assert_stderr_contains() {
-  assert_regex "$stderr" "$1"
+  if command -v assert_regex >/dev/null 2>&1; then
+    assert_regex "$stderr" "$1"
+  else
+    [[ "$stderr" == *"$1"* ]]
+  fi
 }
 
 refute_stderr_contains() {
-  refute_regex "$stderr" "$1"
+  if command -v refute_regex >/dev/null 2>&1; then
+    refute_regex "$stderr" "$1"
+  else
+    [[ "$stderr" != *"$1"* ]]
+  fi
 }
 
 teardown() { rm -rf "$STUB_DIR"; }
