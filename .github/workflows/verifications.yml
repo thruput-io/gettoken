@@ -50,21 +50,22 @@ jobs:
       fail-fast: false
       matrix:
         container:
-          - node:26-slim
+          - debian:testing-slim
     steps:
       - uses: actions/checkout@v4
       - name: run integration test
         run: |
-          apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
-          make test
+          source dynamic.sh
+          bash src/integration-test/test.sh
 
   macos:
-    name: macos-26
+    name: macos-latest
     needs: build
-    runs-on: macos-26
+    runs-on: macos-latest
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - name: run integration test
-        run: make test
-
+        run: |
+          source dynamic.sh
+          bash src/integration-test/test.sh
