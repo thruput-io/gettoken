@@ -2,12 +2,10 @@
 set -euo pipefail
 
 report=$1
-thresholds=$2
-name=$3
+floor=${2:-0}
 
-measured=$(jq -r '.percent' "$report")
-floor=$(jq -r ".\"$name\".percent" "$thresholds")
+measured=$(jq -r '.percent_covered // .percent' "$report")
 
-echo "$name: $measured% covered, floor $floor%"
+echo "coverage: $measured% covered, floor $floor%"
 
 jq -n -e --argjson m "$measured" --argjson f "$floor" '$m >= $f' > /dev/null

@@ -133,7 +133,7 @@ build/shellcheck.checked: build/shellcheck-report.json build/stats.txt
 	errors=$$(jq '[.[] | select(.level=="error")] | length' $<); \
 	warnings=$$(jq '[.[] | select(.level=="warning")] | length' $<); \
 	echo "shellcheck: $$errors errors, $$warnings warnings (max 0/0, $(BASH_SOURCE_FILES) bash files scanned)"; \
-	[ "$$errors" -le 0 ] && [ "$$warnings" -le 0 ] && [ "$(BASH_SOURCE_FILES)" -gt 0 ]
+	[ "$$errors" -le 0 ] && [ "$$warnings" -le 0 ] && [ "$(BASH_SOURCE_FILES)" -gt 20 ]
 
 build/make.checked: build/make-report.json
 	issues=$$([ -s $< ] && jq 'length' $< || echo 0); \
