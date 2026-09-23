@@ -1,20 +1,20 @@
 Architectures: amd64
 Codename: tore/adr-28-build-system
 Components: main
-Date: Wed, 23 Sep 2026 15:41:13 +0000
+Date: Wed, 23 Sep 2026 15:44:30 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/adr-28-build-system
 MD5Sum:
  761b0599cd99eea3fa1d85acb9ca4143            24847 main/binary-amd64/Packages
- 9009dc931f77f57e07b5335ca8ab1568             7807 main/binary-amd64/Packages.gz
+ 8e08d7531dffc14fdc80547273dbcb31             7807 main/binary-amd64/Packages.gz
 SHA1:
  563285b8443ef73a1e5312525210959fa4664ee3            24847 main/binary-amd64/Packages
- 6e95bc8db78167eb7d81c6469d5bd675c5ab33a1             7807 main/binary-amd64/Packages.gz
+ 90114ad0098a651ceade4a5c84184acf52dba600             7807 main/binary-amd64/Packages.gz
 SHA256:
  a0905c78be2dbf9ac50a1bcd12d57946c06b3450952087f36f27c7201b79e0a8            24847 main/binary-amd64/Packages
- b1e2f06d639659d039b62791a01f260cf59e48db63350c6dda563a5127016dd4             7807 main/binary-amd64/Packages.gz
+ 79a7676bfae9165fabf2ae05b4861d8679267d6e1e539c2e0035668bb17f7877             7807 main/binary-amd64/Packages.gz
 SHA512:
  86e05c9de8a9b4c4a2ec3e3141c360be0755762e61f65309346d21a787345395de88f521f93d0b16968759beca6508b6aee33b74476b2dcd279b33b62f5ea636            24847 main/binary-amd64/Packages
- f8e95e01448a7bd4bd729dad9e3c03c287f5c064139dec6f9349e59a543a635a3de6d0fd73d61902809a076e76d644506009d91b8b574ae7d3b360b507be4d17             7807 main/binary-amd64/Packages.gz
+ c4d44eb010519606699a78a1a554fc5a3a7e2caf66c0982234de834a15315588fd64821fa9d408d294f7bccdc652786c19863c55f5b008fa759a6c1b29fff8f1             7807 main/binary-amd64/Packages.gz
