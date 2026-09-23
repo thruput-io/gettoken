@@ -4,27 +4,27 @@ Hash: SHA512
 Architectures: amd64
 Codename: tore/adr-28-build-system
 Components: main
-Date: Wed, 23 Sep 2026 14:56:32 +0000
+Date: Wed, 23 Sep 2026 14:59:17 +0000
 Description: token broker for AI agents
 Label: gettoken
 Origin: gettoken
 Suite: tore/adr-28-build-system
 MD5Sum:
  761b0599cd99eea3fa1d85acb9ca4143            24847 main/binary-amd64/Packages
- 49ae512c688e70a51695b1223b29715e             7807 main/binary-amd64/Packages.gz
+ bb766770f563bae42c84c84b2317cd0a             7807 main/binary-amd64/Packages.gz
 SHA1:
  563285b8443ef73a1e5312525210959fa4664ee3            24847 main/binary-amd64/Packages
- b79699e2adabb0201d3ed937f4b7cddf0f4c050b             7807 main/binary-amd64/Packages.gz
+ 0d13f8769cf071488d56064b7b9a19f99ab274fd             7807 main/binary-amd64/Packages.gz
 SHA256:
  a0905c78be2dbf9ac50a1bcd12d57946c06b3450952087f36f27c7201b79e0a8            24847 main/binary-amd64/Packages
- 45e856d29d7edbab45dc1f1691816c851a302703931ed04f379d8aeee64fb69e             7807 main/binary-amd64/Packages.gz
+ 74c83135d3c39db3800b8456c83a1accb7d15139f7785f124e027b95536d2236             7807 main/binary-amd64/Packages.gz
 SHA512:
  86e05c9de8a9b4c4a2ec3e3141c360be0755762e61f65309346d21a787345395de88f521f93d0b16968759beca6508b6aee33b74476b2dcd279b33b62f5ea636            24847 main/binary-amd64/Packages
- b86935f5f88a773af8fcf511f94f2c2c32217337ea21c08a9f1a328cb86dd76f2e651da42814bd80801d9b417691b0b411571b03cc08e453c1ae3fec2bff31be             7807 main/binary-amd64/Packages.gz
+ 9b7d5d7cc310468a40647270a397f9c7429b23a414a425571ba34751a4ada376223b3a6a5c533f88c32f349d650bb8677a37418152610707482a610dc187e6a9             7807 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarPooAAKCRDDrTt86Qtc
-+rVIAP9Ib9d592SYE5NdwTfc1dce4DEC9tniBTsORZPFrPGw5AD+IyFscHDoVbOI
-V784WqqeKwksWTHnh2fGGYjh1eM7Ag4=
-=zO9P
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarPpRQAKCRDDrTt86Qtc
++su7AP9G64Q3SsmR6uZIpz/5hRa2CcDutI3+fFYe3EdFiDIsuwEAsQjd6lOGBcDI
+tjQh4jAeigQ1i+YjVrQodRqKoI592A0=
+=n68d
 -----END PGP SIGNATURE-----
