@@ -9,7 +9,7 @@ fi
 root=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 cd "$root"
 
-source constants.env
+source "$root/dynamic.sh"
 
 site=gettoken-site
 

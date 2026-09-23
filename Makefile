@@ -187,30 +187,13 @@ build/unit.txt: build/check-readme.txt build/no-branching.checked build/check-pe
                 build/go-unit-test.checked build/go-coverage.checked
 	@echo "unit: all checks passed"
 
-PACKAGE_TARGETS :=
-ifneq ($(findstring deb,$(PACKAGE_FORMATS)),)
-PACKAGE_TARGETS += build/archive.txt
-endif
-ifneq ($(findstring brew,$(PACKAGE_FORMATS)),)
-PACKAGE_TARGETS += build/dist/brew/gettoken.rb
-endif
-
-build/dist/deb/packages: build/unit.txt build/lint.checked src/debian src/contracts
-	bash scripts/deliver-deb.sh build/dist/deb
-	@touch $@
-
-build/dist/brew/gettoken.rb: build/unit.txt build/lint.checked src/debian/changelog
-	bash scripts/deliver-brew.sh build/dist/brew
-
-build/archive.txt: build/dist/deb/packages build/signing-key.asc
-	bash scripts/archive.sh build/dist/deb build/site/apt "$(BRANCH)" build/signing-key.asc > $@
-	bash scripts/sources.sh build/site/apt "$(BRANCH)" "$(SITE_URL)/apt" >> $@
-
-build/package.txt: $(PACKAGE_TARGETS)
-	cat $^ > $@
+build/package.txt: build/unit.txt build/lint.checked build/signing-key.asc
+	@mkdir -p $(@D)
+	bash scripts/package.sh build/site/apt "$(BRANCH)" "$(SITE_URL)" build/signing-key.asc > $@
 	cat $@
 
 build/publish.txt: build/package.txt
+	@mkdir -p $(@D)
 	bash scripts/publish.sh build/site/apt "$(BRANCH)" "$(SITE_URL)" > $@
 	cat $@
 
