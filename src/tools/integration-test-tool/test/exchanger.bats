@@ -36,9 +36,9 @@ trading() {
 }
 
 @test "the narrow token carries what the store holds, not what the exchanger expected" {
-  holding super-4f2a9c
+  holding super-sample-token-123
   run -0 --separate-stderr trading integrationtest/ci/run
-  [ "$(printf '%s' "$output" | jq -r '.access_token')" = "4f2a9c-ci-run-allowed" ]
+  [ "$(printf '%s' "$output" | jq -r '.access_token')" = "sample-token-123-ci-run-allowed" ]
   assert_equal "$stderr" ""
 }
 
@@ -49,13 +49,13 @@ trading() {
 }
 
 @test "the token it issues lives two minutes" {
-  holding super-4f2a9c
+  holding super-sample-token-123
   run -0 --separate-stderr trading integrationtest/ci/run
   [ "$(printf '%s' "$output" | jq -r '.expires_in')" = "120" ]
 }
 
 @test "it asks the store for the key it is keyed by, and for no version" {
-  holding super-4f2a9c
+  holding super-sample-token-123
   run -0 --separate-stderr trading integrationtest/ci/run
   [ "$(jq -r '.key' < "$ASKED_FILE")" = "host-privileged/integrationtest" ]
   [ "$(cat "$ARGS_FILE")" = "--with-key" ]
@@ -75,14 +75,14 @@ trading() {
 }
 
 @test "a capability it does not serve is refused before the store is touched" {
-  holding super-4f2a9c
+  holding super-sample-token-123
   run -1 --separate-stderr trading github/thruput-io/gettoken/pr/create
   [ "$output" = "" ]
   [ ! -f "$ASKED_FILE" ]
 }
 
 @test "a request carrying what an exchanger may not see is refused by the contract" {
-  holding super-4f2a9c
+  holding super-sample-token-123
   run -1 --separate-stderr sh -c 'printf "%s" "{\"who\":\"tore\",\"wants\":\"integrationtest/ci/run\",\"signed\":\"host-privileged\"}" | integrationtest'
   [ "$output" = "" ]
 }

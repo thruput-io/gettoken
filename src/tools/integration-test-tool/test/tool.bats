@@ -14,12 +14,12 @@ running() {
 }
 
 @test "the tool writes back what the narrow token carries, and nothing else" {
-  run -0 --separate-stderr running 4f2a9c-ci-run-allowed
-  [ "$output" = "4f2a9c" ]
+  run -0 --separate-stderr running sample-token-123-ci-run-allowed
+  [ "$output" = "sample-token-123" ]
 }
 
 @test "the super-token that token was traded for is refused" {
-  run -1 --separate-stderr running super-4f2a9c
+  run -1 --separate-stderr running super-sample-token-123
   [ "$output" = "" ]
   assert_equal "$stderr" "integration-test-tool: INTEGRATIONTEST_TOKEN does not allow integrationtest/ci/run"
 }
@@ -30,7 +30,7 @@ running() {
 }
 
 @test "a token allowing something else is refused" {
-  run -1 --separate-stderr running 4f2a9c-ci-run-denied
+  run -1 --separate-stderr running sample-token-123-ci-run-denied
   [ "$output" = "" ]
 }
 
@@ -40,6 +40,6 @@ running() {
 }
 
 @test "a token that is nearly the right one is refused, because it is not it" {
-  run -1 --separate-stderr running 4f2a9c-ci-run-allowed-too
+  run -1 --separate-stderr running sample-token-123-ci-run-allowed-too
   [ "$output" = "" ]
 }
