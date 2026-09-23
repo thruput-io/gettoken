@@ -53,9 +53,8 @@ elif [ -f "./constants.env" ]; then
 fi
 
 if [ "${CI:-}" = "true" ]; then
-  required BRANCH
+  required BRANCH ARCHIVE_SIGNING_KEY
   SITE_URL=$PROD_SITE_URL
-  ARCHIVE_SIGNING_KEY="${ARCHIVE_SIGNING_KEY:-}"
 else
   BRANCH=$(git rev-parse --abbrev-ref HEAD)
   SITE_URL=$LOCAL_SITE_URL
