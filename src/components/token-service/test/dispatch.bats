@@ -14,19 +14,11 @@ setup() {
 teardown() { rm -rf "$EXCHANGER_DIR"; }
 
 assert_stderr_contains() {
-  if command -v assert_regex >/dev/null 2>&1; then
-    assert_regex "$stderr" "$1"
-  else
-    [[ "$stderr" == *"$1"* ]]
-  fi
+  assert_regex "$stderr" "$1"
 }
 
 refute_stderr_contains() {
-  if command -v refute_regex >/dev/null 2>&1; then
-    refute_regex "$stderr" "$1"
-  else
-    [[ "$stderr" != *"$1"* ]]
-  fi
+  refute_regex "$stderr" "$1"
 }
 
 register() {
