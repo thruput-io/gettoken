@@ -57,9 +57,6 @@ jobs:
             runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: install dependencies
-        if: runner.os == 'Linux'
-        run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
       - name: run integration test
         run: |
           source ./dynamic.sh
