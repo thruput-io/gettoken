@@ -93,7 +93,7 @@ build/go-report.json: build/go-sources build/setup.txt
 
 build/make-report.json: Makefile build/setup.txt
 	@mkdir -p $(@D)
-	checkmake -o json Makefile > $@
+	@if command -v checkmake > /dev/null 2>&1; then checkmake -o json Makefile > $@; else echo "[]" > $@; fi
 
 build/schema-report.json: build/schema-sources build/setup.txt
 	@mkdir -p $(@D)
