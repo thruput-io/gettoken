@@ -57,6 +57,10 @@ jobs:
             runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: build/dist
       - name: run integration test
         run: |
           source ./dynamic.sh
