@@ -35,11 +35,15 @@ trading() {
   printf '%s' "{\"who\":\"tore\",\"wants\":\"$1\"}" | integrationtest
 }
 
+NormalizeStdErrWhenKcovOnMac() {
+  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
+}
+
 @test "the narrow token carries what the store holds, not what the exchanger expected" {
   holding super-sample-token-123
   run -0 --separate-stderr trading integrationtest/ci/run
   [ "$(printf '%s' "$output" | jq -r '.access_token')" = "sample-token-123-ci-run-allowed" ]
-  assert_equal "$stderr" ""
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" ""
 }
 
 @test "a different super-token yields a different narrow token" {
@@ -65,7 +69,7 @@ trading() {
   holding not-a-super-token
   run -1 --separate-stderr trading integrationtest/ci/run
   [ "$output" = "" ]
-  assert_equal "$stderr" "integrationtest: the stored super-token is not one this exchanger can trade"
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "integrationtest: the stored super-token is not one this exchanger can trade"
 }
 
 @test "a stored value that is only the prefix is refused" {

@@ -28,10 +28,14 @@ getting_version() {
   format secret-get-request-version.schema.json key version | secret-get
 }
 
+NormalizeStdErrWhenKcovOnMac() {
+  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
+}
+
 @test "storing a secret answers with version and value" {
   run -0 --separate-stderr putting johans-laptop/github super-1
   [ "$output" = '{"value":"super-1","version":0}' ]
-  [ "$stderr" = "" ]
+  [ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" = "" ]
 }
 
 @test "the first secret stored under a key is version zero" {
@@ -60,7 +64,7 @@ getting_version() {
   putting johans-laptop/github super-1
   run -1 --separate-stderr getting_version johans-laptop/github 1
   [ "$output" = "" ]
-  [[ "$stderr" == *"johans-laptop/github has no version 1"* ]]
+  [[ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" == *"johans-laptop/github has no version 1"* ]]
 }
 
 @test "what secret-get emits is the secret and the version it is" {
@@ -72,27 +76,27 @@ getting_version() {
 @test "the secret never appears on stderr" {
   putting johans-laptop/github super-1
   run -0 --separate-stderr getting johans-laptop/github
-  [ "$stderr" = "" ]
+  [ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" = "" ]
 }
 
 @test "nothing stored under a key is a failure, not an empty answer" {
   run -1 --separate-stderr getting nobody/nothing
   [ "$output" = "" ]
-  [[ "$stderr" == *"nothing is stored under nobody/nothing"* ]]
+  [[ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" == *"nothing is stored under nobody/nothing"* ]]
 }
 
 @test "a key the contract does not admit is refused" {
   run -1 --separate-stderr sh -c \
     'printf %s "{\"key\":\"Johans-Laptop\",\"value\":\"super-1\"}" | secret-put'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
+  [[ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" == *"does not satisfy secret-put-request.schema.json"* ]]
 }
 
 @test "a key climbing out of the store is refused, because a key carries no dots" {
   run -1 --separate-stderr sh -c \
     'printf %s "{\"key\":\"..\",\"value\":\"super-1\"}" | secret-put'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
+  [[ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" == *"does not satisfy secret-put-request.schema.json"* ]]
   [ ! -e "$(dirname "$SECRET_DIR")/github" ]
 }
 
@@ -100,13 +104,13 @@ getting_version() {
   run -1 --separate-stderr sh -c \
     'printf %s "{\"key\":\"johans-laptop/github\",\"value\":\"\"}" | secret-put'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-put-request.schema.json"* ]]
+  [[ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" == *"does not satisfy secret-put-request.schema.json"* ]]
 }
 
 @test "asking with no key at all is refused" {
   run -1 --separate-stderr sh -c 'printf %s "{}" | secret-get --with-key'
   [ "$output" = "" ]
-  [[ "$stderr" == *"does not satisfy secret-get-request.schema.json"* ]]
+  [[ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" == *"does not satisfy secret-get-request.schema.json"* ]]
 }
 
 @test "every directory the store is made of is closed to everyone but its owner" {

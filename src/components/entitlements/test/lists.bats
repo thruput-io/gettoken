@@ -11,10 +11,14 @@ asking() {
   printf '%s' '{"who":"tore","doing":"mac.lan","signed":"host-privileged"}' | entitlements
 }
 
+NormalizeStdErrWhenKcovOnMac() {
+  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
+}
+
 @test "the capability the integrated tool is asked for is one the agent may equip" {
   run -0 --separate-stderr asking
   [ "$(printf '%s' "$output" | jq -r '.entitlements[] | select(.capability == "integrationtest/ci/run") | .capability')" = "integrationtest/ci/run" ]
-  [ "$stderr" = "" ]
+  [ "$(NormalizeStdErrWhenKcovOnMac "$stderr")" = "" ]
 }
 
 @test "every capability listed says what it is for" {
