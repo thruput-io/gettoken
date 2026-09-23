@@ -8,6 +8,7 @@ on:
 env:
   BRANCH: ${{ github.head_ref || github.ref_name }}
   ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
+  ROOT_DIR: ${{ github.workspace }}
 
 defaults:
   run:
