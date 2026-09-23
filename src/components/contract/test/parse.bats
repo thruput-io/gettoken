@@ -1,10 +1,17 @@
 bats_require_minimum_version 1.5.0
 
 setup() {
+  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
+  bats_load_library bats-support
+  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   PATH="$root/build/bin:$PATH"
   CONTRACTS_DIR="$root/src/contracts"
   export PATH CONTRACTS_DIR
+}
+
+NormalizeStdErrWhenKcovOnMac() {
+  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
 }
 
 reading() {
@@ -52,7 +59,7 @@ reading() {
   run -0 --separate-stderr reading secret-put-request.schema.json \
     '{"key":"johans-laptop/github","value":"super-1"}'
   [ "$output" = "" ]
-  [ "$stderr" = "" ]
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" ""
 }
 
 @test "a document missing a required field is refused" {

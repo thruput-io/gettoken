@@ -1,6 +1,6 @@
 ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
-export PATH := build/bin:$(PATH)
+export PATH := build/bin:/opt/homebrew/bin:$(PATH)
 
 -include build/config.mk
 

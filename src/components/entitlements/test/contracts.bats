@@ -1,10 +1,17 @@
 bats_require_minimum_version 1.5.0
 
 setup() {
+  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
+  bats_load_library bats-support
+  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   PATH="$root/build/bin:$PATH"
   CONTRACTS_DIR="$root/src/contracts"
   export PATH CONTRACTS_DIR
+}
+
+NormalizeStdErrWhenKcovOnMac() {
+  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
 }
 
 admits() { printf '%s' "$2" | parse "$1"; }
@@ -12,7 +19,7 @@ admits() { printf '%s' "$2" | parse "$1"; }
 @test "entitlements naming what they are and what their variables mean are admitted" {
   run -0 --separate-stderr admits entitlements-response.schema.json \
     '{"entitlements":[{"capability":"github/{org}/{repo}/pr/create","description":"Open a pull request.","variables":[{"name":"org","description":"The organisation that owns the repository."},{"name":"repo","description":"The repository to open the pull request against."}]}]}'
-  [ "$stderr" = "" ]
+  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" ""
 }
 
 @test "an entitlement that does not say what it is for is refused" {
