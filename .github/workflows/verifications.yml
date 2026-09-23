@@ -68,5 +68,4 @@ jobs:
       - name: run integration test
         run: |
           export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-          source dynamic.sh
-          bash src/integration-test/test.sh
+          /opt/homebrew/bin/bash -c "source dynamic.sh && bash src/integration-test/test.sh"
