@@ -64,7 +64,10 @@ build/semgrep.txt: build/tools.txt
 	bash -ec "$(SEMGREP_INSTALL_COMMAND)"
 	bash scripts/fetch-semgrep-bash.sh build > $@
 
-build/setup.txt: build/tools.txt build/semgrep.txt
+build/versions.txt: build/tools.txt build/semgrep.txt
+	bash scripts/versions.sh > $@
+
+build/setup.txt: build/tools.txt build/semgrep.txt build/versions.txt
 	bash -c "source dynamic.sh && ensure_bash5"
 	cat $^ > $@
 
@@ -80,11 +83,11 @@ include $(ROOT_DIR)/stats.mk
 
 build/semgrep-report.json: build/sources build/setup.txt
 	@mkdir -p $(@D)
-	-semgrep-bash --json-output=$@ $(SHELL_FILES)
+	semgrep-bash --json-output=$@ $(SHELL_FILES)
 
 build/shellcheck-report.json: build/sources build/setup.txt
 	@mkdir -p $(@D)
-	-shellcheck -s bash -x -f json $(SHELL_FILES) > $@
+	shellcheck -s bash -x -f json $(SHELL_FILES) > $@
 
 build/go-report.json: build/go-sources build/setup.txt
 	@mkdir -p $(@D)
@@ -92,7 +95,7 @@ build/go-report.json: build/go-sources build/setup.txt
 
 build/make-report.json: Makefile build/setup.txt
 	@mkdir -p $(@D)
-	-checkmake -o json Makefile > $@
+	checkmake -o json Makefile > $@
 
 build/schema-report.json: build/schema-sources build/setup.txt
 	@mkdir -p $(@D)
