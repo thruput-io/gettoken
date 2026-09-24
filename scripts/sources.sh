@@ -9,7 +9,7 @@ url=${3:?sources.sh: name the URL the archive is served from}
   echo 'Types: deb'
   echo "URIs: $url"
   echo "Suites: $suite"
-  echo 'Components: main'
+  echo "Components: $suite"
   echo 'Signed-By:'
   sed -e 's/^$/./' -e 's/^/ /' "$root/gettoken-archive-keyring.asc"
 } > "$root/dists/$suite/gettoken.sources"

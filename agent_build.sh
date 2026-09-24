@@ -1,14 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-if (( BASH_VERSINFO[0] < 5 )); then
-  exec bash "$0" "$@"
-fi
-
 root=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 cd "$root"
 
+ROOT_DIR=$root
 source "$root/dynamic.sh"
 
 site=gettoken-site
@@ -17,7 +13,7 @@ say() { printf '\n=== %s ===\n' "$1"; }
 
 gone() { docker ps -aq -f "name=^$1\$" | xargs -r docker rm -f > /dev/null; }
 
-the_tree() { (git ls-files; find .git) | COPYFILE_DISABLE=1 tar -cf - -T -; }
+the_tree() { (git ls-files --cached --others --exclude-standard | grep -v '/$'; find .git) | COPYFILE_DISABLE=1 tar -cf - -T -; }
 
 gone gettoken-builder
 docker ps -aq --filter "volume=$site" | xargs -r docker rm -f > /dev/null

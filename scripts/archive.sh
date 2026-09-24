@@ -1,54 +1,42 @@
 #!/usr/bin/env bash
 set -euo pipefail
-PATH="build/bin:$(dirname "$0")/../build/bin:$PATH"
-export PATH
 
 packages=${1:?archive.sh: name the directory holding the packages}
 root=${2:?archive.sh: name the directory to build the archive in}
 suite=${3:?archive.sh: name the suite, which is the branch the packages were built on}
 key=${4:?archive.sh: name the key the archive signs with}
 
-pool="pool/$suite"
-dist="dists/$suite"
-
 arch=$(dpkg --print-architecture)
 
-release_anyone_can_read=$(mktemp)
 home=$(mktemp -d)
-trap 'rm -f "$release_anyone_can_read"; rm -rf "$home"' EXIT
+conf=$(mktemp -d)
+db=$(mktemp -d)
+trap 'rm -rf "$home" "$conf" "$db"' EXIT
 chmod 700 "$home"
 
 gpg --homedir "$home" --batch --quiet --import "$key"
+fingerprint=$(gpg --homedir "$home" --list-secret-keys --with-colons | awk -F: '/^fpr/ { print $10; exit }')
 
 mkdir -p "$root"
 root=$(CDPATH='' cd "$root" && pwd)
 packages=$(CDPATH='' cd "$packages" && pwd)
 
-rm -rf "${root:?}/$pool" "${root:?}/$dist"
-mkdir -p "$root/$pool" "$root/$dist/main/binary-$arch"
-cp "$packages"/*.deb "$root/$pool"
+rm -rf "${root:?}/pool/$suite" "${root:?}/dists/$suite"
 
 gpg --homedir "$home" --batch --quiet --armor --export > "$root/gettoken-archive-keyring.asc"
 
-cd "$root"
+cat > "$conf/distributions" <<DISTRIBUTION
+Origin: gettoken
+Label: gettoken
+Codename: $suite
+Suite: $suite
+Architectures: $arch
+Components: $suite
+Description: token broker for AI agents
+SignWith: $fingerprint
+DISTRIBUTION
 
-apt-ftparchive packages "$pool" > "$dist/main/binary-$arch/Packages"
-gzip -kf "$dist/main/binary-$arch/Packages"
+GNUPGHOME=$home reprepro --basedir "$root" --confdir "$conf" --dbdir "$db" --outdir "$root" \
+  includedeb "$suite" "$packages"/*.deb
 
-apt-ftparchive \
-  -o "APT::FTPArchive::Release::Origin=gettoken" \
-  -o "APT::FTPArchive::Release::Label=gettoken" \
-  -o "APT::FTPArchive::Release::Suite=$suite" \
-  -o "APT::FTPArchive::Release::Codename=$suite" \
-  -o "APT::FTPArchive::Release::Architectures=$arch" \
-  -o "APT::FTPArchive::Release::Components=main" \
-  -o "APT::FTPArchive::Release::Description=token broker for AI agents" \
-  release "$dist" > "$release_anyone_can_read"
-mv "$release_anyone_can_read" "$dist/Release"
-
-gpg --homedir "$home" --batch --quiet --yes --pinentry-mode loopback --passphrase '' \
-    --clearsign --output "$dist/InRelease" "$dist/Release"
-gpg --homedir "$home" --batch --quiet --yes --pinentry-mode loopback --passphrase '' \
-    --detach-sign --armor --output "$dist/Release.gpg" "$dist/Release"
-
-echo "$(find "$pool" -name '*.deb' | wc -l) $arch packages in $suite, indexed and signed"
+echo "$(find "$root/pool/$suite" -name '*.deb' | wc -l | tr -d ' ') $arch packages in $suite, indexed and signed"

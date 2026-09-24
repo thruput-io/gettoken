@@ -15,7 +15,7 @@ setup() {
 
   packages="$work/packages"
   mkdir -p "$packages/a-package/DEBIAN"
-  printf 'Package: a-package\nVersion: 1.0\nArchitecture: all\nMaintainer: nobody <no@one.invalid>\nDescription: one\n' \
+  printf 'Package: a-package\nVersion: 1.0\nSection: misc\nPriority: optional\nArchitecture: all\nMaintainer: nobody <no@one.invalid>\nDescription: one\n' \
     > "$packages/a-package/DEBIAN/control"
   dpkg-deb --build --root-owner-group "$packages/a-package" "$packages" > /dev/null
 
@@ -53,6 +53,15 @@ an_archive() {
   an_archive
   run find "$work/site/pool/$suite" -name '*.deb'
   [[ "$output" == *"a-package"* ]]
+}
+
+@test "a suite named like a branch, slash and all, gets its own dists and pool" {
+  the_key
+  "$root/scripts/archive.sh" "$packages" "$work/site" "someone/a-branch" "$work/key.asc" > /dev/null
+  run find "$work/site/pool/someone/a-branch" -name '*.deb'
+  [[ "$output" == *"a-package"* ]]
+  run cat "$work/site/dists/someone/a-branch/Release"
+  [[ "$output" == *"Codename: someone/a-branch"* ]]
 }
 
 @test "the archive publishes the key a reader verifies it with, carrying no secret half" {

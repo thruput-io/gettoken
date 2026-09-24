@@ -3,7 +3,8 @@ set -euo pipefail
 
 umask 002
 
-roots=("${@:-.}")
+: "${1:?check-permissions.sh: name the roots to scan}"
+roots=("$@")
 
 candidates=$(mktemp)
 trap 'rm -f "$candidates"' EXIT
