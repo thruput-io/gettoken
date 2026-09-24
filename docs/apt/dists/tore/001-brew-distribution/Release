@@ -2,7 +2,7 @@ Origin: gettoken
 Label: gettoken
 Suite: tore/001-brew-distribution
 Codename: tore/001-brew-distribution
-Date: Thu, 24 Sep 2026 19:36:25 UTC
+Date: Thu, 24 Sep 2026 22:02:57 UTC
 Architectures: amd64
 Components: tore/001-brew-distribution
 Description: token broker for AI agents
