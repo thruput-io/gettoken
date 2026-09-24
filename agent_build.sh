@@ -30,12 +30,24 @@ the_tree | docker run -i --name gettoken-builder --network host \
     export GOFLAGS=-buildvcs=false
     make package'
 
-say "test on a clean node slim"
-the_tree | bash scripts/served.sh "$site" -i node:26-slim sh -ec '
+say "test on a clean node slim: make test, then the same invocation CI uses"
+the_tree | bash scripts/served.sh "$site" -i node:26-slim bash -ec '
     mkdir -p /work && cd /work && tar xf -
     chmod +x scripts/*.sh src/components/contract/build.sh src/components/entitlements/entitlements src/components/secret-manager/secret-put src/components/secret-manager/secret-get src/components/token-service/token-service src/tools/gettoken/bin/gettoken src/tools/gettoken/privileged/token-requester src/tools/integration-test-tool/privileged/exchangers/integrationtest src/tools/integration-test-tool/bin/integration-test-tool src/integration-test/test.sh src/debian/rules dynamic.sh 2>/dev/null || true
     apt-get update && apt-get install -y -qq --no-install-recommends make git ca-certificates gnupg > /dev/null
     git config --global --add safe.directory "*"
-    make test'
+    make test
+    export ROOT_DIR=/work
+    source dynamic.sh
+    bash src/integration-test/test.sh'
+
+if command -v macos-vm > /dev/null; then
+  say "verify dynamic configuration on a fresh macOS guest, mimicking the macOS CI job"
+  macos-vm reset > /dev/null
+  the_tree | macos-vm shell bash -lc '
+    rm -rf "$HOME/gettoken" && mkdir "$HOME/gettoken" && cd "$HOME/gettoken" && tar -xf -
+    export ROOT_DIR="$HOME/gettoken" CI=true BRANCH=agent-build ARCHIVE_SIGNING_KEY=agent-build-placeholder
+    source dynamic.sh'
+fi
 
 say "everything the pipeline does, done here"
