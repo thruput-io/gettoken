@@ -88,7 +88,7 @@ placeholder, tracked in issue #51) exercising it for real.
 
 | Goal | Cheapest way to "pass" while missing the point | How the goal excludes it | Accepted by |
 |---|---|---|---|
-| 1 | A single formula with a real `url`/`sha256` whose `def install` only symlinks `bin/gettoken`, without building or installing the privileged-half scripts (`token-requester`, `secret-manager`, `token-service`, `entitlements`, the exchanger) as their own installable units — `brew install` succeeds, `gettoken` fails at first real use, and the tap does not mirror apt's package boundaries. | "Behaves identically... for an agent asking for a capability" requires the full request path to work; [D2](#discussions) requires the tap to mirror apt's installable-component boundaries, not collapse them into one keg. | pending |
+| 1 | A single formula with a real `url`/`sha256` whose `def install` only symlinks `bin/gettoken`, without building or installing the privileged-half scripts (`token-requester`, `secret-manager`, `token-service`, `entitlements`, the exchanger) as their own installable units — `brew install` succeeds, `gettoken` fails at first real use, and the tap does not mirror apt's package boundaries. A weaker cheat: 22 formulae exist, but with no real `depends_on` between them (dependency edges only in a comment, or every formula standing alone) — the count is right and the wiring, which is what makes the mirror real rather than cosmetic ([D6](#discussions)), is missing. | "Behaves identically... for an agent asking for a capability" requires the full request path to work; [D2](#discussions)/[D6](#discussions) require the tap to mirror apt's boundaries *and* its dependency graph, not just its package count. | pending |
 | 2 | A bats test that asserts `brew install gettoken` exits 0 and stops there. | "Proven... by the same kind of black-box test ADR 0020 requires" ties the bar to the existing Debian integration test's shape: install via the package manager alone, then exercise the product through its public interface. | pending |
 | 3 | Rename the job or add a step that runs without asserting anything — this is the exact pattern PR #50's review caught in the previous `macOS stable` job. | "Exercises that real install-and-use flow" is the same flow goal 2 proves; a job that does not run it does not satisfy this goal regardless of its name or green status. | pending |
 
@@ -101,12 +101,16 @@ placeholder, tracked in issue #51) exercising it for real.
 
 ## Summary
 
-{Pending the open questions below — a tap repository is created, the formula is rewritten to
-build from a real tagged source and install the full component set behind the same public-PATH
-contract `packaging.bats` already enforces for apt, CI publishes it the way `pages.sh` publishes
-the apt archive, and the macOS integration test installs from that tap and runs the same kind of
-capability-exchange assertion the Debian job runs. Milestones are drafted below and will be
-finalized once Phase 2 closes.}
+`version.txt` holds `MAJOR.MINOR`; CI appends the build number as the patch digit and cuts a git
+tag on every merge to `main` ([D3](#discussions), [D4](#discussions)). A generator script, run
+from the same contract/component data `scripts/packaging.sh` already reads to build `debian/control`,
+emits one Homebrew formula per apt package — including the ten contract-only ones — each building
+from that tag's source tarball and wired together with `depends_on` the way apt wires them with
+`Depends` ([D2](#discussions), [D6](#discussions)). `thruput-io/homebrew-tap` ([D1](#discussions))
+receives them via the same installation-token push `pages_push` already uses for the apt archive
+([D5](#discussions)). `macOS stable` in CI (currently a placeholder, issue #51) installs from that
+tap and runs the same class of black-box, capability-exchange assertion the Debian integration job
+runs.
 
 ## Assumptions, risks and preconditions
 
@@ -155,16 +159,101 @@ The decision register: one row per non-trivial decision, in the order the decisi
 | D3 | A new git tag is cut on every merge to `main`; the version is repo-wide, not per-component, for now | "What is the source of truth for the formula's version — a git tag drives `src/debian/changelog`, the changelog drives the tag, or they are chosen independently per release?" | "New tag for each merge to main and versions stays repo wide for now" | human | The tag becomes the single source of truth for what every formula and the apt archive call "this version," deferring per-component versioning. | 2026-09-24 |
 | D4 | Version = `{major}.{minor}` from `version.txt`, patch digit = the CI build number | "Is version/release lockstep automation... in scope for this plan, or does it belong to a later one?" | "A super simple one for now major/minor from a verion.txt then patch version as build numer" | human | In scope, deliberately minimal: a committed `version.txt` for the two digits a human chooses, the build number for the one that shouldn't need a commit. | 2026-09-24 |
 | D5 | CI publishes the tap with the same installation-token `git push` mechanism `pages_push` uses for the apt archive | "What pushes the formula to the tap in CI — the same installation-token pattern `pages_push` uses for the apt archive, or something else?" | "apt if that is okey with brew?" | human, agent confirmed the mechanism is compatible | A Homebrew tap is a plain git repository (`docs.brew.sh/Taps`); no Homebrew-specific push API exists, so the existing pattern applies unchanged once the app has write access to the new repo. | 2026-09-24 |
+| D6 | "Mirror apt" means a literal formula for every apt package (22, including the 10 contract-only ones), wired with `depends_on` exactly as apt wires them with `Depends` | "Does 'mirror apt's package boundaries' mean one formula per installable component, or a literal formula for all 22 apt packages including the ten that carry only a schema?" | "doesn't brew have deps?" / "it's kind of vital to this solution" | human | Confirmed from the Formula Cookbook: `depends_on "formula-name"` is a first-class formula dependency, the same mechanism `Depends` gives apt — there is no technical reason to collapse the graph. The human stressed the dependency wiring itself is load-bearing, not cosmetic: a set of 22 formulae with no real `depends_on` edges between them would not satisfy this decision. | 2026-09-24 |
 
 ## Open questions
 
-- [ ] Does "mirror apt's package boundaries" ([D2](#discussions)) mean one formula per
-      *installable* component (`gettoken`, `token-requester`, `secret-manager`, `token-service`,
-      `entitlements`, `integration-test-tool`, the exchanger — using `depends_on` where apt uses a
-      contract-package dependency edge), or a literal formula for all 22 apt packages, including
-      the ten that carry only a schema and no installable content?
+Empty — closed by [D6](#discussions).
 
 ## Execution Plan
 
-{Not yet written. Per `PLANNING.md`, this section is drafted only after the goals, non-goals,
-alternative search, and open questions above are agreed with the human — Phase 2 is not complete.}
+Draft — presented in full for challenge before any step is implemented, per Phase 3.
+
+### Goal coverage
+
+| Goal | Delivered by |
+|---|---|
+| 1 | M1, M2, M3 |
+| 2 | M2, M4 |
+| 3 | M4 |
+
+### Running all tests
+
+`make unit lint` (quality gates, unchanged) and `make test` (black-box install-and-use, extended
+by M2 and M4) — both at the repository root, both already exist. M4 is the last milestone to
+touch `make test`'s Darwin path.
+
+### Milestone M1 — A version exists to tag and build from
+
+**Delivers:** Goal 1 (a real source to build from)
+
+**Steps**
+
+1. Add `version.txt` at the repository root holding `MAJOR.MINOR` (starting `0.1`, matching
+   `src/debian/changelog`'s current `0.1.0`).
+2. Add a CI step, on push to `main`, that reads `version.txt`, appends the CI build number as the
+   patch digit, and creates + pushes a git tag `v{major}.{minor}.{build}` ([D3](#discussions),
+   [D4](#discussions)).
+3. `dynamic.sh` or a new small script exposes the resolved version to the rest of the build the
+   same way it exposes `BRANCH` today, so both `src/debian/changelog` and the formula generator
+   (M2) read one value.
+
+**Verification:** a merge to `main` produces a new git tag matching `v{version.txt}.{build
+number}`; `git describe --tags` on that commit returns it.
+
+### Milestone M2 — Formulae mirror apt's package graph, built from a real tag
+
+**Delivers:** Goal 1 (full component set, real dependency graph), part of Goal 2 (installable
+correctly)
+
+**Steps**
+
+1. Extract the per-contract dependency computation `scripts/packaging.sh` already does for
+   `debian/control` into data both the deb and brew generators read, rather than duplicating the
+   `uses`/`needs` logic.
+2. Write a generator (parallel to `packaging.sh`'s `deb` arm, in the existing `PACKAGE_FORMATS`
+   loop per ADR 29) that emits one `.rb` formula per apt package — the 12 installable components
+   and the 10 contract-only packages — each `url`/`sha256` pointing at M1's tag, `depends_on`
+   wiring mirroring apt's `Depends` exactly.
+3. Each installable formula's `def install` builds only what that apt package builds (reusing
+   `src/components/contract/build.sh` for `parse`/`format`) and installs only what that package's
+   `.install` file names, so the public-PATH contract `packaging.bats` asserts for apt holds for
+   brew too.
+4. Replace `deliver-brew.sh`'s placeholder body with this generator; remove the
+   `gettoken.rb.todo` emission.
+
+**Verification:** `brew audit --new --formula` is clean on every generated formula in a scratch
+tap; a new or extended `packaging.bats`-style assertion confirms the brew dependency graph matches
+apt's `Depends` graph package-for-package.
+
+### Milestone M3 — A real tap receives them
+
+**Delivers:** Goal 1 (installable from a real channel)
+
+**Steps**
+
+1. Create `thruput-io/homebrew-tap` ([D1](#discussions)) and grant the GitHub App installation
+   write access to it.
+2. Replace `publish.sh`'s brew arm — which today only copies `gettoken.rb` into the `gh-pages`
+   worktree and says publishing is not built yet (issue #53) — with a push of M2's generated
+   `Formula/*.rb` into the tap repo, using the same installation-token mechanism `pages_push` uses
+   ([D5](#discussions)), gated by `PACKAGE_FORMATS` on Darwin CI.
+
+**Verification:** on a clean macOS guest, `brew tap thruput-io/tap && brew install gettoken`
+succeeds and installs the dependency graph M2 built.
+
+### Milestone M4 — CI proves the whole chain, replacing the placeholder
+
+**Delivers:** Goal 2 (black-box proof), Goal 3 (real `macOS stable` job, closes issue #51)
+
+**Steps**
+
+1. Replace the checkout-only `macOS stable` job with `make test` on a Darwin runner, installing
+   `gettoken` from the tap M3 publishes.
+2. Extend `src/integration-test/test.sh` (or a Darwin-specific equivalent it already branches to
+   via `PACKAGE_FORMATS`) to run the same class of assertion the Debian job runs: put a
+   super-token in the store, ask `gettoken` for a capability, run the tool on the narrow token that
+   comes back.
+
+**Verification:** `macOS stable` in CI goes green on that real flow; it fails if the tap, a
+formula, or the dependency graph is broken, the same way `Debian stable` fails today.
