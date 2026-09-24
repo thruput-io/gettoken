@@ -47,10 +47,10 @@ jobs:
     runs-on: ubuntu-latest
     container: debian:testing-slim
     steps:
-      - run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
+      - run: apt-get update && apt-get install -y --no-install-recommends git ca-certificates
       - uses: actions/checkout@v4
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - run: make test
+      - run: source dynamic.sh && bash src/integration-test/test.sh
 
   macos:
     name: macOS stable

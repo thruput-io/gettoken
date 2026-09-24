@@ -55,8 +55,12 @@ Nothing is skipped when a tool is missing. A test that cannot run fails.
 
 `make build` runs the suite, builds a package in every format `PACKAGE_FORMATS`
 asks for, signs the archive and publishes it. `make test` installs what was published
-and uses it. Nothing joins those two, because they do not run on the same
-machine: one needs a toolchain, the other needs to have nothing.
+and uses it, for a developer, or `agent_build.sh`'s own container, that already has
+a toolchain. What actually proves the chain is `source dynamic.sh && bash
+src/integration-test/test.sh`, run directly on a machine that has nothing —
+CI's integration job invokes exactly that, never `make`, because `make test`
+needs `make` itself installed first, which is not what a real install sees
+(`docs/adrs/0030`).
 
 `make package` writes `build/dist/deb/`, holding every `.deb`, and the archive
 under `build/site/apt/`: a suite named after the branch, with a `Packages` index,
