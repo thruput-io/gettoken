@@ -158,74 +158,27 @@ than on `PATH`, because it is run with the super-token in reach.
 
 ## Install it
 
-Distribution is `apt`, and the packages are built from this tree rather than kept
-in it. Building them leaves an apt repository behind, so installing is what it
-would be from any other archive:
+Distribution is `apt`. Every branch publishes a signed archive under a suite
+named after the branch, and `main`'s suite is the release. The archive is signed,
+and the key it was signed with has to be somewhere apt can read rather than
+verification being turned off. The sources file the archive publishes carries it
+inline:
 
 ```sh
-make packages
-```
-
-That writes `build/packages/deb/`, holding every `.deb` for that release,
-a `Packages` index, a `Release` naming the index files that exist, and the
-`InRelease` and `Release.gpg` signatures over it. It also writes the apt source
-line naming the key that archive must verify against, so installing is what it
-would be from any other signed archive:
-
-```sh
-sudo cp build/packages/deb/gettoken.list /etc/apt/sources.list.d/gettoken.list
+curl -fsSL https://thruput.se/gettoken/apt/dists/main/gettoken.sources \
+  | sudo tee /etc/apt/sources.list.d/gettoken.sources > /dev/null
 sudo apt-get update
 sudo apt-get install integration-test-tool
 ```
 
-Asking for that one package installs twenty-two: the tool, `gettoken`, the
-privileged half behind it, the store, the dispatcher, the two programs that carry
-a document through a contract, and one package per contract. Nothing else is
-named, and nothing else arrives. Purging it takes them all with it, and the store
-with them.
-
-`make package` builds both outcomes: the Debian packages under
-`build/packages/deb/` and the Homebrew formula under `build/packages/brew/`.
-What debhelper, Go and Policy the packaging says of itself is written in
-`config.sh`, stated rather than sniffed, so a build that finds something
-different says so. `lintian` at pedantic is what proves the statement, on the
-source and on every package.
-
-Nothing under `debian/` that can be derived is kept. `debian/control` and one
-`.install` per contract are written by `scripts/packaging.sh` from the contracts,
-the components and the target, before `dpkg` reads anything, because `dpkg`
-resolves build dependencies out of `debian/control` before any rule could act.
-`debian/control.in` carries only what none of those know, which is prose about
-the components themselves.
-
-To install onto a machine that is not the one that built them, copy that
-release's directory across and point apt at it there. It is a plain apt repository:
-nothing in it depends on having been built locally.
-
-### From the published archive
-
-`make publish` uploads that same directory to the URL it is given, and
-`make promote` moves the one that passed its tests to the URL a machine points
-apt at. Nothing about the archive changes on the way: `Packages` names each file
-relative to the archive, so an archive that moves keeps working, and `Release`
-covers the indices rather than where they sit, so the signature survives the move
-too.
-
-Published, it is signed, and the key it was signed with has to be somewhere apt
-can read rather than verification being turned off:
-
-```sh
-curl -fsSL https://thruput-io.github.io/gettoken/gettoken-archive-keyring.gpg \
-  | sudo tee /etc/apt/keyrings/gettoken-archive-keyring.gpg > /dev/null
-echo "deb [signed-by=/etc/apt/keyrings/gettoken-archive-keyring.gpg] https://thruput-io.github.io/gettoken/ ./" \
-  | sudo tee /etc/apt/sources.list.d/gettoken.list
-sudo apt-get update
-sudo apt-get install integration-test-tool
-```
-
-`signed-by` names the one key that one archive may be signed with. A key put in
+`Signed-By` names the one key that one archive may be signed with. A key put in
 `/etc/apt/trusted.gpg.d` instead would be trusted to sign every other archive on
 that machine, Debian's own included, which is why it does not go there.
+
+Asking for that one package installs the tool, `gettoken`, the privileged half
+behind it, the store, the dispatcher, the two programs that carry a document
+through a contract, and one package per contract. Nothing else is named, and
+nothing else arrives. Purging it takes them all with it, and the store with them.
 
 ### What arrives, and why that is the interesting part
 
@@ -257,43 +210,6 @@ someone else already packages, that is a second package alongside theirs, becaus
 theirs is not ours to change — `gh-gettoken` next to `gh`. `integration-test-tool`
 stands in for that: the tool and the exchanger beside it are two packages, because
 the tool is not ours to speak for and the exchanger is.
-
-## Build it
-
-`config.sh` says how to install build dependencies, which package formats to
-produce, how to publish each of them, and who the unprivileged user is.
-`config.local.sh`, if you have one, says it differently for your machine, and
-`config.local.sh.example` says what belongs in one.
-
-The archive signs what it publishes, so it needs a key of its own. On a machine
-that publishes for real the key is the same every time, because a key that
-changes is a keyring every reader has to replace. Make one once:
-
-```sh
-GNUPGHOME=$(mktemp -d) gpg --batch --quiet --pinentry-mode loopback \
-  --passphrase '' --quick-generate-key 'gettoken archive <archive@gettoken.invalid>' \
-  default default never
-gpg --batch --armor --export-secret-keys 'gettoken archive' > ~/.gettoken-archive-key.asc
-```
-
-and `config.local.sh` reads it from there.
-
-`make build` verifies, packages and publishes. `make test` installs what was
-published and uses it, so it runs on a machine that built nothing. What points a
-machine at the archive is the machine's business, not the test's: locally that is
-the container `make publish` writes into, and in the pipeline it is a step before
-`make test`.
-
-```sh
-docker run -d --name package-archive -p 8080:80 nginx
-```
-
-```sh
-curl -fsS http://localhost:8080/deb/gettoken-archive-keyring.pgp \
-  | sudo tee /etc/apt/keyrings/gettoken-archive-keyring.pgp > /dev/null
-echo "deb [signed-by=/etc/apt/keyrings/gettoken-archive-keyring.pgp] http://localhost:8080/deb ./" \
-  | sudo tee /etc/apt/sources.list.d/gettoken.list
-```
 
 ## Vision
 
