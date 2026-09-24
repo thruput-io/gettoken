@@ -1,0 +1,6 @@
+Archive: tore/integration-test-clean-machine
+Component: tore/integration-test-clean-machine
+Origin: gettoken
+Label: gettoken
+Architecture: amd64
+Description: token broker for AI agents

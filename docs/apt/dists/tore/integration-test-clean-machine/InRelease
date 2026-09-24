@@ -1,0 +1,30 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Origin: gettoken
+Label: gettoken
+Suite: tore/integration-test-clean-machine
+Codename: tore/integration-test-clean-machine
+Date: Thu, 24 Sep 2026 19:27:57 UTC
+Architectures: amd64
+Components: tore/integration-test-clean-machine
+Description: token broker for AI agents
+MD5Sum:
+ 88ccb8128979d48474a37c81c882069c 22087 tore/integration-test-clean-machine/binary-amd64/Packages
+ 9ee611b51fb052a03fc9d1e5bc62bccf 5851 tore/integration-test-clean-machine/binary-amd64/Packages.gz
+ f48fc0af51de1562ae8d3e414d9ee2fa 185 tore/integration-test-clean-machine/binary-amd64/Release
+SHA1:
+ 9b2abe6b5c7b0672f19684426bea6558b94be251 22087 tore/integration-test-clean-machine/binary-amd64/Packages
+ a0b089289472e6ef1386ad444b560a1bc7905c6b 5851 tore/integration-test-clean-machine/binary-amd64/Packages.gz
+ d576137f230c8746e7cc0416a48cddcea81a0c98 185 tore/integration-test-clean-machine/binary-amd64/Release
+SHA256:
+ 6d59fdc7080a6e1589b892f496764ae176486139761ca68df353b2cb419deb5e 22087 tore/integration-test-clean-machine/binary-amd64/Packages
+ 8a588bcb1a0ba56313a877f8b0731560f0f38ce073d97c973378b62da01a44f3 5851 tore/integration-test-clean-machine/binary-amd64/Packages.gz
+ 32c718113a421609a7d241df5dd3252f2ac52e116ac39d9d5b1fc5806b67a6ec 185 tore/integration-test-clean-machine/binary-amd64/Release
+-----BEGIN PGP SIGNATURE-----
+
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarV5vQAKCRDDrTt86Qtc
++vxAAP49JShTZ43jlYl58Fi1mv4J3HtJ319ghYe4Sf72C+d0JAEAmUp3KAjg/pWJ
+A4FpDmpDEKuoD7XcbIa1s3SgE4y42QE=
+=2gBC
+-----END PGP SIGNATURE-----
