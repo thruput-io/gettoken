@@ -26,15 +26,23 @@ decide what a platform builds, which this plan works inside rather than around.
 Anything not in this plan is out of scope — stop and ask rather than extending it.
 
 **Definition of done.** Implementation is complete when every milestone's verification test
-passes, `make unit lint` and `make test` (on a Darwin runner, `PACKAGE_FORMATS=brew`) report
-success, and every goal in [Goals](#goals) is delivered per the [Goal coverage](#goal-coverage)
-table.
+passes, `make unit lint` reports success, the black-box flow (`source dynamic.sh; bash
+src/integration-test/test.sh` — never `make test`, see [D7](#discussions)) succeeds on a
+genuinely clean Darwin image with `PACKAGE_FORMATS=brew`, and every goal in [Goals](#goals) is
+delivered per the [Goal coverage](#goal-coverage) table.
 
-**Verification.** Run `make unit lint` for the quality gates and `make test` for the black-box
-install-and-use flow — both already exist at the repository root and are unchanged by this plan
-except where a milestone explicitly extends them (e.g. a brew-specific assertion in
-`scripts/test/packaging.bats`). Do not treat a milestone as done on inspection alone; on macOS,
-run it in a pristine `macos-vm` guest or in CI, never on a developer's own Homebrew prefix.
+**Verification.** Run `make unit lint` for the quality gates (a build machine with a toolchain,
+unchanged by this plan). For the black-box proof, run `dynamic.sh` then `test.sh` directly on a
+machine that has installed nothing but what those two scripts install themselves — `make test`
+requires `make` and the whole Makefile graph before anything runs, which is not the clean machine
+a real installer sees ([D7](#discussions)). Do not treat a milestone as done on inspection alone;
+on macOS, run it in a pristine `macos-vm` guest or in CI, never on a developer's own Homebrew
+prefix.
+
+**Related, out of scope.** `verifications.yml`'s existing Debian `integration` job runs `make
+test` (merged in PR #50) and has the same problem D7 describes — it installs `make`/`git` before
+anything, which a real apt install never needs. Fixing it is not one of this plan's goals; flag it
+to the human rather than fold it in silently.
 
 ### Progress log
 
@@ -160,6 +168,7 @@ The decision register: one row per non-trivial decision, in the order the decisi
 | D4 | Version = `{major}.{minor}` from `version.txt`, patch digit = the CI build number | "Is version/release lockstep automation... in scope for this plan, or does it belong to a later one?" | "A super simple one for now major/minor from a verion.txt then patch version as build numer" | human | In scope, deliberately minimal: a committed `version.txt` for the two digits a human chooses, the build number for the one that shouldn't need a commit. | 2026-09-24 |
 | D5 | CI publishes the tap with the same installation-token `git push` mechanism `pages_push` uses for the apt archive | "What pushes the formula to the tap in CI — the same installation-token pattern `pages_push` uses for the apt archive, or something else?" | "apt if that is okey with brew?" | human, agent confirmed the mechanism is compatible | A Homebrew tap is a plain git repository (`docs.brew.sh/Taps`); no Homebrew-specific push API exists, so the existing pattern applies unchanged once the app has write access to the new repo. | 2026-09-24 |
 | D6 | "Mirror apt" means a literal formula for every apt package (22, including the 10 contract-only ones), wired with `depends_on` exactly as apt wires them with `Depends` | "Does 'mirror apt's package boundaries' mean one formula per installable component, or a literal formula for all 22 apt packages including the ten that carry only a schema?" | "doesn't brew have deps?" / "it's kind of vital to this solution" | human | Confirmed from the Formula Cookbook: `depends_on "formula-name"` is a first-class formula dependency, the same mechanism `Depends` gives apt — there is no technical reason to collapse the graph. The human stressed the dependency wiring itself is load-bearing, not cosmetic: a set of 22 formulae with no real `depends_on` edges between them would not satisfy this decision. | 2026-09-24 |
+| D7 | The black-box proof (Goal 2) invokes `dynamic.sh` + `src/integration-test/test.sh` directly on the CI runner; it never goes through `make test`. `test.sh` gains a `SETUP_COMMAND` value from `dynamic.sh` (mirroring `INSTALL_COMMAND`) for the one apt-specific step, so it stays linear rather than branching on `PACKAGE_FORMATS` itself | "What should the macOS CI job invoke instead of make test?" | "integration test runs a completely clean machine" / "mkae test is local environment only" | human | `make test` requires `make` and the whole Makefile dependency graph on the runner before anything installs — that is not the clean machine a real installer sees. `dynamic.sh` sourced directly needs only `bash`; `test.sh` then installs the product exactly as a user would, through the platform's own package manager. `test.sh` already avoids branching on `PACKAGE_FORMATS` (a prior version did and PR #50's review flagged it); a second per-platform value from `dynamic.sh` keeps that true for the tap-vs-sources-file step instead of adding an `if` to `test.sh`. | 2026-09-24 |
 
 ## Open questions
 
@@ -179,9 +188,10 @@ Draft — presented in full for challenge before any step is implemented, per Ph
 
 ### Running all tests
 
-`make unit lint` (quality gates, unchanged) and `make test` (black-box install-and-use, extended
-by M2 and M4) — both at the repository root, both already exist. M4 is the last milestone to
-touch `make test`'s Darwin path.
+`make unit lint` (quality gates, unchanged) for the build machine. For the black-box proof:
+`source dynamic.sh && bash src/integration-test/test.sh` on a clean image — never `make test`
+([D7](#discussions)). Both exist today; M4 is the milestone that points the macOS CI job at the
+direct invocation instead of the placeholder step it has now.
 
 ### Milestone M1 — A version exists to tag and build from
 
@@ -248,12 +258,17 @@ succeeds and installs the dependency graph M2 built.
 
 **Steps**
 
-1. Replace the checkout-only `macOS stable` job with `make test` on a Darwin runner, installing
-   `gettoken` from the tap M3 publishes.
-2. Extend `src/integration-test/test.sh` (or a Darwin-specific equivalent it already branches to
-   via `PACKAGE_FORMATS`) to run the same class of assertion the Debian job runs: put a
-   super-token in the store, ask `gettoken` for a capability, run the tool on the narrow token that
-   comes back.
+1. `dynamic.sh` exposes a new per-platform value, `SETUP_COMMAND` (mirroring `INSTALL_COMMAND`):
+   on Debian, the existing `curl … -o gettoken.sources` step; on Darwin, `brew tap
+   thruput-io/tap`. This keeps `test.sh` linear rather than teaching it to branch on
+   `PACKAGE_FORMATS` ([D7](#discussions)).
+2. `test.sh` runs `$SETUP_COMMAND` where it currently hard-codes the apt sources-file write, then
+   proceeds unchanged: put a super-token in the store, ask `gettoken` for a capability, run the
+   tool on the narrow token that comes back.
+3. Replace the placeholder `macOS stable` job in `verifications.yml` with: install only
+   `git`/`ca-certificates` (no `make`), checkout, `source dynamic.sh`, `bash
+   src/integration-test/test.sh` — installing `gettoken` from the tap M3 publishes.
 
-**Verification:** `macOS stable` in CI goes green on that real flow; it fails if the tap, a
-formula, or the dependency graph is broken, the same way `Debian stable` fails today.
+**Verification:** `macOS stable` in CI goes green on that real flow, invoked the same way (never
+`make test`) as [D7](#discussions) requires; it fails if the tap, a formula, or the dependency
+graph is broken, the same way `Debian stable` fails today.
