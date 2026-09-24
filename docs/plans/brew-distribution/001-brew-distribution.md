@@ -88,7 +88,7 @@ placeholder, tracked in issue #51) exercising it for real.
 
 | Goal | Cheapest way to "pass" while missing the point | How the goal excludes it | Accepted by |
 |---|---|---|---|
-| 1 | A formula with a real `url`/`sha256` whose `def install` only symlinks `bin/gettoken`, without building or installing the privileged-half scripts (`token-requester`, `secret-manager`, `token-service`, `entitlements`, the exchanger) — `brew install` succeeds, `gettoken` fails at first real use. | "Behaves identically... for an agent asking for a capability" requires the full request path to work, not just the binary to exist. | pending |
+| 1 | A single formula with a real `url`/`sha256` whose `def install` only symlinks `bin/gettoken`, without building or installing the privileged-half scripts (`token-requester`, `secret-manager`, `token-service`, `entitlements`, the exchanger) as their own installable units — `brew install` succeeds, `gettoken` fails at first real use, and the tap does not mirror apt's package boundaries. | "Behaves identically... for an agent asking for a capability" requires the full request path to work; [D2](#discussions) requires the tap to mirror apt's installable-component boundaries, not collapse them into one keg. | pending |
 | 2 | A bats test that asserts `brew install gettoken` exits 0 and stops there. | "Proven... by the same kind of black-box test ADR 0020 requires" ties the bar to the existing Debian integration test's shape: install via the package manager alone, then exercise the product through its public interface. | pending |
 | 3 | Rename the job or add a step that runs without asserting anything — this is the exact pattern PR #50's review caught in the previous `macOS stable` job. | "Exercises that real install-and-use flow" is the same flow goal 2 proves; a job that does not run it does not satisfy this goal regardless of its name or green status. | pending |
 
@@ -96,10 +96,8 @@ placeholder, tracked in issue #51) exercising it for real.
 
 - Homebrew bottles (pre-built binaries). ADR 27 restricts brew to a source-built formula; revising
   that is a separate decision, not part of this plan.
-- Matching apt's 22-package, per-contract granularity (`docs/adrs/0021`) inside Homebrew. Whether
-  a single-keg formula is an acceptable platform difference or needs its own ADR is an open
-  question below, not assumed either way.
 - Changing anything about the apt archive, its signing, or its publishing.
+- Per-component version numbers. Versioning is repo-wide for now ([D3](#discussions)).
 
 ## Summary
 
@@ -114,10 +112,9 @@ finalized once Phase 2 closes.}
 
 | Assumption or risk | How it was tested | Result | If it turns out false |
 |---|---|---|---|
-| A tap repository can be created in `thruput-io` | `gh api orgs/thruput-io/repos` searched for `brew\|tap\|formula` in repo names | none exist today | need org permission/decision before M3 |
-| Git tags will source the formula's version | `git tag -l` in this repo | empty — no tag exists | version has to come from somewhere else (e.g. `src/debian/changelog`), open question below |
+| The GitHub App installation can be granted write access to a new `thruput-io/homebrew-tap` repo | Not tested — `gh api orgs/thruput-io/repos` confirms the repo does not exist yet ([D1](#discussions)) | untested | M3 creates the repo and grants access before attempting the push; if refused, escalate to the human rather than work around it |
 | The vendored Go contract component needs no network to build | Read ADR 24 (`-mod=vendor`, no `buildvcs`) | confirmed by the ADR's own reasoning, not independently re-run in this plan | brew's sandboxed build environment would need network access declared, which `brew audit` flags |
-| Homebrew's single-keg model is an acceptable platform difference from apt's 22 packages | Not tested — read `docs/adrs/0021` and compared by inspection | genuine open design question | may need its own ADR before M2 |
+| A tap is a plain git repo, so the same installation-token `git push` `pages_push` uses will work against it, with no Homebrew-specific API | Read `docs.brew.sh/Taps` and `/How-to-Create-and-Maintain-a-Tap`: a tap is "a Git repository... or even just a directory with files in it" | confirmed by documentation, not yet proven by an actual push | if false, M3's push step needs a different mechanism than `pages.sh`'s |
 
 **Preconditions.** PR #50 merged into `main` (confirmed 2026-09-24: `origin/main` at `f08566b`,
 carrying the ADR 28/29 report-threshold-check build model this plan's milestones will build
@@ -153,22 +150,19 @@ The decision register: one row per non-trivial decision, in the order the decisi
 
 | # | Decision | Question put to the human | Answer (verbatim) | Decided by | Rationale | Date |
 |---|---|---|---|---|---|---|
-| — | none yet | — | — | — | — | — |
+| D1 | Tap repository is `thruput-io/homebrew-tap` | "What repository name/location should the tap live at (e.g. `thruput-io/homebrew-tap` vs `thruput-io/homebrew-gettoken`)?" | "1. is fine" | human | Accepts the first offered option. | 2026-09-24 |
+| D2 | The tap mirrors apt's package boundaries, not a single monolithic formula | "Does the single-keg Homebrew model need its own ADR recording the intentional departure from ADR 21's per-contract packaging, or is it accepted as a platform difference without one?" | "just as apt" | human | Rejects the single-keg framing outright; the tap is to mirror apt's boundaries rather than diverge from them. Scope of "mirror" (installable components only vs. every apt package including contract-only stubs) is [open](#open-questions), pending the human's answer. | 2026-09-24 |
+| D3 | A new git tag is cut on every merge to `main`; the version is repo-wide, not per-component, for now | "What is the source of truth for the formula's version — a git tag drives `src/debian/changelog`, the changelog drives the tag, or they are chosen independently per release?" | "New tag for each merge to main and versions stays repo wide for now" | human | The tag becomes the single source of truth for what every formula and the apt archive call "this version," deferring per-component versioning. | 2026-09-24 |
+| D4 | Version = `{major}.{minor}` from `version.txt`, patch digit = the CI build number | "Is version/release lockstep automation... in scope for this plan, or does it belong to a later one?" | "A super simple one for now major/minor from a verion.txt then patch version as build numer" | human | In scope, deliberately minimal: a committed `version.txt` for the two digits a human chooses, the build number for the one that shouldn't need a commit. | 2026-09-24 |
+| D5 | CI publishes the tap with the same installation-token `git push` mechanism `pages_push` uses for the apt archive | "What pushes the formula to the tap in CI — the same installation-token pattern `pages_push` uses for the apt archive, or something else?" | "apt if that is okey with brew?" | human, agent confirmed the mechanism is compatible | A Homebrew tap is a plain git repository (`docs.brew.sh/Taps`); no Homebrew-specific push API exists, so the existing pattern applies unchanged once the app has write access to the new repo. | 2026-09-24 |
 
 ## Open questions
 
-- [ ] What repository name/location should the tap live at (e.g. `thruput-io/homebrew-tap` vs
-      `thruput-io/homebrew-gettoken`)?
-- [ ] Does the single-keg Homebrew model need its own ADR recording the intentional departure
-      from ADR 21's per-contract packaging, or is it accepted as a platform difference without
-      one?
-- [ ] What is the source of truth for the formula's version — a git tag drives
-      `src/debian/changelog`, the changelog drives the tag, or they are chosen independently per
-      release?
-- [ ] Is version/release lockstep automation (the optional M5 from the earlier sketch) in scope
-      for this plan, or does it belong to a later one?
-- [ ] What pushes the formula to the tap in CI — the same installation-token pattern
-      `pages_push` uses for the apt archive, or something else?
+- [ ] Does "mirror apt's package boundaries" ([D2](#discussions)) mean one formula per
+      *installable* component (`gettoken`, `token-requester`, `secret-manager`, `token-service`,
+      `entitlements`, `integration-test-tool`, the exchanger — using `depends_on` where apt uses a
+      contract-package dependency edge), or a literal formula for all 22 apt packages, including
+      the ten that carry only a schema and no installable content?
 
 ## Execution Plan
 
