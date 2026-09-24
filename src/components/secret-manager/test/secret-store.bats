@@ -1,9 +1,8 @@
 bats_require_minimum_version 1.5.0
 
+load '../../../../scripts/test/helper'
+
 setup() {
-  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
-  bats_load_library bats-support
-  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   PATH="$root/src/components/secret-manager:$root/build/bin:$PATH"
   SECRET_DIR="$(mktemp -d)/secrets"
@@ -12,10 +11,6 @@ setup() {
 }
 
 teardown() { rm -rf "$(dirname "$SECRET_DIR")"; }
-
-NormalizeStdErrWhenKcovOnMac() {
-  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked|version|who|doing|signed)=)/d'
-}
 
 putting() {
   key=$1 value=$2
@@ -66,7 +61,7 @@ getting_version() {
   putting johans-laptop/github super-1
   run -1 --separate-stderr getting_version johans-laptop/github 1
   [ "$output" = "" ]
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "secret-get: johans-laptop/github has no version 1"
+  assert_equal "$(without_kcov_trace "$stderr")" "secret-get: johans-laptop/github has no version 1"
 }
 
 @test "what secret-get emits is the secret and the version it is" {
@@ -78,13 +73,13 @@ getting_version() {
 @test "the secret never appears on stderr" {
   putting johans-laptop/github super-1
   run -0 --separate-stderr getting johans-laptop/github
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" ""
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "nothing stored under a key is a failure, not an empty answer" {
   run -1 --separate-stderr getting nobody/nothing
   [ "$output" = "" ]
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "secret-get: nothing is stored under nobody/nothing"
+  assert_equal "$(without_kcov_trace "$stderr")" "secret-get: nothing is stored under nobody/nothing"
 }
 
 @test "a key the contract does not admit is refused" {
@@ -92,7 +87,7 @@ getting_version() {
     'printf %s "{\"key\":\"Johans-Laptop\",\"value\":\"super-1\"}" | secret-put'
   [ "$output" = "" ]
   expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: "Johans-Laptop" does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"')
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
 @test "a key climbing out of the store is refused, because a key carries no dots" {
@@ -100,7 +95,7 @@ getting_version() {
     'printf %s "{\"key\":\"..\",\"value\":\"super-1\"}" | secret-put'
   [ "$output" = "" ]
   expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: ".." does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"')
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
   [ ! -e "$(dirname "$SECRET_DIR")/github" ]
 }
 
@@ -109,14 +104,14 @@ getting_version() {
     'printf %s "{\"key\":\"johans-laptop/github\",\"value\":\"\"}" | secret-put'
   [ "$output" = "" ]
   expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/value: validating /$defs/Secret: minLength: "" contains 0 Unicode code points, fewer than 1')
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
 @test "asking with no key at all is refused" {
   run -1 --separate-stderr sh -c 'printf %s "{}" | secret-get --with-key'
   [ "$output" = "" ]
   expected=$(printf 'parse: the document does not satisfy secret-get-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: required: missing properties: ["key"]')
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
 @test "every directory the store is made of is closed to everyone but its owner" {

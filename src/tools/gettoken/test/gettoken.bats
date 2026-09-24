@@ -1,9 +1,8 @@
 bats_require_minimum_version 1.5.0
 
+load '../../../../scripts/test/helper'
+
 setup() {
-  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
-  bats_load_library bats-support
-  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   stub=$(mktemp -d)
   ASK_FILE="$stub/ask.json"
@@ -23,20 +22,16 @@ STUB
   chmod 755 "$stub/token-requester"
 }
 
-NormalizeStdErrWhenKcovOnMac() {
-  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
-}
-
 @test "no arguments refuses, hands over nothing, and names the tool the agent invoked" {
   run -1 --separate-stderr gettoken
   [ "$output" = "" ]
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "gettoken: usage: gettoken --list | gettoken <capability>"
+  assert_equal "$(without_kcov_trace "$stderr")" "gettoken: usage: gettoken --list | gettoken <capability>"
 }
 
 @test "more than one argument refuses the same way" {
   run -1 --separate-stderr gettoken integrationtest/ci/run and-another
   [ "$output" = "" ]
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "gettoken: usage: gettoken --list | gettoken <capability>"
+  assert_equal "$(without_kcov_trace "$stderr")" "gettoken: usage: gettoken --list | gettoken <capability>"
 }
 
 @test "the ask names the capability and nothing the agent has no say over" {

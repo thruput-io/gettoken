@@ -1,17 +1,12 @@
 bats_require_minimum_version 1.5.0
 
+load '../../../../scripts/test/helper'
+
 setup() {
-  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
-  bats_load_library bats-support
-  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   PATH="$root/build/bin:$PATH"
   CONTRACTS_DIR="$root/src/contracts"
   export PATH CONTRACTS_DIR
-}
-
-NormalizeStdErrWhenKcovOnMac() {
-  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
 }
 
 reading() {
@@ -59,7 +54,7 @@ reading() {
   run -0 --separate-stderr reading secret-put-request.schema.json \
     '{"key":"johans-laptop/github","value":"super-1"}'
   [ "$output" = "" ]
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" ""
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "a document missing a required field is refused" {
@@ -67,7 +62,7 @@ reading() {
     '{}' key
   [ "$output" = "" ]
   expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: required: missing properties: ["key" "value"]')
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
 @test "a field breaking its type is refused" {
@@ -75,7 +70,7 @@ reading() {
     '{"key":"Johans-Laptop","value":"super-1"}' key
   [ "$output" = "" ]
   expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: "Johans-Laptop" does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"')
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
 @test "a version below the first one the store can hold is refused" {
@@ -83,23 +78,23 @@ reading() {
     '{"key":"johans-laptop/github","version":-1}' version
   [ "$output" = "" ]
   expected=$(printf 'parse: the document does not satisfy secret-get-request-version.schema.json\nvalidating https://thruput.io/gettoken/secret-request-key.schema.json: validating /properties/version: validating /$defs/Version: minimum: -1/1 is less than 0.000000')
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
 @test "naming a contract that does not exist is refused, and says so differently" {
   run -1 --separate-stderr reading no-such-contract.schema.json '{}'
   [ "$output" = "" ]
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "parse: no contract named no-such-contract.schema.json in $root/src/contracts"
+  assert_equal "$(without_kcov_trace "$stderr")" "parse: no contract named no-such-contract.schema.json in $root/src/contracts"
 }
 
 @test "a body that is not JSON at all is refused rather than read as empty" {
   run -1 --separate-stderr reading secret-put-request.schema.json 'not json' key
   [ "$output" = "" ]
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "parse: the document is not JSON: invalid character 'o' in literal null (expecting 'u')"
+  assert_equal "$(without_kcov_trace "$stderr")" "parse: the document is not JSON: invalid character 'o' in literal null (expecting 'u')"
 }
 
 @test "an empty body is refused rather than read as an empty document" {
   run -1 --separate-stderr reading secret-put-request.schema.json '' key
   [ "$output" = "" ]
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "parse: the document is not JSON: unexpected end of JSON input"
+  assert_equal "$(without_kcov_trace "$stderr")" "parse: the document is not JSON: unexpected end of JSON input"
 }
