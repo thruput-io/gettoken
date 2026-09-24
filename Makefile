@@ -157,8 +157,14 @@ build/semgrep.checked: build/semgrep-report.json build/stats.txt
 build/lint.checked: build/shellcheck.checked build/make.checked build/schemas.checked build/go-lint.checked build/semgrep.checked
 	@echo "All lint accept checks passed cleanly"
 
-build/no-branching.checked: build/sources build/config.mk build/setup.txt
-	bash scripts/check-branching.sh . 0
+build/branching-report.txt: build/sources build/setup.txt
+	@mkdir -p $(@D)
+	bash scripts/branching.sh . > $@
+
+build/no-branching.checked: build/branching-report.txt build/stats.txt
+	set -euo pipefail; sites=$$(wc -l < $< | tr -d ' '); \
+	echo "no-branching: $$sites sites branch or default in tests (max 0, $(BATS_TEST_FILES) test files scanned)"; \
+	[ "$$sites" -le 0 ] && [ "$(BATS_TEST_FILES)" -gt 0 ]
 
 build/bash-unit-test.checked: build/report.tap build/stats.txt
 	set -uo pipefail; pass=$$(grep -c -- '^ok ' $<); fail=$$(grep -c -- '^not ok ' $<); \
