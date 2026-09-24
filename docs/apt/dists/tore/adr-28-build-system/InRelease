@@ -5,7 +5,7 @@ Origin: gettoken
 Label: gettoken
 Suite: tore/adr-28-build-system
 Codename: tore/adr-28-build-system
-Date: Thu, 24 Sep 2026 14:05:42 UTC
+Date: Thu, 24 Sep 2026 14:21:03 UTC
 Architectures: amd64
 Components: tore/adr-28-build-system
 Description: token broker for AI agents
@@ -23,8 +23,8 @@ SHA256:
  05b70322d3b78366c4f1082f9546028a021c8a498f39c5533cff6dd9ee9d1478 163 tore/adr-28-build-system/binary-amd64/Release
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarUuNgAKCRDDrTt86Qtc
-+hQZAQDC0xpoDH7SKh2mt+NSOPicqvbXa/nkCuxOTGllFD7rVQEA/NUPiLZsmaTC
-DLQ4ewYwhCl8V6CeNY3vaI0bb/RZHAQ=
-=fSm2
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarUxzwAKCRDDrTt86Qtc
++ld2AP9Nf+gHwUHgPklMo/Cc+SpwPKOQJ8+oNW7mCayatqlP0AD/Y3U+/W4xjQ4C
+kYEMRn9cl2ZoGXaNIo1awIxSJKMlhQM=
+=ky6x
 -----END PGP SIGNATURE-----
