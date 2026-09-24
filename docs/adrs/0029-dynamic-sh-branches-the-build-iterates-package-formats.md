@@ -33,6 +33,13 @@ reprepro, and so forth. Where brew cannot provide it any more, the cut is made
 by iterating `PACKAGE_FORMATS`. There is no reason to do all of it on a Mac; the
 rest is left to CI/CD, building on Linux.
 
+`PACKAGE_FORMATS`, `BUILD_DEPS` and the other lists cross from `dynamic.sh` to
+make as space-separated strings: there is no array structure in bash that is
+compatible with make.
+
+The configuration is not tested, and neither are the build scripts. Coverage is
+measured over `src` only; we cannot check coverage on the build pipeline itself.
+
 Every script is `#!/usr/bin/env bash`, not `#!/bin/bash`: macOS constantly
 throws you back to `/bin/bash`, which is too old.
 
