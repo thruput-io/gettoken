@@ -1,0 +1,30 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Origin: gettoken
+Label: gettoken
+Suite: tore/001-brew-distribution
+Codename: tore/001-brew-distribution
+Date: Thu, 24 Sep 2026 19:36:25 UTC
+Architectures: amd64
+Components: tore/001-brew-distribution
+Description: token broker for AI agents
+MD5Sum:
+ a72f4c61cebcbb25d1555b6b9379e1b5 21871 tore/001-brew-distribution/binary-amd64/Packages
+ 0a6a0856ef8f45fbeae2d43b02758c89 5855 tore/001-brew-distribution/binary-amd64/Packages.gz
+ 403167498edc89f302162092eb505844 167 tore/001-brew-distribution/binary-amd64/Release
+SHA1:
+ f7d37ccbb3e5808a5614833878f4f7542528969c 21871 tore/001-brew-distribution/binary-amd64/Packages
+ 897939850f860d35aff89f23d3b294539d7b4915 5855 tore/001-brew-distribution/binary-amd64/Packages.gz
+ 87e18da368f2ee35ff5056cf645ae3f4d3d16d28 167 tore/001-brew-distribution/binary-amd64/Release
+SHA256:
+ 68672f842ead1f78ea384cbb7dd12d633402f89cb007deb648ec208bb9426dc1 21871 tore/001-brew-distribution/binary-amd64/Packages
+ 685c867da09b12798726893b3d81e8d77289f1caf3e9c708e53fe99cc2925299 5855 tore/001-brew-distribution/binary-amd64/Packages.gz
+ 093adf9a76fa449c2033b188bc40a7102488a6e4273d15f235741ad695a903e4 167 tore/001-brew-distribution/binary-amd64/Release
+-----BEGIN PGP SIGNATURE-----
+
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarV7uQAKCRDDrTt86Qtc
++quaAQDUXkp4dfV2yQ7E79sYL877U166Qaynd8RyOZ1BQ+dyGwD/QbsTWf8OAYXh
+OZrs48HRuwWK70TGfRhN7Wy7sVN5AAw=
+=34dj
+-----END PGP SIGNATURE-----
