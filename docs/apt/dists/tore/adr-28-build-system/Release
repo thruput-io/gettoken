@@ -2,7 +2,7 @@ Origin: gettoken
 Label: gettoken
 Suite: tore/adr-28-build-system
 Codename: tore/adr-28-build-system
-Date: Thu, 24 Sep 2026 14:21:03 UTC
+Date: Thu, 24 Sep 2026 14:46:55 UTC
 Architectures: amd64
 Components: tore/adr-28-build-system
 Description: token broker for AI agents
