@@ -1,9 +1,9 @@
 bats_require_minimum_version 1.5.0
 
-load '../../../../scripts/test/helper'
+load "$ROOT_DIR/scripts/test/helper"
 
 setup() {
-  root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
+  root=$ROOT_DIR
   stub=$(mktemp -d)
   REQUEST_FILE="$stub/request.json"
   PATH="$stub:$root/src/tools/gettoken/privileged:$root/build/bin:$PATH"

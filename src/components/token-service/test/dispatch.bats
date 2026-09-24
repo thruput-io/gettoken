@@ -1,9 +1,9 @@
 bats_require_minimum_version 1.5.0
 
-load '../../../../scripts/test/helper'
+load "$ROOT_DIR/scripts/test/helper"
 
 setup() {
-  root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
+  root=$ROOT_DIR
   PATH="$root/src/components/token-service:$root/build/bin:$PATH"
   EXCHANGER_DIR=$(mktemp -d)
   CONTRACTS_DIR="$root/src/contracts"
