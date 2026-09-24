@@ -5,7 +5,7 @@ Origin: gettoken
 Label: gettoken
 Suite: tore/integration-test-clean-machine
 Codename: tore/integration-test-clean-machine
-Date: Thu, 24 Sep 2026 19:27:57 UTC
+Date: Thu, 24 Sep 2026 21:01:27 UTC
 Architectures: amd64
 Components: tore/integration-test-clean-machine
 Description: token broker for AI agents
@@ -23,8 +23,8 @@ SHA256:
  32c718113a421609a7d241df5dd3252f2ac52e116ac39d9d5b1fc5806b67a6ec 185 tore/integration-test-clean-machine/binary-amd64/Release
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarV5vQAKCRDDrTt86Qtc
-+vxAAP49JShTZ43jlYl58Fi1mv4J3HtJ319ghYe4Sf72C+d0JAEAmUp3KAjg/pWJ
-A4FpDmpDEKuoD7XcbIa1s3SgE4y42QE=
-=2gBC
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarWPpwAKCRDDrTt86Qtc
++pT0AQCUb5FewsdCoZMFUPKQzVfX3xcGwGxuSn7fuAVhAxOOHgD/RzRZct/QbseF
+2XldV+sOkVXj+NTRJ0kodO6l0x57Jww=
+=QpWH
 -----END PGP SIGNATURE-----
