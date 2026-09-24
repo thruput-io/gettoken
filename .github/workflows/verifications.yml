@@ -42,7 +42,7 @@ jobs:
           path: build/dist
 
   integration:
-    name: ${{ matrix.container }}
+    name: Debian stable
     needs: build
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
@@ -52,14 +52,13 @@ jobs:
         container:
           - debian:testing-slim
     steps:
+      - run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
       - uses: actions/checkout@v4
-      - name: run integration test
-        run: |
-          source dynamic.sh
-          bash src/integration-test/test.sh
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - run: make test
 
   macos:
-    name: macos-latest
+    name: macOS stable
     needs: build
     runs-on: macos-latest
     continue-on-error: true
