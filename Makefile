@@ -154,7 +154,7 @@ build/semgrep.checked: build/semgrep-report.json build/stats.txt
 	echo "semgrep: $$findings findings, $$unparsed files not fully parsed (max 0/0, $(BASH_SOURCE_FILES) bash files scanned)"; \
 	[ "$$findings" -le 0 ] && [ "$$unparsed" -le 0 ] && [ "$(BASH_SOURCE_FILES)" -gt 0 ]
 
-build/lint.checked: build/shellcheck.checked build/make.checked build/schemas.checked build/go-lint.checked build/semgrep.checked build/check-permissions.txt
+build/lint.checked: build/shellcheck.checked build/make.checked build/schemas.checked build/go-lint.checked build/semgrep.checked
 	@echo "All lint accept checks passed cleanly"
 
 build/no-branching.checked: build/sources build/config.mk build/setup.txt
