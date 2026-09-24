@@ -254,6 +254,7 @@ source tree.
 docs/
   adrs/
   plans/
+    brew-distribution/
     containers/
       research/
     virtual-macos/
