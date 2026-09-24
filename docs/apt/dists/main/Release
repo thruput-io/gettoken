@@ -1,20 +1,20 @@
-Architectures: amd64
-Codename: main
-Components: main
-Date: Mon, 21 Sep 2026 23:33:17 +0000
-Description: token broker for AI agents
-Label: gettoken
 Origin: gettoken
+Label: gettoken
 Suite: main
+Codename: main
+Date: Thu, 24 Sep 2026 16:06:03 UTC
+Architectures: amd64
+Components: main
+Description: token broker for AI agents
 MD5Sum:
- a375089f86b46e50129026e5f89d7465            24316 main/binary-amd64/Packages
- 9fe3e65186037bca63809681eac3db0b             7772 main/binary-amd64/Packages.gz
+ 4f9e524d71ef83c8cfcb72fcca253f26 21343 main/binary-amd64/Packages
+ e855d1839cc181dad93e6a4216e0e452 5834 main/binary-amd64/Packages.gz
+ 141192b1b769fa0702102a95aad00610 123 main/binary-amd64/Release
 SHA1:
- 0cd2090a9d2923e4f234367d6882f272b909e7e5            24316 main/binary-amd64/Packages
- 974e2867f4e4e2d1f2af721119d3920f4f8de181             7772 main/binary-amd64/Packages.gz
+ 19159006876a0bd903ce6ffcaa4b8f31a5c82fc6 21343 main/binary-amd64/Packages
+ 0c62db3b3f59da4beba442ef4adf6b6f8bcde3f1 5834 main/binary-amd64/Packages.gz
+ bc64aad6444fbdd829a648fcb4d0416262ef8d3c 123 main/binary-amd64/Release
 SHA256:
- 09a0f0b92200c212a1afb8f8dac9cb4ef179c4645fbd00a774c07383cb9938b2            24316 main/binary-amd64/Packages
- 8609712384131b158c72c818c86b1d635bb71191c0003947c5cd9643351433fd             7772 main/binary-amd64/Packages.gz
-SHA512:
- 8ad486dd8c2b676bbc9acee4d86bccef859e2ebb31ee2f13916c4437e255f9542b9731531dce9c5e9415f5d252c05dbcf45380fa8d479ec1a5c72da06cfec0d0            24316 main/binary-amd64/Packages
- 4e483a601d25266849681c24e9f5631a4f0b362e9e59777ceedf3f73fced0f7ea03ecc1afeb0f385a4d1a254ed4dc60b19bd9671fa6af4cee0bfcd18d58ddc69             7772 main/binary-amd64/Packages.gz
+ 1499b3a0ea715cd81a2fdaab1d9a9ae1fa3ecf8ef606faeab7ef9c738bfe97d9 21343 main/binary-amd64/Packages
+ 81e2cb7be75ab662425d3a77597dc3016c2d998159a4d63994195337c36b0d5f 5834 main/binary-amd64/Packages.gz
+ 938ddc0cba963d57d2c6cde32e1c4fcccebc87efcf20dbb26097d6a7b9fe20f1 123 main/binary-amd64/Release
