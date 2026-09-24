@@ -41,7 +41,6 @@ found.
 The report stage does not judge. A tool that exits non-zero because it found
 something still leaves its report, and the check will see what it found and
 fail. No exit code is defaulted or rewritten to move a decision into the check.
-
 `.DELETE_ON_ERROR` is not used. The reports are the proof that nobody has
 tampered with the pipeline. A tool that crashes does not leave a truncated
 report, or it is highly unlikely that it does, and deleting reports on error
@@ -68,5 +67,5 @@ having examined nothing.
 `[ a -gt b ] && [ c -eq d ]` is the only form for combining conditions: simple
 variables or constants, one comparator each, and only `&&` between conditions.
 
-The `.checked` stamp is produced only by a passing check. It records that a
-comparison happened, never that a command ran.
+`.checked` produces no file. The comparison is cheap, so it runs every time;
+the targets are phony.
