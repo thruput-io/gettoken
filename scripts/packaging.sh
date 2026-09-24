@@ -42,12 +42,14 @@ every_contract_named_on_a_line() {
   }' "$1"
 }
 
-for fmt in ${PACKAGE_FORMATS:-deb}; do
+for fmt in ${PACKAGE_FORMATS:?packaging.sh: name the PACKAGE_FORMATS to package for}; do
   case "$fmt" in
     deb)
       for install in debian/*.install; do
         package=$(basename "$install" .install)
-        case $package in gettoken-contract-*) continue ;; esac
+        case "$package" in
+          gettoken-contract-*) continue ;;
+        esac
 
         uses=$(
           while read -r src _; do
@@ -88,6 +90,10 @@ for fmt in ${PACKAGE_FORMATS:-deb}; do
       ;;
     brew)
       echo "packaging for brew format"
+      ;;
+    *)
+      echo "packaging.sh: no packaging for format '$fmt'" >&2
+      exit 1
       ;;
   esac
 done

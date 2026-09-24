@@ -1,8 +1,8 @@
-BASH_SOURCE_FILES := $(shell echo $(SHELL_FILES) | wc -w)
-GO_SOURCE_FILES   := $(shell find src -name '*.go' ! -name '*_test.go' | grep -v /vendor/ | wc -l)
-JSON_SCHEMAS      := $(shell find src/contracts -name '*.schema.json' | wc -l)
-BATS_TEST_FILES   := $(shell find src scripts -name '*.bats' | wc -l)
-GO_TEST_FILES     := $(shell find src -name '*_test.go' | wc -l)
+BASH_SOURCE_FILES := $(strip $(shell echo $(SHELL_FILES) | wc -w))
+GO_SOURCE_FILES   := $(strip $(shell find src -name '*.go' ! -name '*_test.go' | grep -v /vendor/ | wc -l))
+JSON_SCHEMAS      := $(strip $(shell find src/contracts -name '*.schema.json' | wc -l))
+BATS_TEST_FILES   := $(strip $(shell find src scripts -name '*.bats' | wc -l))
+GO_TEST_FILES     := $(strip $(shell find src -name '*_test.go' | wc -l))
 BATS_TESTS        := $(shell grep -rc '^@test' src scripts --include='*.bats' | awk -F: '{sum+=$$2} END {print sum}')
 GO_TESTS          := $(shell grep -rc '^func Test' src --include='*_test.go' | awk -F: '{sum+=$$2} END {print sum}')
 

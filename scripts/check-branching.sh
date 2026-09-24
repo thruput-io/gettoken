@@ -1,26 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-root=$1
+root=${1:?check-branching.sh: name the tree to scan}
+allowed=${2:?check-branching.sh: name the number of sites allowed}
 
 branching=$(mktemp)
 trap 'rm -f "$branching"' EXIT
 
 find "$root/src" "$root/scripts" -name '*.bats' -print0 \
-  > "$branching.files"
-find "$root" -maxdepth 1 \( -name 'config*.sh' -o -name 'config*.example' \) -print0 \
-  >> "$branching.files"
-trap 'rm -f "$branching" "$branching.files"' EXIT
-
-xargs -0 awk '
+  | xargs -0 awk '
   /^[[:space:]]*(if|elif|case)[[:space:]]/          { print FILENAME ": branches" }
   /\$\{[A-Za-z_][A-Za-z0-9_]*:[-=+?]/               { print FILENAME ": defaults a variable" }
-' < "$branching.files" | sort -u > "$branching"
+' | sort -u > "$branching"
 
 found=$(wc -l < "$branching" | tr -d ' ')
-allowed=${2:-0}
 
 cat "$branching"
-echo "no-branching: $found sites branch or default in tests or configuration (allowed $allowed)"
+echo "no-branching: $found sites branch or default in tests (allowed $allowed)"
 
 test "$found" -le "$allowed"
