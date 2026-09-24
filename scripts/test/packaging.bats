@@ -1,7 +1,7 @@
 bats_require_minimum_version 1.5.0
 
 setup() {
-  root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../.." && pwd)
+  root=$ROOT_DIR
   export root
 }
 
