@@ -45,12 +45,14 @@ jobs:
     name: Debian stable
     needs: build
     runs-on: ubuntu-latest
-    container: debian:testing-slim
     steps:
-      - run: apt-get update && apt-get install -y --no-install-recommends git ca-certificates
       - uses: actions/checkout@v4
-      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - run: source dynamic.sh && bash src/integration-test/test.sh
+      - run: |
+          tar -cf - constants.env dynamic.sh src/integration-test/test.sh \
+            | docker run -i --rm -e CI=true -e ROOT_DIR=/work -e BRANCH -e ARCHIVE_SIGNING_KEY \
+              debian:testing-slim bash -c '
+                mkdir -p /work && cd /work && tar xf -
+                source dynamic.sh && bash src/integration-test/test.sh'
 
   macos:
     name: macOS stable
