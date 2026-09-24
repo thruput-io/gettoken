@@ -32,22 +32,18 @@ is the only place allowed to span them.
 
 ## Running the suite
 
-`make unit` runs the suite where you invoke it. `make package` builds both the
-Debian package and the Homebrew formula, and `make test` installs what was built
-and uses it, so only that one reaches the paths a package puts things at. What
-each of them needs is declared in `config.sh`, and `make setup` installs it. The
-host needs `jq`, `bats`, `shellcheck` and a Go toolchain,
-which builds the contract component named in
-[record 17](docs/adrs/0017-a-validator-brew-and-apt-can-carry.md):
-
-```sh
-apt install jq bats shellcheck golang-go
-brew install jq bats-core shellcheck go
-```
+`make unit` runs the suite where you invoke it. `make package` builds every
+format named in `PACKAGE_FORMATS`, and `make test` installs what was built and
+uses it, so only that one reaches the paths a package puts things at. What each
+of them needs is declared per platform in `constants.env`, and `make setup`
+installs it: a Go toolchain, which builds the contract component, `bats` with
+`bats-support` and `bats-assert`, `shellcheck`, `semgrep`, `kcov`, `checkmake`,
+`check-jsonschema`, `gnupg`, `dpkg` and `reprepro`, and on Debian the toolchain
+that builds the `.deb`.
 
 `make unit` builds `parse` and `format` before it runs anything, into a
-directory it puts on `PATH`. To run one `bats` file on its own, build them first
-and put them on `PATH` yourself.
+directory it puts on `PATH`. Every check runs through a make target; there is no
+other way a check is run.
 
 The gate reads every file's first line: a script says which shell it is written
 for with a shebang, and a file that is sourced rather than run says it with a
@@ -57,10 +53,31 @@ Nothing is skipped when a tool is missing. A test that cannot run fails.
 
 ## The chain a package travels
 
-`make build` runs the suite, builds a package in every format `config.sh` asks
-for, signs the archive and publishes it. `make test` installs what was published
+`make build` runs the suite, builds a package in every format `PACKAGE_FORMATS`
+asks for, signs the archive and publishes it. `make test` installs what was published
 and uses it. Nothing joins those two, because they do not run on the same
 machine: one needs a toolchain, the other needs to have nothing.
+
+`make package` writes `build/dist/deb/`, holding every `.deb`, and the archive
+under `build/site/apt/`: a suite named after the branch, with a `Packages` index,
+a `Release` naming the index files that exist, the `InRelease` and `Release.gpg`
+signatures over it, and the `gettoken.sources` file carrying the key it verifies
+against. `reprepro` builds and signs it, so the archive is the same on every
+platform that can run `reprepro`. The Homebrew formula lands under
+`build/dist/brew/`.
+
+Nothing under `debian/` that can be derived is kept. `debian/control` and one
+`.install` per contract are written by `scripts/packaging.sh` from the contracts,
+the components and the target, before `dpkg` reads anything, because `dpkg`
+resolves build dependencies out of `debian/control` before any rule could act.
+`debian/control.in` carries only what none of those know, which is prose about
+the components themselves. `lintian` at pedantic proves what the packaging says
+of itself, on the source and on every package.
+
+`make publish` uploads the archive to the site's `/apt` corner under the
+branch's suite. Nothing about the archive changes on the way: `Packages` names
+each file relative to the archive, and `Release` covers the indices rather than
+where they sit, so the signature survives the move.
 
 ## What a green run means
 

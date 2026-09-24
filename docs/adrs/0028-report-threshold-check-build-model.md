@@ -1,66 +1,72 @@
-# 1. Report, Threshold, and Check Build Model
-
-* **Date**: 2026-09-23
+# 28. Report, threshold, and check build model
 
 ## Context
 
-A quality tool invoked directly from a Make recipe answers only "pass" or "fail". There are
-so many ways to get it wrong this ADR tries to lower the risk of it happening. Hidden lint
-and test errors are the most harmful and fails entire projects.
+A quality tool invoked directly from a Make recipe answers only "pass" or "fail".
+There are so many ways to get that wrong that this record exists to lower the
+risk of it happening. Hidden lint and test errors are the most harmful failures
+there are: they fail entire projects.
 
-## Decision 
+## Decision
 
-This ADR **MUST** be followed without exception as written no interpretations
+This record is followed as written, without interpretation.
 
-Every quality tool is wired as a three-stage chain of Make targets. The stages are separate
-targets, not steps inside one recipe. To keep target clean [Invocation of quality tool in build stays clean]
-other rules might need to bend. Cleanliness to prevent obfuscation always has precedence if called out.
-Defaulting of any kind is not allowed.
+Every quality tool is wired as a three-stage chain of Make targets: report,
+threshold, check. The stages are separate targets, not steps inside one recipe.
+Where this record calls for a clean invocation, other rules bend to it:
+cleanliness that prevents obfuscation always takes precedence. Defaulting of any
+kind is not allowed.
 
-A quality tool is, but not limited to:
-- Test executioner with test result 
-- Coverage collector with coverage
-- Linter with linting result
-- schema verifier with report
+A quality tool is, among others: a test runner with its test result, a coverage
+collector with its coverage, a linter with its lint result, a schema verifier
+with its report.
 
+### The invocation stays clean
 
-### Invocation of quality tool in build stays clean
-Invocation **MUST** must be as simple and clear as possible, never any indirection, chaining, piping, or other tricks or variable.
+The invocation is as simple and clear as possible: no indirection, chaining,
+piping, other tricks, or variables.
 
-#### Good
-test: test-tool -R src/test > build/linux/test-report.json (good)
+Good: `test: test-tool -R src/test > build/test-report.json`
 
-#### Bad
-test: test-tool $(params) ($SOURCES) | jg 'result' > build/test-module/test-report.json (bad)
+Bad: `test: test-tool $(params) $(SOURCES) | jq 'result' > build/test-report.json`
 
 ### 1. Report
 
-The tool runs and its native output lands at `build/<platform>/<tool>-report.<ext>`.
+The tool runs and its native output lands at `build/<tool>-report.<ext>`.
 
-1. The report **MUST** land untouched. Normalization, filtering, reformatting, or merging 
-   **MUST NOT** be allowed, report that has been rewritten is no longer evidence of what 
-   the tool found.
-2. **MUST NOT**  No manipulating or default of error codes to move decisions to Check or any other
-    similar claims.
-3. .DELETE_ON_ERROR **MUST NOT** be used as it destroys evidence and makes bug-finding impossible
+The report lands untouched. No normalisation, filtering, reformatting or
+merging: a report that has been rewritten is no longer evidence of what the tool
+found.
+
+The report stage does not judge. A tool that exits non-zero because it found
+something still leaves its report, and the check will see what it found and
+fail. No exit code is defaulted or rewritten to move a decision into the check.
+
+`.DELETE_ON_ERROR` is not used. The reports are the proof that nobody has
+tampered with the pipeline. A tool that crashes does not leave a truncated
+report, or it is highly unlikely that it does, and deleting reports on error
+would destroy that proof to guard against a false positive.
 
 ### 2. Threshold
 
-Threshold constants are hardcoded directly inside each target's `.checked` check recipe where they are evaluated.
+Threshold constants are written directly in the `.checked` recipe where they are
+evaluated.
 
-1. Threshold values (e.g. max 0 lint errors, min 10 tests, floor 22% bash coverage) **MUST** be explicitly written directly in the check assertion recipe.
-2. A threshold **MUST NOT** be raised to make a build pass. Raising one is a reviewable change to
-   the repository's quality bar.
+A threshold is never moved to make a build pass. Changing one is a reviewable
+change to the repository's quality bar.
 
 ### 3. Check
 
-`build/<platform>/<tool>.checked` runs a check script that reads the report in place.
+`build/<tool>.checked` reads the report in place.
 
-1. The check **MUST** print one line stating measured against allowed, so the build log records
-   the quality position and not merely a verdict.
-2. The check **MUST** assert coverage as well as violation counts. A report may not pass by having
-   examined nothing.
-3. [a -gt b] && [c -eq d] is the only allowed form for combining conditions. Where letters are simple 
-   variable or constant comparator is one and only && between conditions
-4. `.checked` stamp **MUST** be produced only by a passing check. It records that a comparison
-   happened, never that a command ran.
+The check prints one line stating measured against allowed, so the build log
+records the quality position and not merely a verdict.
+
+The check asserts coverage as well as violation counts. A report may not pass by
+having examined nothing.
+
+`[ a -gt b ] && [ c -eq d ]` is the only form for combining conditions: simple
+variables or constants, one comparator each, and only `&&` between conditions.
+
+The `.checked` stamp is produced only by a passing check. It records that a
+comparison happened, never that a command ran.
