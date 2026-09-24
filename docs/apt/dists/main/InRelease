@@ -5,7 +5,7 @@ Origin: gettoken
 Label: gettoken
 Suite: main
 Codename: main
-Date: Thu, 24 Sep 2026 16:06:03 UTC
+Date: Thu, 24 Sep 2026 21:54:00 UTC
 Architectures: amd64
 Components: main
 Description: token broker for AI agents
@@ -23,8 +23,8 @@ SHA256:
  938ddc0cba963d57d2c6cde32e1c4fcccebc87efcf20dbb26097d6a7b9fe20f1 123 main/binary-amd64/Release
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarVKawAKCRDDrTt86Qtc
-+pZ8AP4s/4FQvfhln1Ym9IdNo0R+3rkEBsUdRsoK0kvyT2+HvQEA4rsVpO1hMRR3
-mv98MrhLX9n3WLgcmp3qLvr1tOKxxAY=
-=GSw3
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarWb+AAKCRDDrTt86Qtc
++k+AAQD9HCs6/1yRJbHYv+Cedl4yOPpvHLVh0sA6OqaDX1Q7iwD+LwHCjWo1B+kH
+I6rZ0AYFH/7r9HqprCgujCf8mmaq0Ac=
+=2KxA
 -----END PGP SIGNATURE-----
