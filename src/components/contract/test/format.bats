@@ -1,17 +1,12 @@
 bats_require_minimum_version 1.5.0
 
+load '../../../../scripts/test/helper'
+
 setup() {
-  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
-  bats_load_library bats-support
-  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   PATH="$root/build/bin:$PATH"
   CONTRACTS_DIR="$root/src/contracts"
   export PATH CONTRACTS_DIR
-}
-
-NormalizeStdErrWhenKcovOnMac() {
-  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
 }
 
 @test "a value that is not JSON is the one that gets quoted" {
@@ -53,7 +48,7 @@ a second line'
   unset signed
   run -1 --separate-stderr format token-request.schema.json who doing wants signed
   [ "$output" = "" ]
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "format: signed is not set, so there is no value for the field of that name"
+  assert_equal "$(without_kcov_trace "$stderr")" "format: signed is not set, so there is no value for the field of that name"
 }
 
 @test "a field named twice is refused" {
@@ -61,7 +56,7 @@ a second line'
   export who doing wants signed
   run -1 --separate-stderr format token-request.schema.json who who doing wants signed
   [ "$output" = "" ]
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "format: who is named twice"
+  assert_equal "$(without_kcov_trace "$stderr")" "format: who is named twice"
 }
 
 @test "a document the contract forbids is refused and not written" {
@@ -70,7 +65,7 @@ a second line'
   run -1 --separate-stderr format secret-get-response.schema.json version
   [ "$output" = "" ]
   expected=$(printf 'format: the document does not satisfy secret-get-response.schema.json\nvalidating https://thruput.io/gettoken/secret-response.schema.json: required: missing properties: ["value"]')
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
 @test "a field the contract does not govern is refused" {
@@ -79,7 +74,7 @@ a second line'
   run -1 --separate-stderr format secret-get-response.schema.json nosuch
   [ "$output" = "" ]
   expected=$(printf 'format: the document does not satisfy secret-get-response.schema.json\nvalidating https://thruput.io/gettoken/secret-response.schema.json: unexpected additional properties ["nosuch"]')
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
 @test "a value that is not the type the contract names is refused" {
@@ -88,7 +83,7 @@ a second line'
   run -1 --separate-stderr format secret-get-response.schema.json version value
   [ "$output" = "" ]
   expected=$(printf 'format: the document does not satisfy secret-get-response.schema.json\nvalidating https://thruput.io/gettoken/secret-response.schema.json: validating /properties/version: validating /$defs/Version: type: x has type "string", want "integer"')
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
 @test "naming a contract that does not exist is refused, and says so differently" {
@@ -96,5 +91,5 @@ a second line'
   export who
   run -1 --separate-stderr format no-such-contract.schema.json who
   [ "$output" = "" ]
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "format: no contract named no-such-contract.schema.json in $root/src/contracts"
+  assert_equal "$(without_kcov_trace "$stderr")" "format: no contract named no-such-contract.schema.json in $root/src/contracts"
 }

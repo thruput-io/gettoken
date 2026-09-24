@@ -1,19 +1,14 @@
 bats_require_minimum_version 1.5.0
 
+load '../../../../scripts/test/helper'
+
 setup() {
-  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
-  bats_load_library bats-support
-  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   stub=$(mktemp -d)
   REQUEST_FILE="$stub/request.json"
   PATH="$stub:$root/src/tools/gettoken/privileged:$root/build/bin:$PATH"
   CONTRACTS_DIR="$root/src/contracts"
   export PATH CONTRACTS_DIR REQUEST_FILE
-}
-
-NormalizeStdErrWhenKcovOnMac() {
-  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
 }
 
 teardown() { rm -rf "$stub"; }
@@ -62,5 +57,5 @@ asking() {
   run -1 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "" ]
   expected=$(printf 'parse: the document does not satisfy token-response.schema.json\nvalidating https://thruput.io/gettoken/response.schema.json: required: missing properties: ["access_token"]')
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "$expected"
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }

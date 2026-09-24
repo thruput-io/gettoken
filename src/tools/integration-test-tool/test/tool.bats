@@ -1,9 +1,8 @@
 bats_require_minimum_version 1.5.0
 
+load '../../../../scripts/test/helper'
+
 setup() {
-  export BATS_LIB_PATH="/usr/lib/bats:/usr/lib:/opt/homebrew/lib:/usr/local/lib"
-  bats_load_library bats-support
-  bats_load_library bats-assert
   root=$(CDPATH='' cd "$BATS_TEST_DIRNAME/../../../.." && pwd)
   PATH="$root/src/tools/integration-test-tool/bin:$PATH"
   export PATH
@@ -11,10 +10,6 @@ setup() {
 
 running() {
   INTEGRATIONTEST_TOKEN="$1" integration-test-tool
-}
-
-NormalizeStdErrWhenKcovOnMac() {
-  printf '%s' "$1" | sed -E '/(k+cov@|^(wants|key|value|fields|asked)=)/d'
 }
 
 @test "the tool writes back what the narrow token carries, and nothing else" {
@@ -25,7 +20,7 @@ NormalizeStdErrWhenKcovOnMac() {
 @test "the super-token that token was traded for is refused" {
   run -1 --separate-stderr running super-sample-token-123
   [ "$output" = "" ]
-  assert_equal "$(NormalizeStdErrWhenKcovOnMac "$stderr")" "integration-test-tool: INTEGRATIONTEST_TOKEN does not allow integrationtest/ci/run"
+  assert_equal "$(without_kcov_trace "$stderr")" "integration-test-tool: INTEGRATIONTEST_TOKEN does not allow integrationtest/ci/run"
 }
 
 @test "no token at all is refused, and hands over nothing" {
