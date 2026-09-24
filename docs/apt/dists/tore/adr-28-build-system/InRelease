@@ -1,30 +1,30 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-Architectures: amd64
-Codename: tore/adr-28-build-system
-Components: main
-Date: Wed, 23 Sep 2026 17:47:44 +0000
-Description: token broker for AI agents
-Label: gettoken
 Origin: gettoken
+Label: gettoken
 Suite: tore/adr-28-build-system
+Codename: tore/adr-28-build-system
+Date: Thu, 24 Sep 2026 13:22:44 UTC
+Architectures: amd64
+Components: tore/adr-28-build-system
+Description: token broker for AI agents
 MD5Sum:
- 761b0599cd99eea3fa1d85acb9ca4143            24847 main/binary-amd64/Packages
- 11f3e1764be22fb8a810e9bfe07ba81b             7807 main/binary-amd64/Packages.gz
+ 6e57b036186420dd2bc6e85d371defb3 21823 tore/adr-28-build-system/binary-amd64/Packages
+ 2d04d96225e0ef398658ef056d6cfc3e 5855 tore/adr-28-build-system/binary-amd64/Packages.gz
+ 3c2291446a41e1fc22c4bdaa05e6f108 163 tore/adr-28-build-system/binary-amd64/Release
 SHA1:
- 563285b8443ef73a1e5312525210959fa4664ee3            24847 main/binary-amd64/Packages
- 9c8b3e02f99c3ea00c08f9088b1f852c0b404c66             7807 main/binary-amd64/Packages.gz
+ b32dbdaae1c764aabe0bc8956c420e1962085521 21823 tore/adr-28-build-system/binary-amd64/Packages
+ e8b55597bf0b745fc55c0cae413bd5dad0827d03 5855 tore/adr-28-build-system/binary-amd64/Packages.gz
+ e1bb4353cb0b262016dacb77814d14a7b53f9dfa 163 tore/adr-28-build-system/binary-amd64/Release
 SHA256:
- a0905c78be2dbf9ac50a1bcd12d57946c06b3450952087f36f27c7201b79e0a8            24847 main/binary-amd64/Packages
- c7aed3c7e763d0caef864f6f61a6d8ba069413b50c069bd99b660922701bde9a             7807 main/binary-amd64/Packages.gz
-SHA512:
- 86e05c9de8a9b4c4a2ec3e3141c360be0755762e61f65309346d21a787345395de88f521f93d0b16968759beca6508b6aee33b74476b2dcd279b33b62f5ea636            24847 main/binary-amd64/Packages
- e7589fc2a624f8e83d31654cc5c21f97850b5054f7255a57e650a04dcb4054e5c6b2e98c501bd50dfc9ddc096734cc269c9645fe4574b3dd1fd480656527ba62             7807 main/binary-amd64/Packages.gz
+ 5c10a43607cbe2dd7b98314efc171ec704b5fab0c7e5a6d31d42ec240f96bc60 21823 tore/adr-28-build-system/binary-amd64/Packages
+ c878f39c5aac131304e98e8173324e34607226472141503b82501adf44a2d64a 5855 tore/adr-28-build-system/binary-amd64/Packages.gz
+ 05b70322d3b78366c4f1082f9546028a021c8a498f39c5533cff6dd9ee9d1478 163 tore/adr-28-build-system/binary-amd64/Release
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarQQwAAKCRDDrTt86Qtc
-+vWOAP4v91edqxiUnbuRDVukFtfXtVf62wK8Ow/bGknlnatXYwEAg6JxR5mL52eV
-LN2yFA9UTaDRbW4mrnyKOeB0l2AJHAw=
-=mstm
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarUkJAAKCRDDrTt86Qtc
++l9xAPwKE1+bhI7RInYSKX1awd+DCuWnbfiGki2gDGMOCdmPYQEAk/hoaMr6VxdR
+YvbNICLk521ET6giC5djuatwlkQn7QI=
+=GTlg
 -----END PGP SIGNATURE-----

@@ -1,7 +1,7 @@
 Types: deb
 URIs: https://thruput.se/gettoken/apt
 Suites: tore/adr-28-build-system
-Components: main
+Components: tore/adr-28-build-system
 Signed-By:
  -----BEGIN PGP PUBLIC KEY BLOCK-----
  .

@@ -1,0 +1,6 @@
+Archive: tore/adr-28-build-system
+Component: tore/adr-28-build-system
+Origin: gettoken
+Label: gettoken
+Architecture: amd64
+Description: token broker for AI agents
