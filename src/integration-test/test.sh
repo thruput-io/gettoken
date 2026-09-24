@@ -20,3 +20,6 @@ export INTEGRATIONTEST_TOKEN
 ran_on=$(integration-test-tool)
 
 test "$ran_on" = "$carried"
+
+apt-get purge -y gettoken-secret-manager
+test ! -e /var/lib/gettoken
