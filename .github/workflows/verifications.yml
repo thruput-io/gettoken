@@ -45,12 +45,7 @@ jobs:
     name: Debian stable
     needs: build
     runs-on: ubuntu-latest
-    container: ${{ matrix.container }}
-    strategy:
-      fail-fast: false
-      matrix:
-        container:
-          - debian:testing-slim
+    container: debian:testing-slim
     steps:
       - run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
       - uses: actions/checkout@v4
