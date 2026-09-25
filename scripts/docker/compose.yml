@@ -1,0 +1,25 @@
+services:
+  builder:
+    build:
+      context: ../..
+      dockerfile: scripts/docker/Dockerfile
+    working_dir: /work
+    network_mode: host
+    volumes:
+      - site:/work/build/site
+
+  archive:
+    build:
+      context: ../..
+      dockerfile: scripts/docker/Dockerfile.archive
+    volumes:
+      - site:/srv:ro
+
+  test:
+    image: node:26-slim
+    working_dir: /work
+    depends_on:
+      - archive
+
+volumes:
+  site:

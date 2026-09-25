@@ -255,6 +255,7 @@ docs/
   adrs/
   plans/
     brew-distribution/
+      progress/
     containers/
       research/
     virtual-macos/
