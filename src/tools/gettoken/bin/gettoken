@@ -1,21 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-prefix=/usr
-self=$(CDPATH='' cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-if command -v brew > /dev/null && [ "$self" = "$(brew --prefix)" ]; then
-  prefix=$self
-fi
-
-PATH="$prefix/lib/gettoken:/usr/bin:/bin:$PATH"
-: "${EXCHANGER_DIR:=$prefix/lib/gettoken/exchangers}"
-: "${CONTRACTS_DIR:=$prefix/share/gettoken/contracts}"
-if [ "$prefix" = /usr ]; then
-  : "${SECRET_DIR:=/var/lib/gettoken/secrets}"
-else
-  : "${SECRET_DIR:=$HOME/.gettoken/secrets}"
-fi
-export PATH EXCHANGER_DIR CONTRACTS_DIR SECRET_DIR
+PATH="/usr/lib/gettoken:/usr/bin:/bin:$PATH"
+export PATH
 
 if [ $# -ne 1 ]; then
   echo "gettoken: usage: gettoken --list | gettoken <capability>" >&2
