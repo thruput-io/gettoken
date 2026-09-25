@@ -41,12 +41,13 @@ reset_build_and_test
 
 if command -v macos-vm > /dev/null; then
   say "build and package on a fresh macOS guest: PACKAGE_FORMATS=brew resolves here, nowhere else"
+  key=$(bash "$root/scripts/generate-key.sh")
   macos-vm reset > /dev/null
-  the_tree | macos-vm shell bash -lc '
-    rm -rf "$HOME/gettoken" && mkdir "$HOME/gettoken" && cd "$HOME/gettoken" && tar -xf -
-    export ROOT_DIR="$HOME/gettoken" CI=true BRANCH=agent-build ARCHIVE_SIGNING_KEY=agent-build-placeholder BUILD_NUMBER=0
+  the_tree | macos-vm shell bash -lc "
+    rm -rf \"\$HOME/gettoken\" && mkdir \"\$HOME/gettoken\" && cd \"\$HOME/gettoken\" && tar -xf -
+    export ROOT_DIR=\"\$HOME/gettoken\" CI=true BRANCH=agent-build ARCHIVE_SIGNING_KEY='$key' BUILD_NUMBER=0
     source dynamic.sh
-    make package'
+    make package"
 fi
 
 say "everything the pipeline does, done here"

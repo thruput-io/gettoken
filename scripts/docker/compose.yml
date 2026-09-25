@@ -9,8 +9,9 @@ services:
       - site:/work/build/site
 
   archive:
-    image: busybox
-    command: httpd -f -p 80 -h /srv
+    build:
+      context: ../..
+      dockerfile: scripts/docker/Dockerfile.archive
     volumes:
       - site:/srv:ro
 
