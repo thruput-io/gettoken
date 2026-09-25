@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if command -v brew > /dev/null; then
-  prefix=$(brew --prefix)
-else
-  prefix=/usr
+prefix=/usr
+self=$(CDPATH='' cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+if command -v brew > /dev/null && [ "$self" = "$(brew --prefix)" ]; then
+  prefix=$self
 fi
 
 PATH="$prefix/lib/gettoken:/usr/bin:/bin:$PATH"

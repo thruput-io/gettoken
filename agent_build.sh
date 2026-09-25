@@ -14,8 +14,8 @@ say() { printf '\n=== %s ===\n' "$1"; }
 the_tree() { (git ls-files --cached --others --exclude-standard | grep -v '/$'; find .git) | COPYFILE_DISABLE=1 tar -cf - -T -; }
 
 reset_build_and_test() {
-  compose rm -fsv builder test archive > /dev/null 2>&1 || true
-  docker volume rm -f gettoken-agent-build_site > /dev/null 2>&1 || true
+  compose rm -fsv builder test archive
+  docker volume rm -f gettoken-agent-build_site
 }
 
 reset_build_and_test
@@ -23,7 +23,6 @@ reset_build_and_test
 say "build and sign the suite on ubuntu, in docker -- BUILD_DEPS is already baked into the image"
 the_tree | compose run --rm -T builder sh -ec '
     mkdir -p /work && cd /work && tar xf -
-    chmod +x scripts/*.sh src/components/contract/build.sh src/components/entitlements/entitlements src/components/secret-manager/secret-put src/components/secret-manager/secret-get src/components/token-service/token-service src/tools/gettoken/bin/gettoken src/tools/gettoken/privileged/token-requester src/tools/integration-test-tool/privileged/exchangers/integrationtest src/tools/integration-test-tool/bin/integration-test-tool src/integration-test/test.sh src/debian/rules dynamic.sh 2>/dev/null || true
     git config --global --add safe.directory "*"
     export GOFLAGS=-buildvcs=false
     make package'
@@ -31,7 +30,6 @@ the_tree | compose run --rm -T builder sh -ec '
 say "test on a clean node slim: make test, then the same invocation CI uses"
 the_tree | compose run --rm -T test bash -ec '
     mkdir -p /work && cd /work && tar xf -
-    chmod +x scripts/*.sh src/components/contract/build.sh src/components/entitlements/entitlements src/components/secret-manager/secret-put src/components/secret-manager/secret-get src/components/token-service/token-service src/tools/gettoken/bin/gettoken src/tools/gettoken/privileged/token-requester src/tools/integration-test-tool/privileged/exchangers/integrationtest src/tools/integration-test-tool/bin/integration-test-tool src/integration-test/test.sh src/debian/rules dynamic.sh 2>/dev/null || true
     apt-get update && apt-get install -y -qq --no-install-recommends make git ca-certificates gnupg > /dev/null
     git config --global --add safe.directory "*"
     make test
