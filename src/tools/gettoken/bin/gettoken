@@ -1,8 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PATH="/usr/lib/gettoken:/usr/bin:/bin:$PATH"
-export PATH
+if command -v brew > /dev/null 2>&1; then
+  prefix=$(brew --prefix)
+else
+  prefix=/usr
+fi
+
+PATH="$prefix/lib/gettoken:/usr/bin:/bin:$PATH"
+EXCHANGER_DIR="$prefix/lib/gettoken/exchangers"
+CONTRACTS_DIR="$prefix/share/gettoken/contracts"
+if [ "$prefix" = /usr ]; then
+  SECRET_DIR=/var/lib/gettoken/secrets
+else
+  SECRET_DIR="$HOME/.gettoken/secrets"
+fi
+export PATH EXCHANGER_DIR CONTRACTS_DIR SECRET_DIR
 
 if [ $# -ne 1 ]; then
   echo "gettoken: usage: gettoken --list | gettoken <capability>" >&2

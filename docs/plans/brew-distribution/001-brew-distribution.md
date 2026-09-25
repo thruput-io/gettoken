@@ -112,7 +112,7 @@ placeholder, tracked in issue #51) exercising it for real.
 `version.txt` holds `MAJOR.MINOR`; CI appends the build number as the patch digit and cuts a git
 tag on every merge to `main` ([D3](#discussions), [D4](#discussions)). A generator script, run
 from the same contract/component data `scripts/packaging.sh` already reads to build `debian/control`,
-emits one Homebrew formula per apt package — including the ten contract-only ones — each building
+emits one Homebrew formula per apt package — including the thirteen contract-only ones — each building
 from that tag's source tarball and wired together with `depends_on` the way apt wires them with
 `Depends` ([D2](#discussions), [D6](#discussions)). `thruput-io/homebrew-tap` ([D1](#discussions))
 receives them via the same installation-token push `pages_push` already uses for the apt archive
@@ -127,6 +127,7 @@ runs.
 | The GitHub App installation can be granted write access to a new `thruput-io/homebrew-tap` repo | Not tested — `gh api orgs/thruput-io/repos` confirms the repo does not exist yet ([D1](#discussions)) | untested | M3 creates the repo and grants access before attempting the push; if refused, escalate to the human rather than work around it |
 | The vendored Go contract component needs no network to build | Read ADR 24 (`-mod=vendor`, no `buildvcs`) | confirmed by the ADR's own reasoning, not independently re-run in this plan | brew's sandboxed build environment would need network access declared, which `brew audit` flags |
 | A tap is a plain git repo, so the same installation-token `git push` `pages_push` uses will work against it, with no Homebrew-specific API | Read `docs.brew.sh/Taps` and `/How-to-Create-and-Maintain-a-Tap`: a tap is "a Git repository... or even just a directory with files in it" | confirmed by documentation, not yet proven by an actual push | if false, M3's push step needs a different mechanism than `pages.sh`'s |
+| Fetching a just-pushed tag's GitHub archive tarball (`.../archive/refs/tags/v{version}.tar.gz`) to compute its `sha256` succeeds on the first try, in the same CI run that pushed the tag | Tested for real on 2026-09-25: `v0.1.0` tagged directly onto `origin/main`'s tip (`a855db5`, a manual bootstrap tag, not yet through the CI step M1 adds) and pushed to the real `thruput-io/gettoken`; the archive fetch succeeded on the first attempt, ~0.65s after the push, 0 retries needed | tested once, succeeded — one success is not a guarantee it always will be | [D9](#discussions)'s retry stays as cheap insurance regardless; empirically the risk looks low |
 
 **Preconditions.** PR #50 merged into `main` (confirmed 2026-09-24: `origin/main` at `f08566b`,
 carrying the ADR 28/29 report-threshold-check build model this plan's milestones will build
@@ -167,8 +168,11 @@ The decision register: one row per non-trivial decision, in the order the decisi
 | D3 | A new git tag is cut on every merge to `main`; the version is repo-wide, not per-component, for now | "What is the source of truth for the formula's version — a git tag drives `src/debian/changelog`, the changelog drives the tag, or they are chosen independently per release?" | "New tag for each merge to main and versions stays repo wide for now" | human | The tag becomes the single source of truth for what every formula and the apt archive call "this version," deferring per-component versioning. | 2026-09-24 |
 | D4 | Version = `{major}.{minor}` from `version.txt`, patch digit = the CI build number | "Is version/release lockstep automation... in scope for this plan, or does it belong to a later one?" | "A super simple one for now major/minor from a verion.txt then patch version as build numer" | human | In scope, deliberately minimal: a committed `version.txt` for the two digits a human chooses, the build number for the one that shouldn't need a commit. | 2026-09-24 |
 | D5 | CI publishes the tap with the same installation-token `git push` mechanism `pages_push` uses for the apt archive | "What pushes the formula to the tap in CI — the same installation-token pattern `pages_push` uses for the apt archive, or something else?" | "apt if that is okey with brew?" | human, agent confirmed the mechanism is compatible | A Homebrew tap is a plain git repository (`docs.brew.sh/Taps`); no Homebrew-specific push API exists, so the existing pattern applies unchanged once the app has write access to the new repo. | 2026-09-24 |
-| D6 | "Mirror apt" means a literal formula for every apt package (22, including the 10 contract-only ones), wired with `depends_on` exactly as apt wires them with `Depends` | "Does 'mirror apt's package boundaries' mean one formula per installable component, or a literal formula for all 22 apt packages including the ten that carry only a schema?" | "doesn't brew have deps?" / "it's kind of vital to this solution" | human | Confirmed from the Formula Cookbook: `depends_on "formula-name"` is a first-class formula dependency, the same mechanism `Depends` gives apt — there is no technical reason to collapse the graph. The human stressed the dependency wiring itself is load-bearing, not cosmetic: a set of 22 formulae with no real `depends_on` edges between them would not satisfy this decision. | 2026-09-24 |
+| D6 | "Mirror apt" means a literal formula for every apt package (22, including the 13 contract-only ones), wired with `depends_on` exactly as apt wires them with `Depends` | "Does 'mirror apt's package boundaries' mean one formula per installable component, or a literal formula for all 22 apt packages including the ones that carry only a schema?" | "doesn't brew have deps?" / "it's kind of vital to this solution" | human | Confirmed from the Formula Cookbook: `depends_on "formula-name"` is a first-class formula dependency, the same mechanism `Depends` gives apt — there is no technical reason to collapse the graph. The human stressed the dependency wiring itself is load-bearing, not cosmetic: a set of 22 formulae with no real `depends_on` edges between them would not satisfy this decision. | 2026-09-24 |
 | D7 | The black-box proof (Goal 2) invokes `dynamic.sh` + `src/integration-test/test.sh` directly on the CI runner; it never goes through `make test`. `test.sh` gains a `SETUP_COMMAND` value from `dynamic.sh` (mirroring `INSTALL_COMMAND`) for the one apt-specific step, so it stays linear rather than branching on `PACKAGE_FORMATS` itself | "What should the macOS CI job invoke instead of make test?" | "integration test runs a completely clean machine" / "mkae test is local environment only" / "make test is completely worong on verification and misses the whole point of it" | human | `make test` requires `make` and the whole Makefile dependency graph on the runner before anything installs — that is not the clean machine a real installer sees. `dynamic.sh` sourced directly needs only `bash`; `test.sh` then installs the product exactly as a user would, through the platform's own package manager. `test.sh` already avoids branching on `PACKAGE_FORMATS` (a prior version did and PR #50's review flagged it); a second per-platform value from `dynamic.sh` keeps that true for the tap-vs-sources-file step instead of adding an `if` to `test.sh`. Recorded as [`docs/adrs/0030-integration-tests-never-go-through-make.md`](../../adrs/0030-integration-tests-never-go-through-make.md), and fixed on `main` directly (PR #54, out of this plan's branch) since it also affected the already-merged Debian job. | 2026-09-24 |
+| D8 | Every generated formula — all 22, including the 13 contract-only ones — carries a `test do` that asserts something real, not merely the minimum `brew audit --new --formula` requires | "Do the 10 contract-only formulae (schema-only apt packages, no binary/PATH entry) also need a `test do`?" | "Yes, trivial test do for all 22" | human | M2's own verification bar (`brew audit --new --formula` clean) requires a `test do` per formula; per [D6](#discussions)'s rejection of cosmetic-only mirroring, the contract-only formulae's test asserts their installed schema/asset is present and valid rather than being a no-op that only satisfies the linter. The question put to the human said "10" — running `packaging.sh` for real (2026-09-25) shows the correct split is 9 installable + 13 contract-only = 22; the decision itself (real test do for every contract-only formula) is unaffected by the count being wrong. | 2026-09-25 |
+| D9 | The CI step that fetches M1's tag's GitHub archive tarball and computes its `sha256` retries with bounded backoff rather than assuming the archive is fetchable in the same run immediately after the tag push | "Is fetching that archive endpoint immediately after the tag push (same CI run) reliable, or should the step retry?" | "Add bounded retry with backoff" | human | Whether GitHub's archive/codeload generation for a just-pushed tag is available with no delay is untested (see the risk row this adds below); a single fetch would make M2 flaky on an untested assumption, so the step retries instead of assuming. | 2026-09-25 |
+| D10 | M2's own formula generation and verification builds from a locally-built source tarball (`file://` url, `sha256` computed directly, no network fetch, no retry needed) instead of M1's tag; M1's real tag + GitHub-archive `sha256` (D9) is consumed only by M3's push to the real, externally-reachable tap | "Then you need to update the plan and tag the repo, how is distribution solved for local build on debian?" | (steer to investigate, not a direct answer) | human steered, agent resolved from evidence | Read `scripts/archive.sh`/`scripts/sources.sh`: apt's local/per-branch build never involves a git tag at all — the suite is the branch name, the package version comes from the static `src/debian/changelog`, and `dpkg-buildpackage` builds straight from the locally copied `src/` tree; every push, PRs included, republishes its own branch's apt corner this way, with no tag or network fetch anywhere in that path. Brew's `url`/`sha256` are Homebrew's actual fetch-and-verify mechanism (unlike dpkg, which doesn't fetch anything), but Homebrew accepts a `file://` url exactly as validly as `https://`, so the same "build from the local copy" pattern applies: M2's generator and its own `brew audit`/scratch-tap verification use a `file://` url to a tarball built from the same `build/source` copy `packaging.sh` already operates on, hashed locally and instantly. Confirmed empirically the same day: `v0.1.0` was tagged directly onto `origin/main` and pushed for real, and its GitHub archive was fetchable on the first attempt (see the risk row above) — real evidence M1's mechanism works, kept separate from M2's own verification path so M2 never depends on network access or an existing tag to be tested. | 2026-09-25 |
 
 ## Open questions
 
@@ -207,9 +211,17 @@ direct invocation instead of the placeholder step it has now.
 3. `dynamic.sh` or a new small script exposes the resolved version to the rest of the build the
    same way it exposes `BRANCH` today, so both `src/debian/changelog` and the formula generator
    (M2) read one value.
+4. After the tag push (step 2), a CI step fetches that tag's GitHub archive tarball
+   (`https://github.com/thruput-io/gettoken/archive/refs/tags/v{version}.tar.gz`) and computes its
+   `sha256`, retrying with bounded backoff rather than failing on a first miss
+   ([D9](#discussions)); expose the result for M3's publish step to use — M2's own generator does
+   not consume this (it builds and verifies against a local tarball instead; see
+   [D10](#discussions)).
 
 **Verification:** a merge to `main` produces a new git tag matching `v{version.txt}.{build
-number}`; `git describe --tags` on that commit returns it.
+number}`; `git describe --tags` on that commit returns it; the fetch-and-hash step succeeds
+against that same tag's archive URL and produces a non-placeholder digest (not the thirty-two
+zero bytes `deliver-brew.sh` writes today).
 
 ### Milestone M2 — Formulae mirror apt's package graph, built from a real tag
 
@@ -220,20 +232,38 @@ correctly)
 
 1. Extract the per-contract dependency computation `scripts/packaging.sh` already does for
    `debian/control` into data both the deb and brew generators read, rather than duplicating the
-   `uses`/`needs` logic.
-2. Write a generator (parallel to `packaging.sh`'s `deb` arm, in the existing `PACKAGE_FORMATS`
-   loop per ADR 29) that emits one `.rb` formula per apt package — the 12 installable components
-   and the 10 contract-only packages — each `url`/`sha256` pointing at M1's tag, `depends_on`
-   wiring mirroring apt's `Depends` exactly.
+   `uses`/`needs` logic: make the existing `deb`-arm resolution (writing every package's `Depends`,
+   contract packages included, into `debian/control`) run unconditionally, ahead of the
+   `PACKAGE_FORMATS` case, so both formats consume the one resolved `debian/control` and the
+   `.install` files packaging.sh already writes for every package (contract packages included —
+   each installs its own schema into `usr/share/gettoken/contracts`). Neither format re-derives the
+   graph from `contracts/*.schema.json` a second time.
+2. Write a generator (a new `brew` case in the same `PACKAGE_FORMATS` loop per ADR 29, reading the
+   resolved `debian/control`/`.install` files from step 1) that emits one `.rb` formula per apt
+   package — the 9 installable components and the 13 contract-only packages (verified by running
+   `packaging.sh` for real on 2026-09-25: `grep -c '^Package: ' debian/control` = 22, split 9/13,
+   not the plan's earlier 12/10) — each `url`/`sha256` pointing at a source tarball built locally
+   from the same `build/source` copy `packaging.sh` already operates on (`file://` url, `sha256`
+   computed directly, no network, no tag needed — mirroring how apt's own local/per-branch build
+   never depends on a git tag either; [D10](#discussions)), `depends_on` wiring parsed from each
+   package's resolved `Depends` line exactly.
 3. Each installable formula's `def install` builds only what that apt package builds (reusing
    `src/components/contract/build.sh` for `parse`/`format`) and installs only what that package's
    `.install` file names, so the public-PATH contract `packaging.bats` asserts for apt holds for
-   brew too.
-4. Replace `deliver-brew.sh`'s placeholder body with this generator; remove the
+   brew too. Every contract-only formula's `def install` installs its schema file per its own
+   `.install` file the same generic way.
+4. Every generated formula carries a `test do` that asserts something real, not a no-op that only
+   satisfies the audit ([D8](#discussions)): for the 9 installable components, invoke the
+   installed binary (`--version`, or for `gettoken` itself a minimal capability-exchange smoke
+   check); for the 13 contract-only formulae, assert their installed schema/asset is present and
+   parses correctly.
+5. Replace `deliver-brew.sh`'s placeholder body with this generator; remove the
    `gettoken.rb.todo` emission.
 
 **Verification:** `brew audit --new --formula` is clean on every generated formula in a scratch
-tap; a new or extended `packaging.bats`-style assertion confirms the brew dependency graph matches
+tap, built against the local `file://` tarball ([D10](#discussions)) — including that every
+formula, contract-only ones included, has a passing, non-trivial `test do` ([D8](#discussions));
+a new or extended `packaging.bats`-style assertion confirms the brew dependency graph matches
 apt's `Depends` graph package-for-package.
 
 ### Milestone M3 — A real tap receives them
@@ -244,8 +274,12 @@ apt's `Depends` graph package-for-package.
 
 1. Create `thruput-io/homebrew-tap` ([D1](#discussions)) and grant the GitHub App installation
    write access to it.
-2. Replace `publish.sh`'s brew arm — which today only copies `gettoken.rb` into the `gh-pages`
-   worktree and says publishing is not built yet (issue #53) — with a push of M2's generated
+2. Before pushing, rewrite each formula's `url`/`sha256` from M2's local `file://` tarball to M1's
+   real tag and its fetched `sha256` ([D9](#discussions), [D10](#discussions)) — the only step in
+   the whole pipeline where a permanently, externally-fetchable source actually matters, since only
+   external users' `brew install` needs a url that outlives the CI runner's own filesystem.
+3. Replace `publish.sh`'s brew arm — which today only copies `gettoken.rb` into the `gh-pages`
+   worktree and says publishing is not built yet (issue #53) — with a push of the rewritten
    `Formula/*.rb` into the tap repo, using the same installation-token mechanism `pages_push` uses
    ([D5](#discussions)), gated by `PACKAGE_FORMATS` on Darwin CI.
 

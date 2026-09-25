@@ -1,0 +1,80 @@
+services:
+  # Builds and packages the suite. BUILD_DEPS is baked into the image once (docker layer
+  # cache), instead of apt-get installing the whole toolchain fresh on every agent_build.sh
+  # run -- the repeated install of ~30 packages including gcc/g++/Go was the thing that made
+  # every run slow and, under disk/memory pressure, unreliable.
+  builder:
+    build:
+      context: ../..
+      dockerfile: scripts/docker/Dockerfile
+    working_dir: /work
+    network_mode: host
+    volumes:
+      - site:/work/build/site
+
+  # Serves the archive builder just packaged, at the hostname "archive" -- matching
+  # constants.env's LOCAL_SITE_URL=http://archive exactly, for free, via compose's
+  # automatic per-service DNS alias.
+  archive:
+    image: busybox
+    command: httpd -f -p 80 -h /srv
+    volumes:
+      - site:/srv:ro
+
+  # A genuinely minimal, unrelated base image -- never the builder's own toolchain image --
+  # so installing and exercising the packages here proves they work on a real clean machine,
+  # not just inside the environment that built them.
+  test:
+    image: node:26-slim
+    working_dir: /work
+    depends_on:
+      - archive
+
+  # A disposable, local git host with an archive-tarball-by-tag endpoint, standing in for
+  # a real tap/GitHub during M2/M3 development so nothing needs pushing to the real repo.
+  # Kept out of agent_build.sh's own build/test lifecycle -- never targeted by its cleanup,
+  # left running across invocations for reuse.
+  gitea:
+    image: gitea/gitea:latest
+    environment:
+      GITEA__database__DB_TYPE: sqlite3
+      GITEA__security__INSTALL_LOCK: "true"
+      GITEA__service__DISABLE_REGISTRATION: "true"
+    ports:
+      - "3500:3000"
+    volumes:
+      - gitea:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/v1/version"]
+      interval: 2s
+      retries: 30
+
+  gitea-init:
+    image: gitea/gitea:latest
+    depends_on:
+      gitea:
+        condition: service_healthy
+    volumes:
+      - gitea:/data
+    entrypoint: /bin/sh
+    command:
+      - -ec
+      - |
+        curl -s -o /dev/null -w '%{http_code}' http://gitea:3000/api/v1/users/probe | grep -qx 200 && exit 0
+        su git -c "gitea admin user create --username probe --password probe-pass-123 --email probe@example.com --admin"
+
+  # Serves a repo's gh-pages branch statically, standing in for GitHub Pages so pages.sh's
+  # real push-and-serve flow can be exercised against Gitea instead of the real repo.
+  git-pages:
+    image: codeberg.org/git-pages/git-pages:latest
+    environment:
+      PAGES_INSECURE: "1"
+    ports:
+      - "3600:3000"
+    volumes:
+      - git-pages:/app/data
+
+volumes:
+  site:
+  gitea:
+  git-pages:

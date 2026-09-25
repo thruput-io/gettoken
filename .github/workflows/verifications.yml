@@ -8,6 +8,7 @@ on:
 env:
   BRANCH: ${{ github.head_ref || github.ref_name }}
   ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
+  BUILD_NUMBER: ${{ github.run_number }}
   ROOT_DIR: ${{ github.workspace }}
 
 defaults:
@@ -26,6 +27,11 @@ jobs:
       - uses: actions/checkout@v4
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: make build
+      - name: cut and push a release tag
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          source dynamic.sh
+          bash scripts/tag-release.sh "v$VERSION" "$GITHUB_REPOSITORY" build/brew-sha256.txt
       - if: always()
         uses: actions/upload-artifact@v4
         with:
