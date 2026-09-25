@@ -5,7 +5,7 @@ Origin: gettoken
 Label: gettoken
 Suite: tore/001-brew-distribution
 Codename: tore/001-brew-distribution
-Date: Fri, 25 Sep 2026 13:44:47 UTC
+Date: Fri, 25 Sep 2026 23:22:38 UTC
 Architectures: amd64
 Components: tore/001-brew-distribution
 Description: token broker for AI agents
@@ -23,8 +23,8 @@ SHA256:
  093adf9a76fa449c2033b188bc40a7102488a6e4273d15f235741ad695a903e4 167 tore/001-brew-distribution/binary-amd64/Release
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarZ6zwAKCRDDrTt86Qtc
-+g8sAPwPvXNn2DRgtRxKkhtIPqxDGSPV9ATJADk64KoMEz6aMQD+OPcs4CszJE3b
-yTA9yn46Q2dhjwP7tcZNAAfIx4N5SwA=
-=A5Wh
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarcCPgAKCRDDrTt86Qtc
++hIwAQCb3qvK8htL9qCUwmwXE/giVZx1ByETqxlCXyXGPVxawQD+PkXFyAx2pRN7
+m5DWhNoI72FW5Hu5iaWqfPfQ39awTgc=
+=JJoe
 -----END PGP SIGNATURE-----
