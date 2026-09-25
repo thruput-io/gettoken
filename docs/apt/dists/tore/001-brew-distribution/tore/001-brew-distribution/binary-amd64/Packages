@@ -8,10 +8,10 @@ Homepage: https://github.com/thruput-io/gettoken
 Priority: optional
 Section: admin
 Filename: pool/tore/001-brew-distribution/g/gettoken/gettoken_0.1.0_all.deb
-Size: 8732
-SHA256: 259b23b61e056ac2b02273220974fb51104be642d437d8e9947f9e1f7f188bce
-SHA1: 08ca17a686dbf713b046aa6ccfa740ae07103fe6
-MD5sum: f501b6d781bd1b4084fe909e18180d31
+Size: 8520
+SHA256: 3ce42fc41ec3340f6a3872516694b96ae9090875d5496cc2ebf2c19ace0f938c
+SHA1: 0aa8c5691867ba7353934e754a986ece369a6854
+MD5sum: cb5285df9080ee6ffe50587de76a1d11
 Description: token broker for AI agents
  An agent that holds a long-lived credential holds whatever authority that
  credential carries, and an agent can be talked into things by whatever it
