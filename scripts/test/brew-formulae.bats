@@ -5,7 +5,6 @@ setup() {
   build=$(mktemp -d)
   cp -a "$root/src" "$build/source"
   cp "$root/README.md" "$build/source/README.md"
-  PACKAGE_FORMATS=deb bash "$root/scripts/packaging.sh" "$build/source" > /dev/null
   VERSION=0.1.0-test PACKAGE_FORMATS=brew bash "$root/scripts/packaging.sh" "$build/source" > /dev/null
   export build root
 }

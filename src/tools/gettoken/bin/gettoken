@@ -8,12 +8,12 @@ else
 fi
 
 PATH="$prefix/lib/gettoken:/usr/bin:/bin:$PATH"
-EXCHANGER_DIR="$prefix/lib/gettoken/exchangers"
-CONTRACTS_DIR="$prefix/share/gettoken/contracts"
+: "${EXCHANGER_DIR:=$prefix/lib/gettoken/exchangers}"
+: "${CONTRACTS_DIR:=$prefix/share/gettoken/contracts}"
 if [ "$prefix" = /usr ]; then
-  SECRET_DIR=/var/lib/gettoken/secrets
+  : "${SECRET_DIR:=/var/lib/gettoken/secrets}"
 else
-  SECRET_DIR="$HOME/.gettoken/secrets"
+  : "${SECRET_DIR:=$HOME/.gettoken/secrets}"
 fi
 export PATH EXCHANGER_DIR CONTRACTS_DIR SECRET_DIR
 
