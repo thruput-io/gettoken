@@ -20,31 +20,10 @@ url="file://$tarball"
 
 mkdir -p Formula
 
-depgraph=$(mktemp)
-trap 'rm -f "$depgraph"' EXIT
-awk '
-  /^Package: / { pkg = $2 }
-  /^Depends:/ {
-    indep = 1
-    line = $0
-    sub(/^Depends: */, "", line)
-    collect(line)
-    next
-  }
-  indep && /^(Architecture|Description): / { indep = 0 }
-  indep { collect($0) }
-  function collect(s,    n, parts, i, tok) {
-    n = split(s, parts, ",")
-    for (i = 1; i <= n; i++) {
-      tok = parts[i]
-      gsub(/^[ \t]+|[ \t]+$/, "", tok)
-      if (tok ~ /^(gettoken|integration-test-tool)/) print pkg, tok
-    }
-  }
-' debian/control > "$depgraph"
+self_dir=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 
 package_depends() {
-  awk -v p="$1" '$1 == p { print $2 }' "$depgraph"
+  bash "$self_dir/apt-depends-for.sh" debian/control "$1"
 }
 
 install_line() {
