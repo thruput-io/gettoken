@@ -55,7 +55,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           tar -cf - constants.env dynamic.sh src/integration-test/test.sh \
-            | docker run -i --rm -e CI=true -e ROOT_DIR=/work -e BRANCH -e ARCHIVE_SIGNING_KEY \
+            | docker run -i --rm -e CI=true -e ROOT_DIR=/work -e BRANCH -e ARCHIVE_SIGNING_KEY -e BUILD_NUMBER \
               debian:testing-slim bash -c '
                 mkdir -p /work && cd /work && tar xf -
                 source dynamic.sh && bash src/integration-test/test.sh'
