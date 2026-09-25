@@ -5,26 +5,26 @@ Origin: gettoken
 Label: gettoken
 Suite: tore/001-brew-distribution
 Codename: tore/001-brew-distribution
-Date: Fri, 25 Sep 2026 01:51:20 UTC
+Date: Fri, 25 Sep 2026 02:12:40 UTC
 Architectures: amd64
 Components: tore/001-brew-distribution
 Description: token broker for AI agents
 MD5Sum:
- d4e1d3e53fb7df124ad934451f3de7cb 21871 tore/001-brew-distribution/binary-amd64/Packages
- d92b818df36fe6e27abba3d8800246af 5855 tore/001-brew-distribution/binary-amd64/Packages.gz
+ 22df04caab2cea5e1eb58f28e4bba0a7 21871 tore/001-brew-distribution/binary-amd64/Packages
+ 68aabe331dc3ff6e8d5e165b2f4d0977 5852 tore/001-brew-distribution/binary-amd64/Packages.gz
  403167498edc89f302162092eb505844 167 tore/001-brew-distribution/binary-amd64/Release
 SHA1:
- e9a8f4f70b34cf8f970c710c61c0b3382f28ba67 21871 tore/001-brew-distribution/binary-amd64/Packages
- 8ff8484aab45aada4ab86e8b629b5de07b0c3e6e 5855 tore/001-brew-distribution/binary-amd64/Packages.gz
+ d55d37d9a87aaddbc3a63fc2a95044d1c449df4c 21871 tore/001-brew-distribution/binary-amd64/Packages
+ d14e6ab11e0810e45275d0e1cce9bedf0a47008f 5852 tore/001-brew-distribution/binary-amd64/Packages.gz
  87e18da368f2ee35ff5056cf645ae3f4d3d16d28 167 tore/001-brew-distribution/binary-amd64/Release
 SHA256:
- 6e7625a8fea1f614a0bebf918beaec6418aac98c4e0147a272194eb7c9a74a84 21871 tore/001-brew-distribution/binary-amd64/Packages
- 903fa5ea7c234115e806ae94f1b438de2c18ba84e52d7315b7a5f8605a83ad24 5855 tore/001-brew-distribution/binary-amd64/Packages.gz
+ 8f0672bdbc83515dc9859998fd588dfedddb22de1a5f640380878a82543db2a0 21871 tore/001-brew-distribution/binary-amd64/Packages
+ dd4693357862ed08def3b61dc19159fd708a0de2ff7fba5a99ca839ffb5cc1ac 5852 tore/001-brew-distribution/binary-amd64/Packages.gz
  093adf9a76fa449c2033b188bc40a7102488a6e4273d15f235741ad695a903e4 167 tore/001-brew-distribution/binary-amd64/Release
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarXTmQAKCRDDrTt86Qtc
-+pnJAQDdbd4eoiGUbYpTtSYp98D5hSRQrnnj5Gf8LcKsquEdjAD/UXrOe7c8Cd+c
-6Ol/L7wkv8B7ZeyZgDd31w8jvZSjpg8=
-=w1M8
+iHUEARYKAB0WIQSS5lqNqbM+UR7oI87DrTt86Qtc+gUCarXYmAAKCRDDrTt86Qtc
++rmzAPwNhfQw2jpw1MmOOuofvFFFn2cUpKIUVaMjFEsitWRHpwEAiiKVFkzMll/Z
+hEm1afKVQpGkyTk/qTgOaXMVoBPtTAM=
+=/3y1
 -----END PGP SIGNATURE-----
