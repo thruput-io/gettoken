@@ -12,14 +12,21 @@ all of it again.
 
 gettoken builds packages and releases them. It does not sign or serve them.
 
-A merge to `main` cuts the tag `v{version.txt}.{run number}` and attaches every
-`.deb`, the source tarball and every Homebrew formula to that GitHub Release.
+A merge to `main` whose integration tests pass on Debian and on macOS cuts the
+tag `v{version.txt}.{run number}`, attaches every `.deb`, the source tarball and
+every Homebrew formula to that GitHub Release, and sends a `release` repository
+dispatch to the distribution repositories. Nothing publishes on a schedule or
+by hand.
 
 `thruput-io/apt` and `thruput-io/homebrew-tap` own distribution, for every repository
-listed in their `sources.txt`. Each takes the latest release of each source with
-its own token: apt builds one signed archive and deploys it to Pages, brew
-commits the formulae to its tap. The signing key lives in `thruput-io/apt`
-only. Neither needs write access to the repository it distributes.
+listed in their `sources.txt`. On a dispatch, each takes the
+latest release of each source with its own token: apt builds one signed
+archive and deploys it to Pages, the tap commits the formulae. The signing key
+lives in `thruput-io/apt` only.
+
+The dispatch is sent as the org's distribution app, a GitHub App whose only
+permission is Contents write on the distribution repositories. It is not the
+app that sets secrets.
 
 Verification installs the delivered files, not a published archive. A pull
 request is proven by installing the `.deb`s it built on a clean machine; the
@@ -31,5 +38,7 @@ apt has `Depends`.
 ## Motivation
 
 Publishing is the same job for every repository, so it is done once, where the
-key is. A repository that releases its files is done; whoever distributes them
-pulls, so no repository holds a credential to another.
+key is. A source can only say that it released; the distribution repositories
+fetch what it released themselves. A GitHub App is the org's identity for one
+repository acting on another, and keeping it to that one permission keeps the
+key and the secrets out of the source's reach.
