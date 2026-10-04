@@ -2,7 +2,8 @@
 
 ## Context
 
-Publishing grew inside gettoken until it was most of the build.
+A user installs gettoken with apt or brew, from one archive and one tap that
+serve everything thruput-io ships.
 
 ## Decision
 
