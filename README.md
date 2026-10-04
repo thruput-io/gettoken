@@ -180,10 +180,10 @@ brew tap thruput-io/brew https://github.com/thruput-io/brew
 brew install integration-test-tool
 ```
 
-The formulae install, but `gettoken` does not run from them yet: it looks for
-its privileged half in `/usr/lib/gettoken` and keeps the store in
-`/var/lib/gettoken`, neither of which Homebrew writes. Where those live on macOS
-is still to be decided (`docs/adrs/0026`).
+The formulae put everything under Homebrew's prefix instead of `/usr/lib`,
+`/usr/share` and `/var/lib` (`docs/adrs/0032`). The store lives in
+`$(brew --prefix)/var/gettoken`, owned by the account that owns brew, and
+`brew uninstall` leaves it in place.
 
 `Signed-By` names the one key that one archive may be signed with. A key put in
 `/etc/apt/trusted.gpg.d` instead would be trusted to sign every other archive on

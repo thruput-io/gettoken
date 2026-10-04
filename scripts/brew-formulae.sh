@@ -45,6 +45,25 @@ prefix_of() {
   esac
 }
 
+roots_in() {
+  while read -r root brew; do
+    if grep -qF "$root" "$1"; then
+      printf '    inreplace "%s", "%s", "%s"\n' "$1" "$root" "$brew"
+    fi
+  done <<'ROOTS'
+/usr/lib/gettoken #{HOMEBREW_PREFIX}/lib/gettoken
+/usr/share/gettoken #{HOMEBREW_PREFIX}/share/gettoken
+/var/lib/gettoken #{var}/gettoken
+ROOTS
+}
+
+sources_of() {
+  if grep -q '^build/bin/' "$1"; then
+    echo components/contract/contract.go
+  fi
+  awk '$1 !~ /^build\// { print $1 }' "$1"
+}
+
 test_of() {
   case "$1" in
     gettoken-contract-*) printf '    require "json"\n    JSON.parse((share/"gettoken/contracts/%s").read)\n' "$2" ;;
@@ -81,6 +100,9 @@ for install in debian/*.install; do
     fi
 
     printf '\n  def install\n'
+    sources_of "$install" | while read -r file; do
+      roots_in "$file"
+    done
     if grep -q '^build/bin/' "$install"; then
       printf '    system "bash", "components/contract/build.sh", "build/bin"\n'
     fi

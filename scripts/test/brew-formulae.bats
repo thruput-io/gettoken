@@ -46,3 +46,25 @@ brew_depends_of() {
   edges=$(cat "$build"/Formula/*.rb | grep -c 'depends_on "thruput-io/brew/')
   [ "$edges" -gt 22 ]
 }
+
+debian_paths_installed() {
+  for install in "$build"/source/debian/*.install; do
+    package=$(basename "$install" .install)
+    awk '/^build\/bin\// { built = 1 } $1 !~ /^build\// { print $1 } END { print (built ? "components/contract/contract.go" : "") }' "$install" \
+      | awk NF | while read -r file; do
+          grep -oF -e /usr/lib/gettoken -e /usr/share/gettoken -e /var/lib/gettoken "$build/source/$file" \
+            | sort -u | sed "s|^|$package $file |"
+        done
+  done | sort
+}
+
+debian_paths_rewritten() {
+  for formula in "$build"/Formula/*.rb; do
+    awk -F'"' -v package="$(basename "$formula" .rb)" '/^    inreplace / { print package, $2, $4 }' "$formula"
+  done | sort
+}
+
+@test "no formula installs a file that still names a Debian path" {
+  [ -n "$(debian_paths_installed)" ]
+  diff <(debian_paths_installed) <(debian_paths_rewritten)
+}

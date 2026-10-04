@@ -17,12 +17,9 @@ jobs:
   build:
     name: build
     runs-on: ubuntu-latest
-    container: debian:testing-slim
     steps:
-      - run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
       - uses: actions/checkout@v4
-      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - run: make build
+      - run: bash scripts/build-in-container.sh build
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -48,12 +45,23 @@ jobs:
         with:
           name: dist
           path: build/dist
+      - run: bash scripts/verify-in-container.sh build/dist
+
+  macos:
+    name: macOS stable
+    needs: build
+    runs-on: macos-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: build/dist
       - run: |
-          tar -cf - constants.env version.txt dynamic.sh src/integration-test/test.sh build/dist/deb \
-            | docker run -i --rm -e ROOT_DIR=/work -e BUILD_NUMBER \
-              debian:testing-slim bash -c '
-                mkdir -p /work && cd /work && tar xf -
-                source dynamic.sh && bash src/integration-test/test.sh build/dist'
+          work=$(mktemp -d)
+          bash scripts/payload.sh build/dist | tar -xf - -C "$work"
+          bash "$work/src/integration-test/clean-machine.sh" dist
 
   release:
     name: release
@@ -76,13 +84,3 @@ jobs:
             --notes "Built from $GITHUB_SHA by run $GITHUB_RUN_ID." \
             build/dist/deb/*.deb build/dist/brew/*.tar.gz build/dist/brew/*.rb
 
-  macos:
-    name: macOS stable
-    needs: build
-    runs-on: macos-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - name: verify dynamic configuration
-        run: |
-          source dynamic.sh
