@@ -35,7 +35,28 @@ jobs:
             build/*.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-debian
+          path: build/dist
+
+  build-macos:
+    name: build macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make build
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-macos
+          path: |
+            build/*.xml
+            build/*.tap
+            build/*.json
+            build/*.checked
+            build/*.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-macos
           path: build/dist
 
   integration:
@@ -46,7 +67,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: dist-debian
           path: build/dist
       - run: |
           tar -cf - constants.env version.txt dynamic.sh src/integration-test build/dist \
@@ -57,13 +78,13 @@ jobs:
 
   macos:
     name: macOS stable
-    needs: build
+    needs: build-macos
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: dist-macos
           path: build/dist
       - run: source dynamic.sh > /dev/null && bash src/integration-test/test.sh build/dist
 
@@ -78,7 +99,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: dist
+          pattern: dist-*
+          merge-multiple: true
           path: build/dist
       - env:
           GH_TOKEN: ${{ github.token }}
