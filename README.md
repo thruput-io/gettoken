@@ -158,18 +158,32 @@ than on `PATH`, because it is run with the super-token in reach.
 
 ## Install it
 
-Distribution is `apt`. Every branch publishes a signed archive under a suite
-named after the branch, and `main`'s suite is the release. The archive is signed,
-and the key it was signed with has to be somewhere apt can read rather than
-verification being turned off. The sources file the archive publishes carries it
-inline:
+Distribution is `apt` and Homebrew, served from
+[`thruput-io/apt`](https://github.com/thruput-io/apt) and
+[`thruput-io/brew`](https://github.com/thruput-io/brew). Every merge to `main`
+is a release; those repositories pick it up and publish it. The apt archive is
+signed, and the key it was signed with has to be somewhere apt can read rather
+than verification being turned off. The sources file the archive publishes
+carries it inline:
 
 ```sh
-curl -fsSL https://thruput.se/gettoken/apt/dists/main/gettoken.sources \
-  | sudo tee /etc/apt/sources.list.d/gettoken.sources > /dev/null
+curl -fsSL https://thruput.se/apt/thruput-io.sources \
+  | sudo tee /etc/apt/sources.list.d/thruput-io.sources > /dev/null
 sudo apt-get update
 sudo apt-get install integration-test-tool
 ```
+
+On macOS the tap carries one formula per package, wired together the same way:
+
+```sh
+brew tap thruput-io/brew https://github.com/thruput-io/brew
+brew install integration-test-tool
+```
+
+The formulae install, but `gettoken` does not run from them yet: it looks for
+its privileged half in `/usr/lib/gettoken` and keeps the store in
+`/var/lib/gettoken`, neither of which Homebrew writes. Where those live on macOS
+is still to be decided (`docs/adrs/0026`).
 
 `Signed-By` names the one key that one archive may be signed with. A key put in
 `/etc/apt/trusted.gpg.d` instead would be trusted to sign every other archive on

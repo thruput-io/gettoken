@@ -6,8 +6,7 @@ on:
     branches: [main]
 
 env:
-  BRANCH: ${{ github.head_ref || github.ref_name }}
-  ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
+  BUILD_NUMBER: ${{ github.run_number }}
   ROOT_DIR: ${{ github.workspace }}
 
 defaults:
@@ -19,8 +18,6 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     container: debian:testing-slim
-    permissions:
-      contents: write
     steps:
       - run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
       - uses: actions/checkout@v4
@@ -47,12 +44,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: build/dist
       - run: |
-          tar -cf - constants.env dynamic.sh src/integration-test/test.sh \
-            | docker run -i --rm -e CI=true -e ROOT_DIR=/work -e BRANCH -e ARCHIVE_SIGNING_KEY \
+          tar -cf - constants.env version.txt dynamic.sh src/integration-test/test.sh build/dist/deb \
+            | docker run -i --rm -e ROOT_DIR=/work -e BUILD_NUMBER \
               debian:testing-slim bash -c '
                 mkdir -p /work && cd /work && tar xf -
-                source dynamic.sh && bash src/integration-test/test.sh'
+                source dynamic.sh && bash src/integration-test/test.sh build/dist'
+
+  release:
+    name: release
+    needs: integration
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: build/dist
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          source dynamic.sh > /dev/null
+          gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" \
+            --notes "Built from $GITHUB_SHA by run $GITHUB_RUN_ID." \
+            build/dist/deb/*.deb build/dist/brew/*.tar.gz build/dist/brew/*.rb
 
   macos:
     name: macOS stable

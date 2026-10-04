@@ -38,8 +38,7 @@ uses it, so only that one reaches the paths a package puts things at. What each
 of them needs is declared per platform in `constants.env`, and `make setup`
 installs it: a Go toolchain, which builds the contract component, `bats` with
 `bats-support` and `bats-assert`, `shellcheck`, `semgrep`, `kcov`, `checkmake`,
-`check-jsonschema`, `gnupg`, `dpkg` and `reprepro`, and on Debian the toolchain
-that builds the `.deb`.
+and `check-jsonschema`, and on Debian the toolchain that builds the `.deb`.
 
 `make unit` builds `parse` and `format` before it runs anything, into a
 directory it puts on `PATH`. Every check runs through a make target; there is no
@@ -53,22 +52,19 @@ Nothing is skipped when a tool is missing. A test that cannot run fails.
 
 ## The chain a package travels
 
-`make build` runs the suite, builds a package in every format `PACKAGE_FORMATS`
-asks for, signs the archive and publishes it. `make test` installs what was published
-and uses it, for a developer, or `agent_build.sh`'s own container, that already has
-a toolchain. What actually proves the chain is `source dynamic.sh && bash
-src/integration-test/test.sh`, run directly on a machine that has nothing —
-CI's integration job invokes exactly that, never `make`, because `make test`
-needs `make` itself installed first, which is not what a real install sees
-(`docs/adrs/0030`).
+`make build` runs the suite and builds a package in every format
+`PACKAGE_FORMATS` asks for. `make test` installs what was built and uses it,
+for a developer, or `agent_build.sh`'s own container, that already has a
+toolchain. What actually proves the chain is `source dynamic.sh && bash
+src/integration-test/test.sh build/dist`, run directly on a machine that has
+nothing — CI's integration job invokes exactly that, never `make`, because
+`make test` needs `make` itself installed first, which is not what a real
+install sees (`docs/adrs/0030`).
 
-`make package` writes `build/dist/deb/`, holding every `.deb`, and the archive
-under `build/site/apt/`: a suite named after the branch, with a `Packages` index,
-a `Release` naming the index files that exist, the `InRelease` and `Release.gpg`
-signatures over it, and the `gettoken.sources` file carrying the key it verifies
-against. `reprepro` builds and signs it, so the archive is the same on every
-platform that can run `reprepro`. The Homebrew formula lands under
-`build/dist/brew/`.
+`make package` writes `build/dist/deb/`, holding every `.deb`, and
+`build/dist/brew/`, holding the source tarball and one formula per package.
+The version is `version.txt` with the CI run number as its last digit, `0`
+locally.
 
 Nothing under `debian/` that can be derived is kept. `debian/control` and one
 `.install` per contract are written by `scripts/packaging.sh` from the contracts,
@@ -78,16 +74,15 @@ resolves build dependencies out of `debian/control` before any rule could act.
 the components themselves. `lintian` at pedantic proves what the packaging says
 of itself, on the source and on every package.
 
-`make publish` uploads the archive to the site's `/apt` corner under the
-branch's suite. Nothing about the archive changes on the way: `Packages` names
-each file relative to the archive, and `Release` covers the indices rather than
-where they sit, so the signature survives the move.
+Nothing is signed or published here (`docs/adrs/0031`). A merge to `main`
+releases `build/dist` as `v{VERSION}`; `thruput-io/apt` signs and serves the
+`.deb`s, and `thruput-io/brew` carries the formulae.
 
 ## What a green run means
 
 The use-case runs on the `integrationtest/ci/run` capability, on the official
-image for the release and nothing put onto it first: the one tool package is
-installed, the super-token goes into the store, `gettoken` is asked for the
+image for the release and nothing put onto it first: the packages that were
+built are installed from the files, the super-token goes into the store, `gettoken` is asked for the
 capability, and `integration-test-tool` runs on what comes back. The same tool
 refuses the super-token, asserted by the tool's own tests, so a run that
 succeeds is a downgrade that happened. This is the invariant: keep it green.

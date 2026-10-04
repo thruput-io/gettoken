@@ -4,10 +4,10 @@ export ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 export PATH := build/bin:$(PATH_PREFIX)$(PATH)
 
-.PHONY: all clean test diagrams stats config setup unit build contract signing-key lint lint-semgrep lint-shellcheck lint-go lint-make lint-schemas lint-permissions no-branching check-readme bash-unit-test bash-coverage go-unit-test go-coverage package publish integration-test readme build/unit.txt
+.PHONY: all clean test diagrams stats config setup unit build contract lint lint-semgrep lint-shellcheck lint-go lint-make lint-schemas lint-permissions no-branching check-readme bash-unit-test bash-coverage go-unit-test go-coverage package integration-test readme build/unit.txt
 
 all:              test
-build:            publish
+build:            package
 test:             integration-test
 
 diagrams:         build/diagrams.txt
@@ -23,9 +23,7 @@ lint-make:        build/make.checked
 lint-schemas:     build/schemas.checked
 lint-permissions: build/check-permissions.txt
 package:          build/package.txt
-publish:          build/publish.txt
 contract:         build/bin/parse build/bin/format
-signing-key:      build/signing-key.asc
 no-branching:     build/no-branching.checked
 check-readme:     build/check-readme.txt
 bash-unit-test:   build/bash-unit-test.checked
@@ -70,9 +68,6 @@ build/versions.txt: build/tools.txt build/semgrep.txt
 build/setup.txt: build/tools.txt build/semgrep.txt build/versions.txt
 	bash -c "source dynamic.sh && ensure_bash5"
 	cat $^ > $@
-
-build/signing-key.asc: build/setup.txt
-	bash scripts/signing-key.sh $@
 
 build/bin/parse build/bin/format: build/go-sources build/setup.txt
 	bash src/components/contract/build.sh build/bin
@@ -196,19 +191,14 @@ build/unit.txt: build/check-readme.txt build/no-branching.checked build/check-pe
                 build/go-unit-test.checked build/go-coverage.checked
 	@echo "unit: all checks passed"
 
-build/package.txt: build/unit.txt build/lint.checked build/signing-key.asc
+build/package.txt: build/unit.txt build/lint.checked
 	@mkdir -p $(@D)
-	bash scripts/package.sh build/site/apt "$(BRANCH)" "$(SITE_URL)" build/signing-key.asc > $@
+	bash scripts/package.sh build/dist > $@
 	cat $@
 
-build/publish.txt: build/package.txt
+build/integration-test.checked: build/config.mk build/package.txt
 	@mkdir -p $(@D)
-	bash scripts/publish.sh build/site/apt "$(BRANCH)" "$(SITE_URL)" > $@
-	cat $@
-
-build/integration-test.checked: build/config.mk
-	@mkdir -p $(@D)
-	INSTALL_COMMAND="$(INSTALL_COMMAND)" SITE_URL="$(SITE_URL)" BRANCH="$(BRANCH)" bash src/integration-test/test.sh > $@
+	bash src/integration-test/test.sh build/dist > $@
 
 build/diagrams.txt: build/sources README.md scripts/mermaid.sh
 	@mkdir -p $(@D)

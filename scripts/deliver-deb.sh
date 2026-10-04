@@ -2,6 +2,7 @@
 set -euo pipefail
 
 into=${1:?deliver-deb.sh: name a directory to deliver the packages into}
+version=${VERSION:?deliver-deb.sh: name the VERSION}
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 
@@ -11,6 +12,7 @@ trap 'rm -rf "$build"' EXIT
 cp -a "$root/src" "$build/source"
 cp "$root/README.md" "$build/source/README.md"
 "$root/scripts/packaging.sh" "$build/source"
+sed -i "1s/(.*)/($version)/" "$build/source/debian/changelog"
 
 (cd "$build/source" && dpkg-buildpackage -us -uc)
 
