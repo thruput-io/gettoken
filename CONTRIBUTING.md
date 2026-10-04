@@ -79,7 +79,7 @@ of itself, on the source and on every package.
 
 Nothing is signed or published here (`docs/adrs/0031`). A merge to `main`
 releases `build/dist` as `v{VERSION}`; `thruput-io/apt` signs and serves the
-`.deb`s, and `thruput-io/brew` carries the formulae.
+`.deb`s, and `thruput-io/homebrew-tap` carries the formulae.
 
 ## What a green run means
 

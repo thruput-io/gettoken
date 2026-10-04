@@ -15,7 +15,7 @@ gettoken builds packages and releases them. It does not sign or serve them.
 A merge to `main` cuts the tag `v{version.txt}.{run number}` and attaches every
 `.deb`, the source tarball and every Homebrew formula to that GitHub Release.
 
-`thruput-io/apt` and `thruput-io/brew` own distribution, for every repository
+`thruput-io/apt` and `thruput-io/homebrew-tap` own distribution, for every repository
 listed in their `sources.txt`. Each takes the latest release of each source with
 its own token: apt builds one signed archive and deploys it to Pages, brew
 commits the formulae to its tap. The signing key lives in `thruput-io/apt`

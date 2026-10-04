@@ -5,7 +5,7 @@ setup() {
   build=$(mktemp -d)
   cp -a "$root/src" "$build/source"
   bash "$root/scripts/packaging.sh" "$build/source" > /dev/null
-  VERSION=0.0.0 BREW_TAP=thruput-io/brew bash "$root/scripts/brew-formulae.sh" \
+  VERSION=0.0.0 BREW_TAP=thruput-io/tap bash "$root/scripts/brew-formulae.sh" \
     "$build/source" "$build/Formula" https://example.invalid/gettoken.tar.gz 0 > /dev/null
   export build root
 }
@@ -28,7 +28,7 @@ apt_depends_of() {
 }
 
 brew_depends_of() {
-  awk -F'"' '/depends_on "thruput-io\/brew\// { sub(/.*\//, "", $2); print $2 }' "$build/Formula/$1.rb" | sort
+  awk -F'"' '/depends_on "thruput-io\/tap\// { sub(/.*\//, "", $2); print $2 }' "$build/Formula/$1.rb" | sort
 }
 
 @test "a formula exists for every apt package and for nothing else" {
@@ -43,7 +43,7 @@ brew_depends_of() {
 }
 
 @test "the graph has edges, so the mirror is not only a count" {
-  edges=$(cat "$build"/Formula/*.rb | grep -c 'depends_on "thruput-io/brew/')
+  edges=$(cat "$build"/Formula/*.rb | grep -c 'depends_on "thruput-io/tap/')
   [ "$edges" -gt 22 ]
 }
 

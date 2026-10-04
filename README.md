@@ -160,7 +160,7 @@ than on `PATH`, because it is run with the super-token in reach.
 
 Distribution is `apt` and Homebrew, served from
 [`thruput-io/apt`](https://github.com/thruput-io/apt) and
-[`thruput-io/brew`](https://github.com/thruput-io/brew). Every merge to `main`
+[`thruput-io/homebrew-tap`](https://github.com/thruput-io/homebrew-tap). Every merge to `main`
 is a release; those repositories pick it up and publish it. The apt archive is
 signed, and the key it was signed with has to be somewhere apt can read rather
 than verification being turned off. The sources file the archive publishes
@@ -176,8 +176,8 @@ sudo apt-get install integration-test-tool
 On macOS the tap carries one formula per package, wired together the same way:
 
 ```sh
-brew tap thruput-io/brew https://github.com/thruput-io/brew
-brew trust thruput-io/brew
+brew tap thruput-io/tap
+brew trust thruput-io/tap
 brew install integration-test-tool
 ```
 
