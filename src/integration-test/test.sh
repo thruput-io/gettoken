@@ -22,7 +22,7 @@ for fmt in ${PACKAGE_FORMATS:?test.sh: name the PACKAGE_FORMATS to install}; do
       for formula in "$dist"/brew/*.rb; do
         sed "s|^  url .*|  url \"file://$tarball\"|" "$formula" > "$formulae/$(basename "$formula")"
       done
-      bash -ec "$install_command $tap/integration-test-tool $tap/gettoken"
+      bash -ec "$install_command $(find "$dist/brew" -name '*.rb' -exec basename {} .rb \; | sed "s|^|$tap/|" | tr '\n' ' ')"
       privileged=$(brew --prefix)/lib/gettoken
       ;;
     *)

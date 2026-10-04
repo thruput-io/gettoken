@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-source=$1
+source=${1:?packaging.sh: name the source tree to package}
+url=${2:-}
+sha256=${3:-}
+
+self_dir=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 
 cd "$source"
 
 cp debian/control.in debian/control
 
 dpkg_expands_this_one_not_the_shell='$'
+
+speaks=$(mktemp)
+trap 'rm -f "$speaks"' EXIT
+: > "$speaks"
 
 for schema in contracts/*.schema.json; do
   contract=$(basename "$schema" .schema.json)
@@ -19,6 +27,7 @@ for schema in contracts/*.schema.json; do
   if [ "$contract" != defs ] && grep -q 'defs\.schema\.json' "$schema"; then
     needs_defs=",\n         gettoken-contract-defs"
   fi
+  printf '%s %s\n' "$package" "${needs_defs:+gettoken-contract-defs}" >> "$speaks"
 
   {
     printf '\nPackage: %s\nArchitecture: all\n' "$package"
@@ -27,10 +36,6 @@ for schema in contracts/*.schema.json; do
     jq -r '.description' "$schema" | fold -s -w 78 | sed 's/^/ /; s/[[:space:]]*$//'
   } >> debian/control
 done
-
-speaks=$(mktemp)
-trap 'rm -f "$speaks"' EXIT
-: > "$speaks"
 
 every_contract_named_on_a_line() {
   awk '{
@@ -63,24 +68,37 @@ for install in debian/*.install; do
   printf '%s %s\n' "$package" "$needs" >> "$speaks"
 done
 
-awk -v speaks="$speaks" '
-  BEGIN {
-    while ((getline line < speaks) > 0) {
-      n = split(line, f, " ")
-      key = f[1]
-      list = ""
-      for (i = 2; i <= n; i++) list = list ",\n         " f[i]
-      have[key] = list
-    }
-  }
-  {
-    where = index($0, "@CONTRACTS@:")
-    if (where == 0) { print; next }
-    head = substr($0, 1, where - 1)
-    key = substr($0, where + length("@CONTRACTS@:"))
-    printf "%s%s\n", head, have[key]
-  }
-' debian/control > debian/control.spliced
-mv debian/control.spliced debian/control
+for fmt in ${PACKAGE_FORMATS:?packaging.sh: name the PACKAGE_FORMATS to package for}; do
+  case "$fmt" in
+    deb)
+      awk -v speaks="$speaks" '
+        BEGIN {
+          while ((getline line < speaks) > 0) {
+            n = split(line, f, " ")
+            key = f[1]
+            list = ""
+            for (i = 2; i <= n; i++) list = list ",\n         " f[i]
+            have[key] = list
+          }
+        }
+        {
+          where = index($0, "@CONTRACTS@:")
+          if (where == 0) { print; next }
+          head = substr($0, 1, where - 1)
+          key = substr($0, where + length("@CONTRACTS@:"))
+          printf "%s%s\n", head, have[key]
+        }
+      ' debian/control > debian/control.spliced
+      mv debian/control.spliced debian/control
 
-echo "resolved $(grep -c '^Package: ' debian/control) packages"
+      echo "deb: $(grep -c '^Package: ' debian/control) packages"
+      ;;
+    brew)
+      "$self_dir/brew-formulae.sh" . "$speaks" Formula "${url:?packaging.sh: name the url the brew tarball is fetched from}" "${sha256:?packaging.sh: name the sha256 of that tarball}"
+      ;;
+    *)
+      echo "packaging.sh: no packaging for format '$fmt'" >&2
+      exit 1
+      ;;
+  esac
+done

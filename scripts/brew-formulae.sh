@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-source=${1:?brew-formulae.sh: name the resolved source tree to read the packages from}
-into=${2:?brew-formulae.sh: name the directory to write the formulae into}
-url=${3:?brew-formulae.sh: name the url the source tarball is fetched from}
-sha256=${4:?brew-formulae.sh: name the sha256 of that tarball}
+source=${1:?brew-formulae.sh: name the source tree to read the packages from}
+speaks=${2:?brew-formulae.sh: name the file saying what each package speaks}
+into=${3:?brew-formulae.sh: name the directory to write the formulae into}
+url=${4:?brew-formulae.sh: name the url the source tarball is fetched from}
+sha256=${5:?brew-formulae.sh: name the sha256 of that tarball}
 version=${VERSION:?brew-formulae.sh: name the VERSION}
 tap=${BREW_TAP:?brew-formulae.sh: name the BREW_TAP the formulae depend on each other through}
 
+speaks=$(CDPATH='' cd "$(dirname "$speaks")" && pwd)/$(basename "$speaks")
 mkdir -p "$into"
 into=$(CDPATH='' cd "$into" && pwd)
 cd "$source"
@@ -17,19 +19,7 @@ class_name() {
 }
 
 depends_of() {
-  awk -v want="$1" '
-    /^Package: / { pkg = $2; depends = 0; next }
-    /^Depends:/ { depends = 1; sub(/^Depends: */, "") }
-    depends && /^[A-Z][A-Za-z-]*:/ && !/^Depends:/ { depends = 0 }
-    depends && pkg == want {
-      n = split($0, parts, ",")
-      for (i = 1; i <= n; i++) {
-        tok = parts[i]
-        gsub(/^[ \t]+|[ \t]+$/, "", tok)
-        if (tok != "" && tok !~ /^\$/) print tok
-      }
-    }
-  ' debian/control
+  awk -v want="$1" '$1 == want { for (i = 2; i <= NF; i++) print $i }' "$speaks"
 }
 
 prefix_of() {
@@ -116,5 +106,3 @@ for install in debian/*.install; do
     printf '  end\nend\n'
   } > "$into/$package.rb"
 done
-
-echo "$(find "$into" -name '*.rb' | wc -l | tr -d ' ') formulae for $version in $into"
