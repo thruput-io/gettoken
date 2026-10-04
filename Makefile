@@ -198,7 +198,7 @@ build/package.txt: build/unit.txt build/lint.checked
 
 build/integration-test.checked: build/config.mk build/package.txt
 	@mkdir -p $(@D)
-	bash src/integration-test/test.sh build/dist > $@
+	bash src/integration-test/test.sh > $@
 
 build/diagrams.txt: build/sources README.md scripts/mermaid.sh
 	@mkdir -p $(@D)

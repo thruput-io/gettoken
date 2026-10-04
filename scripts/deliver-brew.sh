@@ -3,7 +3,6 @@ set -euo pipefail
 
 into=${1:?deliver-brew.sh: name a directory to deliver the formulae into}
 version=${VERSION:?deliver-brew.sh: name the VERSION}
-release=${RELEASE_URL:?deliver-brew.sh: name the RELEASE_URL the tarball is downloaded from}
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 
@@ -21,7 +20,7 @@ tarball=$into/$name.tar.gz
 COPYFILE_DISABLE=1 tar -czf "$tarball" -C "$build" "$name"
 sha256=$(shasum -a 256 < "$tarball" | cut -d" " -f1)
 
-"$root/scripts/packaging.sh" "$build/$name" "$release/v$version/$name.tar.gz" "$sha256"
+"$root/scripts/packaging.sh" "$build/$name" "file://$tarball" "$sha256"
 
 rm -f -- "$into"/*.rb
 cp "$build/$name"/Formula/*.rb "$into"

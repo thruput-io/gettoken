@@ -55,7 +55,7 @@ Nothing is skipped when a tool is missing. A test that cannot run fails.
 `make build` runs the suite and builds a package in every format
 `PACKAGE_FORMATS` asks for. `make test` installs what was built and uses it,
 for a developer that already has a toolchain. What actually proves the chain is
-`source dynamic.sh && bash src/integration-test/test.sh build/dist`, run on a
+`source dynamic.sh && bash src/integration-test/test.sh`, run on a
 machine that has nothing but the packages and the files the test needs — never
 `make`, because `make test` needs `make` itself installed first, which is not
 what a real install sees (`docs/adrs/0030`).

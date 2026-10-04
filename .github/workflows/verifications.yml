@@ -74,7 +74,7 @@ jobs:
             | docker run -i --rm -e ROOT_DIR=/work -e BUILD_NUMBER \
               debian:testing-slim bash -c '
                 mkdir -p /work && cd /work && tar xf -
-                source dynamic.sh > /dev/null && bash src/integration-test/test.sh build/dist'
+                source dynamic.sh > /dev/null && bash src/integration-test/test.sh'
 
   macos:
     name: macOS stable
@@ -86,7 +86,7 @@ jobs:
         with:
           name: dist-macos
           path: build/dist
-      - run: source dynamic.sh > /dev/null && bash src/integration-test/test.sh build/dist
+      - run: source dynamic.sh > /dev/null && bash src/integration-test/test.sh
 
   release:
     name: release
