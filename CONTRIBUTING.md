@@ -55,14 +55,13 @@ Nothing is skipped when a tool is missing. A test that cannot run fails.
 `make build` runs the suite and builds a package in every format
 `PACKAGE_FORMATS` asks for. `make test` installs what was built and uses it,
 for a developer that already has a toolchain. What actually proves the chain is
-`src/integration-test/clean-machine.sh`, run on a machine that has nothing but
-the packages and what `scripts/payload.sh` hands it — never `make`, because
-`make test` needs `make` itself installed first, which is not what a real
-install sees (`docs/adrs/0030`).
+`source dynamic.sh && bash src/integration-test/test.sh build/dist`, run on a
+machine that has nothing but the packages and the files the test needs — never
+`make`, because `make test` needs `make` itself installed first, which is not
+what a real install sees (`docs/adrs/0030`).
 
-`./agent_build.sh` runs the pipeline locally: the same scripts CI's jobs call,
-in the same images (`docs/adrs/0033`). It needs Docker, and `macos-vm` for the
-macOS half.
+`./agent_build.sh` captures locally what the GitHub pipelines do
+(`docs/adrs/0033`). It needs Docker, and `macos-vm` for the macOS half.
 
 `make package` writes `build/dist/deb/`, holding every `.deb`, and
 `build/dist/brew/`, holding the source tarball and one formula per package.

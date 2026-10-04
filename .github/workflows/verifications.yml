@@ -17,9 +17,12 @@ jobs:
   build:
     name: build
     runs-on: ubuntu-latest
+    container: debian:testing-slim
     steps:
+      - run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
       - uses: actions/checkout@v4
-      - run: bash scripts/build-in-container.sh build
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - run: make build
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -45,7 +48,12 @@ jobs:
         with:
           name: dist
           path: build/dist
-      - run: bash scripts/verify-in-container.sh build/dist
+      - run: |
+          tar -cf - constants.env version.txt dynamic.sh src/integration-test build/dist \
+            | docker run -i --rm -e ROOT_DIR=/work -e BUILD_NUMBER \
+              debian:testing-slim bash -c '
+                mkdir -p /work && cd /work && tar xf -
+                source dynamic.sh > /dev/null && bash src/integration-test/test.sh build/dist'
 
   macos:
     name: macOS stable
@@ -57,10 +65,7 @@ jobs:
         with:
           name: dist
           path: build/dist
-      - run: |
-          work=$(mktemp -d)
-          bash scripts/payload.sh build/dist | tar -xf - -C "$work"
-          bash "$work/src/integration-test/clean-machine.sh" dist
+      - run: source dynamic.sh > /dev/null && bash src/integration-test/test.sh build/dist
 
   release:
     name: release
