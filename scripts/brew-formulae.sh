@@ -6,7 +6,6 @@ speaks=${2:?brew-formulae.sh: name the file saying what each package speaks}
 into=${3:?brew-formulae.sh: name the directory to write the formulae into}
 url=${4:?brew-formulae.sh: name the url the source tarball is fetched from}
 sha256=${5:?brew-formulae.sh: name the sha256 of that tarball}
-version=${VERSION:?brew-formulae.sh: name the VERSION}
 tap=${BREW_TAP:?brew-formulae.sh: name the BREW_TAP the formulae depend on each other through}
 
 speaks=$(CDPATH='' cd "$(dirname "$speaks")" && pwd)/$(basename "$speaks")
