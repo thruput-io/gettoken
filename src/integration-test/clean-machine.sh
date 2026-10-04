@@ -5,6 +5,7 @@ dist=${1:?clean-machine.sh: name the directory the packages were delivered into}
 
 ROOT_DIR=$(CDPATH='' cd "$(dirname "$0")/../.." && pwd)
 export ROOT_DIR
+cd "$ROOT_DIR"
 
 # shellcheck source-path=SCRIPTDIR/../..
 # shellcheck source=dynamic.sh
