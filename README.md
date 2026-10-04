@@ -177,6 +177,7 @@ On macOS the tap carries one formula per package, wired together the same way:
 
 ```sh
 brew tap thruput-io/brew https://github.com/thruput-io/brew
+brew trust thruput-io/brew
 brew install integration-test-tool
 ```
 

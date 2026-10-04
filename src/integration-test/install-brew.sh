@@ -8,6 +8,7 @@ tarball=$(find "$dist/brew" -name '*.tar.gz')
 test -f "$tarball"
 
 brew tap-new --no-git "$tap"
+brew trust "$tap"
 formulae=$(brew --repository "$tap")/Formula
 mkdir -p "$formulae"
 
