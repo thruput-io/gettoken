@@ -1,0 +1,12 @@
+Package: gettoken-exchanger
+Architecture: all
+Depends: ${misc:Depends}@DEPENDS@:gettoken-exchanger
+Description: token broker for AI agents - trades a super-token for a narrow one
+ The exchanger is asked for a capability. It finds the plugin installed for
+ the service named by the capability's first segment, reads the super-token
+ the store holds for that service, hands it to the plugin, and answers with
+ the narrow token the plugin writes back.
+ .
+ It ships no plugin. Each integrated tool installs its own into
+ /usr/lib/gettoken/exchangers, so adding the hundredth tool costs what the
+ first one did.

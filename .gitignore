@@ -1,15 +1,6 @@
 *.swp
 .DS_Store
-src/debian/.debhelper/
-src/debian/debhelper-build-stamp
-src/debian/files
-src/debian/*.debhelper.log
-src/debian/*.substvars
-src/debian/control
-src/debian/gettoken/
-src/debian/gettoken-*/
-src/debian/gettoken-contract-*.install
-src/debian/integration-test-tool/
 build/
 config.local.mk
 .idea/
+.agents/

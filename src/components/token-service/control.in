@@ -1,0 +1,7 @@
+Package: gettoken-token-service
+Architecture: all
+Depends: ${misc:Depends}@DEPENDS@:gettoken-token-service
+Description: token broker for AI agents - answers a request for a token
+ token-service authenticates a request, resolves what it asks for, and hands
+ who is asking and what for to the exchanger. What the exchanger answers is
+ checked against the contract before it is handed back.

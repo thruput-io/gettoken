@@ -72,7 +72,7 @@ build/setup.txt: build/tools.txt build/semgrep.txt build/versions.txt
 build/bin/parse build/bin/format: build/go-sources build/setup.txt
 	bash src/components/contract/build.sh build/bin
 
-SHELL_FILES := $$(find src scripts -type f \( -name '*.sh' -o -name '*.postrm' -o -name 'entitlements' -o -name 'secret-*' -o -name 'token-*' -o -name 'gettoken' -o -name 'integration-test*' \) | grep -v -E '\.(json|1|manpages|install|bats)$$')
+SHELL_FILES := $$(find src scripts -type f \( -name '*.sh' -o -name '*.postrm' -o -name 'entitlements' -o -name 'secret-*' -o -name 'token-*' -o -name 'gettoken' -o -name 'exchanger' -o -name 'integrationtest' -o -name 'integration-test*' \) | grep -v -E '\.(json|1|manpages|install|bats|in)$$')
 
 include $(ROOT_DIR)/stats.mk
 
@@ -198,7 +198,6 @@ build/package.txt: build/unit.txt build/lint.checked
 
 build/integration-test.checked: build/config.mk build/package.txt
 	@mkdir -p $(@D)
-	bash -ec "$$ADD_ARCHIVE"
 	bash src/integration-test/test.sh > $@
 
 build/diagrams.txt: build/sources README.md scripts/mermaid.sh

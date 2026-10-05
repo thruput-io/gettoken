@@ -4,84 +4,50 @@ load "$ROOT_DIR/scripts/test/helper"
 
 setup() {
   root=$ROOT_DIR
-  STUB_DIR=$(mktemp -d)
-  PATH="$STUB_DIR:$root/src/tools/integration-test-tool/privileged/exchangers:$root/build/bin:$PATH"
-  CONTRACTS_DIR="$root/src/contracts"
-  ASKED_FILE="$STUB_DIR/asked"
-  ARGS_FILE="$STUB_DIR/args"
-  export PATH CONTRACTS_DIR ASKED_FILE ARGS_FILE
+  STORE_DIR=$(mktemp -d)
+  PATH="$STORE_DIR:$root/src/tools/integration-test-tool/privileged/exchangers:$PATH"
+  STORE_ASKED_FILE="$STORE_DIR/the-store-was-asked"
+  export PATH STORE_ASKED_FILE
+  printf '%s\n' '#!/bin/sh' 'touch "$STORE_ASKED_FILE"' 'exit 1' > "$STORE_DIR/secret-get"
+  chmod 755 "$STORE_DIR/secret-get"
 }
 
-teardown() { rm -rf "$STUB_DIR"; }
-
-holding() {
-  STORED=$1
-  export STORED
-  cat > "$STUB_DIR/secret-get" <<'STUB'
-#!/bin/sh
-set -eu
-printf '%s' "$*" > "$ARGS_FILE"
-cat > "$ASKED_FILE"
-version=0
-value=$STORED
-export version value
-format secret-get-response.schema.json version value
-STUB
-  chmod 755 "$STUB_DIR/secret-get"
-}
+teardown() { rm -rf "$STORE_DIR"; }
 
 trading() {
-  printf '%s' "{\"who\":\"tore\",\"wants\":\"$1\"}" | integrationtest
+  printf '%s' "$2" | integrationtest "$1"
 }
 
-@test "the narrow token carries what the store holds, not what the exchanger expected" {
-  holding super-sample-token-123
-  run -0 --separate-stderr trading integrationtest/ci/run
-  [ "$(printf '%s' "$output" | jq -r '.access_token')" = "sample-token-123-ci-run-allowed" ]
+@test "the narrow token carries the secret it was handed, not what the plugin expected" {
+  run -0 --separate-stderr trading integrationtest/ci/run super-sample-token-123
+  [ "$output" = "sample-token-123-ci-run-allowed" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "a different super-token yields a different narrow token" {
-  holding super-9b1e
-  run -0 --separate-stderr trading integrationtest/ci/run
-  [ "$(printf '%s' "$output" | jq -r '.access_token')" = "9b1e-ci-run-allowed" ]
+  run -0 --separate-stderr trading integrationtest/ci/run super-9b1e
+  [ "$output" = "9b1e-ci-run-allowed" ]
 }
 
-@test "the token it issues lives two minutes" {
-  holding super-sample-token-123
-  run -0 --separate-stderr trading integrationtest/ci/run
-  [ "$(printf '%s' "$output" | jq -r '.expires_in')" = "120" ]
+@test "it trades what it was handed and never asks the store" {
+  run -0 --separate-stderr trading integrationtest/ci/run super-sample-token-123
+  [ "$output" = "sample-token-123-ci-run-allowed" ]
+  [ ! -f "$STORE_ASKED_FILE" ]
 }
 
-@test "it asks the store for the key it is keyed by, and for no version" {
-  holding super-sample-token-123
-  run -0 --separate-stderr trading integrationtest/ci/run
-  [ "$(jq -r '.key' < "$ASKED_FILE")" = "host-privileged/integrationtest" ]
-  [ "$(cat "$ARGS_FILE")" = "--with-key" ]
-}
-
-@test "a stored value that is not a super-token is refused, and hands over nothing" {
-  holding not-a-super-token
-  run -1 --separate-stderr trading integrationtest/ci/run
+@test "a secret that is not a super-token is refused, and hands over nothing" {
+  run -1 --separate-stderr trading integrationtest/ci/run not-a-super-token
   [ "$output" = "" ]
-  assert_equal "$(without_kcov_trace "$stderr")" "integrationtest: the stored super-token is not one this exchanger can trade"
+  assert_equal "$(without_kcov_trace "$stderr")" "integrationtest: the secret it was handed is not a super-token it can trade"
 }
 
-@test "a stored value that is only the prefix is refused" {
-  holding super-
-  run -1 --separate-stderr trading integrationtest/ci/run
+@test "a secret that is only the prefix is refused" {
+  run -1 --separate-stderr trading integrationtest/ci/run super-
   [ "$output" = "" ]
 }
 
-@test "a capability it does not serve is refused before the store is touched" {
-  holding super-sample-token-123
-  run -1 --separate-stderr trading github/thruput-io/gettoken/pr/create
+@test "a capability it does not serve is refused" {
+  run -1 --separate-stderr trading github/thruput-io/gettoken/pr/create super-sample-token-123
   [ "$output" = "" ]
-  [ ! -f "$ASKED_FILE" ]
-}
-
-@test "a request carrying what an exchanger may not see is refused by the contract" {
-  holding super-sample-token-123
-  run -1 --separate-stderr sh -c 'printf "%s" "{\"who\":\"tore\",\"wants\":\"integrationtest/ci/run\",\"signed\":\"host-privileged\"}" | integrationtest'
-  [ "$output" = "" ]
+  assert_equal "$(without_kcov_trace "$stderr")" "integrationtest: nothing is registered for github/thruput-io/gettoken/pr/create"
 }

@@ -6,8 +6,9 @@ version=${VERSION:?deliver-deb.sh: name the VERSION}
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 
-build=$(mktemp -d)
-trap 'rm -rf "$build"' EXIT
+build=$root/build/package/deb
+rm -rf "$build"
+mkdir -p "$build"
 
 cp -a "$root/src" "$build/source"
 cp "$root/README.md" "$build/source/README.md"

@@ -1,0 +1,25 @@
+Package: gettoken-parse
+Architecture: any
+Static-Built-Using: ${misc:Static-Built-Using}
+Depends: ${misc:Depends},
+         ${shlibs:Depends}@DEPENDS@:gettoken-parse
+Description: token broker for AI agents - reads a document through its contract
+ parse reads one document on standard input, checks it against the contract
+ named on its command line, and hands back the fields asked for as assignments
+ a shell can evaluate. A document that does not satisfy its contract yields
+ nothing to evaluate.
+ .
+ It carries no contract of its own. What may cross a boundary is stated by the
+ contract package the component reading that boundary depends on.
+
+Package: gettoken-format
+Architecture: any
+Static-Built-Using: ${misc:Static-Built-Using}
+Depends: ${misc:Depends},
+         ${shlibs:Depends}@DEPENDS@:gettoken-format
+Description: token broker for AI agents - writes a document through its contract
+ format takes the fields named on its command line from the environment, writes
+ the document they make, and checks that document against the contract before
+ handing it over. A component cannot emit something its contract does not admit.
+ .
+ It carries no contract of its own, for the same reason parse does not.

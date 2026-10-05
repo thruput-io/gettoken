@@ -1,0 +1,14 @@
+class Gettoken < Formula
+  desc "Token broker for AI agents - gettoken"
+  homepage "https://github.com/thruput-io/gettoken"
+  url "@URL@"
+  sha256 "@SHA256@"
+  license "Apache-2.0"
+
+@DEPENDS@
+
+  def install
+    system "make", "configured", "prefix=#{HOMEBREW_PREFIX}"
+    bin.install "tools/gettoken/bin/gettoken"
+  end
+end

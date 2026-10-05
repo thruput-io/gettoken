@@ -1,0 +1,30 @@
+Package: integration-test-tool
+Architecture: all
+Depends: ${misc:Depends},
+         gettoken,
+         integration-test-tool-exchanger@DEPENDS@:integration-test-tool
+Description: token broker for AI agents - tool that verifies the chain
+ The tool the verification suite integrates, standing in for a real one so the
+ chain can be exercised without reaching a service. It runs on the token that
+ integrationtest/ci/run downgrades to and refuses the super-token that token
+ was traded for, so a run that succeeds is proof that a downgrade happened. It
+ writes back what the narrow token carries, so what the store was given can be
+ followed all the way to the tool.
+ .
+ It is also the worked example of an integration: it depends on gettoken and
+ carries one exchanger, which knows one service and nothing about any other.
+ What that exchanger may say and be told is the contracts it depends on, and
+ nothing else. Installing it is what brings the chain onto a machine.
+
+Package: integration-test-tool-exchanger
+Architecture: all
+Depends: ${misc:Depends},
+         gettoken-exchanger@DEPENDS@:integration-test-tool-exchanger
+Description: token broker for AI agents - the plugin the tool integrates
+ The exchanger plugin integrationtest/ci/run is served by. It is told the
+ capability asked for, is handed the super-token on standard input, and writes
+ the narrow token it trades it for on standard output.
+ .
+ It is a separate package from the tool because it is on the other side of the
+ boundary: the tool is a public name an agent runs, and this is run by the
+ exchanger with the super-token in hand.

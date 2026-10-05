@@ -1,0 +1,15 @@
+class IntegrationTestTool < Formula
+  desc "Token broker for AI agents - integration-test-tool"
+  homepage "https://github.com/thruput-io/gettoken"
+  url "@URL@"
+  sha256 "@SHA256@"
+  license "Apache-2.0"
+
+  depends_on "@BREW_TAP@/gettoken"
+  depends_on "@BREW_TAP@/integration-test-tool-exchanger"
+@DEPENDS@
+
+  def install
+    bin.install "tools/integration-test-tool/bin/integration-test-tool"
+  end
+end

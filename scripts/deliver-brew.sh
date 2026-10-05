@@ -6,8 +6,9 @@ version=${VERSION:?deliver-brew.sh: name the VERSION}
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 
-build=$(mktemp -d)
-trap 'rm -rf "$build"' EXIT
+build=$root/build/package/brew
+rm -rf "$build"
+mkdir -p "$build"
 
 name=gettoken-$version
 cp -a "$root/src" "$build/$name"

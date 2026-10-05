@@ -58,30 +58,46 @@ for a developer that already has a toolchain. What actually proves the chain is
 `source dynamic.sh && bash src/integration-test/test.sh`, run on a
 machine that has nothing but the packages and the files the test needs — never
 `make`, because `make test` needs `make` itself installed first, which is not
-what a real install sees (`docs/adrs/0030`).
+what a real install sees.
 
-`./agent_build.sh` captures locally what the GitHub pipelines do
-(`docs/adrs/0033`). It needs Docker, and `macos-vm` for the macOS half.
+`./agent_build.sh` captures locally what the GitHub pipelines do. It needs
+Docker, and `macos-vm` for the macOS half.
 
 `make package` writes `build/dist/deb/`, holding every `.deb` and the `Packages`
 index that makes the directory an apt archive, and `build/dist/brew/`, holding
 the source tarball and one formula per package. Whatever runs the integration
-test first adds what was built as a source the package manager installs from,
-which on Debian is the apt source for `build/dist/deb/` and on macOS the tap the
-formulae are copied into; `test.sh` then installs `integration-test-tool` alone,
-as a user does from the published archive. apt pulls the rest through the
-dependencies the packages declare, so a dependency the packaging got wrong
-fails the test rather than being hidden by installing every `.deb` by hand.
+test first adds what was built as a source the package manager installs from:
+the pipeline and `agent_build.sh` write the apt source for `build/dist/deb/` on
+Debian and copy the formulae into the tap on macOS, and a builder running
+`make test` does the same by hand. `test.sh` then installs
+`integration-test-tool` alone, as a user does from the published archive and
+tap. apt and brew pull the rest through the dependencies the packages declare,
+so a dependency the packaging got wrong fails the test rather than being hidden
+by installing every package by hand.
 The version is `version.txt` with the CI run number as its last digit, `0`
 locally.
 
-Nothing under `debian/` that can be derived is kept. `debian/control` and one
-`.install` per contract are written by `scripts/packaging.sh` from the contracts,
-the components and the target, before `dpkg` reads anything, because `dpkg`
-resolves build dependencies out of `debian/control` before any rule could act.
-`debian/control.in` carries only what none of those know, which is prose about
-the components themselves. `lintian` at pedantic proves what the packaging says
-of itself, on the source and on every package.
+No `debian/` folder is kept. Each tool says what its own packages are: a
+`control.in` holding its stanzas, the debhelper lists beside it, and one `.rb.in`
+per formula. `scripts/packaging.sh` assembles `debian/` and the formulae under
+`build/package/` from those, from the contracts, and from `scripts/debian/`,
+which holds what belongs to no tool. It does so before `dpkg` reads anything,
+because `dpkg` resolves build dependencies out of `debian/control` before any
+rule could act.
+
+A component never spells out where it is installed. It names `@libdir@`,
+`@datadir@` or `@localstatedir@`, and the Makefile beside the source fills them
+in from `prefix`, with the defaults the GNU coding standards give them. The
+Debian rules build for `/usr` with state in `/var`; a formula builds for the
+Homebrew prefix. Run from a checkout nothing is filled in, and the tests name
+the directories they need through the environment.
+
+`scripts/packaging.sh` manages the dependencies, once, for both formats: a
+package depends on the contracts its components speak and on the packages of the
+components they pipe a document into. A tool states only what cannot be derived,
+as `integration-test-tool` does of `gettoken` and of its own exchanger. `lintian`
+at pedantic proves what the packaging says of itself, on the source and on every
+package, and nothing is overridden.
 
 Nothing is signed or published here (`docs/adrs/0031`). A merge to `main`
 whose integration tests pass releases `build/dist` as `v{VERSION}` and tells

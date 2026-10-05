@@ -9,92 +9,163 @@ self_dir=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 
 cd "$source"
 
-cp debian/control.in debian/control
-
 dpkg_expands_this_one_not_the_shell='$'
 
-speaks=$(mktemp)
-trap 'rm -f "$speaks"' EXIT
-: > "$speaks"
+needs=$(mktemp)
+commands=$(mktemp)
+trap 'rm -f "$needs" "$commands"' EXIT
+: > "$needs"
 
-for schema in contracts/*.schema.json; do
-  contract=$(basename "$schema" .schema.json)
-  package="gettoken-contract-$contract"
+install_lists() {
+  find components tools -type f -name '*.install' | sort
+}
 
-  printf '%s usr/share/gettoken/contracts\n' "$schema" > "debian/$package.install"
+class_name() {
+  awk -F- '{ out = ""; for (i = 1; i <= NF; i++) out = out toupper(substr($i, 1, 1)) substr($i, 2); print out }' <<< "$1"
+}
 
-  needs_defs=""
-  if [ "$contract" != defs ] && grep -q 'defs\.schema\.json' "$schema"; then
-    needs_defs=",\n         gettoken-contract-defs"
-  fi
-  printf '%s %s\n' "$package" "${needs_defs:+gettoken-contract-defs}" >> "$speaks"
-
-  {
-    printf '\nPackage: %s\nArchitecture: all\n' "$package"
-    printf 'Depends: %s{misc:Depends}%b\n' "$dpkg_expands_this_one_not_the_shell" "$needs_defs"
-    printf 'Description: token broker for AI agents - the %s contract\n' "$contract"
-    jq -r '.description' "$schema" | fold -s -w 78 | sed 's/^/ /; s/[[:space:]]*$//'
-  } >> debian/control
-done
-
-every_contract_named_on_a_line() {
+contracts_spoken_in() {
   awk '{
     rest = $0
     while (match(rest, /(parse|format) [a-z-]+\.schema\.json/)) {
-      print substr(rest, RSTART, RLENGTH)
+      split(substr(rest, RSTART, RLENGTH), spoken, " ")
+      sub(/\.schema\.json$/, "", spoken[2])
+      print "gettoken-" spoken[1]
+      print "gettoken-contract-" spoken[2]
       rest = substr(rest, RSTART + RLENGTH)
     }
   }' "$1"
 }
 
-for install in debian/*.install; do
-  package=$(basename "$install" .install)
-  case "$package" in
-    gettoken-contract-*) continue ;;
-  esac
+components_piped_into() {
+  awk -v commands="$commands" -v this_package="$2" '
+    BEGIN {
+      while ((getline line < commands) > 0) {
+        split(line, installed, " ")
+        package_installing[installed[1]] = installed[2]
+      }
+    }
+    {
+      rest = $0
+      while (match(rest, /\|[[:space:]]*[a-z][a-z-]*/)) {
+        piped_into = substr(rest, RSTART, RLENGTH)
+        sub(/^\|[[:space:]]*/, "", piped_into)
+        if (piped_into in package_installing && package_installing[piped_into] != this_package) {
+          print package_installing[piped_into]
+        }
+        rest = substr(rest, RSTART + RLENGTH)
+      }
+    }' "$1"
+}
 
-  uses=$(
-    while read -r src _; do
-      if [ -f "$src" ]; then
-        every_contract_named_on_a_line "$src"
+needed_by() {
+  awk -v want="$1" '$1 == want { for (i = 2; i <= NF; i++) print $i }' "$needs"
+}
+
+install_lists | while read -r install; do
+  awk -v package="$(basename "$install" .install)" '{ n = split($1, p, "/"); print p[n], package }' "$install"
+done > "$commands"
+
+for schema in contracts/*.schema.json; do
+  contract=$(basename "$schema" .schema.json)
+  needs_defs=""
+  if [ "$contract" != defs ] && grep -q 'defs\.schema\.json' "$schema"; then
+    needs_defs=gettoken-contract-defs
+  fi
+  printf 'gettoken-contract-%s %s\n' "$contract" "$needs_defs" >> "$needs"
+done
+
+install_lists | while read -r install; do
+  package=$(basename "$install" .install)
+  needed=$(
+    while read -r file _; do
+      if [ -f "$file" ]; then
+        contracts_spoken_in "$file"
+        components_piped_into "$file" "$package"
       fi
-    done < "$install"
+    done < "$install" | sort -u | tr '\n' ' '
   )
-  needs=$(
-    printf '%s\n' "$uses" \
-      | awk 'NF { print "gettoken-" $1; sub(/\.schema\.json$/, "", $2); print "gettoken-contract-" $2 }' \
-      | sort -u | tr '\n' ' '
-  )
-  printf '%s %s\n' "$package" "$needs" >> "$speaks"
+  printf '%s %s\n' "$package" "$needed" >> "$needs"
 done
 
 for fmt in ${PACKAGE_FORMATS:?packaging.sh: name the PACKAGE_FORMATS to package for}; do
   case "$fmt" in
     deb)
-      awk -v speaks="$speaks" '
+      rm -rf debian
+      cp -a "$self_dir/debian" debian
+      find components tools -type f \( -name '*.install' -o -name '*.manpages' -o -name '*.docs' -o -name '*.postrm' \) -exec cp -p {} debian/ \;
+
+      mv debian/control.in debian/control
+      find components tools -type f -name control.in | sort | while read -r said_by_the_tool; do
+        printf '\n'
+        cat "$said_by_the_tool"
+      done >> debian/control
+
+      for schema in contracts/*.schema.json; do
+        package="gettoken-contract-$(basename "$schema" .schema.json)"
+        printf '%s usr/share/gettoken/contracts\n' "$schema" > "debian/$package.install"
+        {
+          printf '\nPackage: %s\nArchitecture: all\n' "$package"
+          printf 'Depends: %s{misc:Depends}@DEPENDS@:%s\n' "$dpkg_expands_this_one_not_the_shell" "$package"
+          printf 'Description: token broker for AI agents - the %s contract\n' "$(basename "$schema" .schema.json)"
+          jq -r '.description' "$schema" | fold -s -w 78 | sed 's/^/ /; s/[[:space:]]*$//'
+        } >> debian/control
+      done
+
+      awk -v needs="$needs" '
         BEGIN {
-          while ((getline line < speaks) > 0) {
+          while ((getline line < needs) > 0) {
             n = split(line, f, " ")
-            key = f[1]
             list = ""
             for (i = 2; i <= n; i++) list = list ",\n         " f[i]
-            have[key] = list
+            managed[f[1]] = list
           }
         }
         {
-          where = index($0, "@CONTRACTS@:")
+          where = index($0, "@DEPENDS@:")
           if (where == 0) { print; next }
-          head = substr($0, 1, where - 1)
-          key = substr($0, where + length("@CONTRACTS@:"))
-          printf "%s%s\n", head, have[key]
+          printf "%s%s\n", substr($0, 1, where - 1), managed[substr($0, where + length("@DEPENDS@:"))]
         }
-      ' debian/control > debian/control.spliced
-      mv debian/control.spliced debian/control
+      ' debian/control > debian/control.managed
+      mv debian/control.managed debian/control
 
       echo "deb: $(grep -c '^Package: ' debian/control) packages"
       ;;
     brew)
-      "$self_dir/brew-formulae.sh" . "$speaks" Formula "${url:?packaging.sh: name the url the brew tarball is fetched from}" "${sha256:?packaging.sh: name the sha256 of that tarball}"
+      tap=${BREW_TAP:?packaging.sh: name the BREW_TAP the formulae depend on each other through}
+      : "${url:?packaging.sh: name the url the brew tarball is fetched from}"
+      : "${sha256:?packaging.sh: name the sha256 of that tarball}"
+
+      rm -rf Formula
+      mkdir Formula
+
+      find components tools -type f -name '*.rb.in' | sort | while read -r said_by_the_tool; do
+        package=$(basename "$said_by_the_tool" .rb.in)
+        managed=$(needed_by "$package" | sed "s|.*|  depends_on \"$tap/&\"|")
+        export managed
+        awk -v url="$url" -v sha256="$sha256" -v tap="$tap" '
+          $0 == "@DEPENDS@" { print ENVIRON["managed"]; next }
+          { gsub(/@URL@/, url); gsub(/@SHA256@/, sha256); gsub(/@BREW_TAP@/, tap); print }
+        ' "$said_by_the_tool" | cat -s > "Formula/$package.rb"
+      done
+
+      for schema in contracts/*.schema.json; do
+        package="gettoken-contract-$(basename "$schema" .schema.json)"
+        {
+          printf 'class %s < Formula\n' "$(class_name "$package")"
+          printf '  desc "Token broker for AI agents - %s"\n' "$package"
+          printf '  homepage "https://github.com/thruput-io/gettoken"\n'
+          printf '  url "%s"\n' "$url"
+          printf '  sha256 "%s"\n' "$sha256"
+          printf '  license "Apache-2.0"\n\n'
+          needed_by "$package" | sed "s|.*|  depends_on \"$tap/&\"|"
+          printf '\n  def install\n'
+          printf '    (share/"gettoken/contracts").install "%s"\n' "$schema"
+          printf '  end\nend\n'
+        } | cat -s > "Formula/$package.rb"
+      done
+
+      echo "brew: $(find Formula -name '*.rb' | wc -l | tr -d ' ') formulae"
       ;;
     *)
       echo "packaging.sh: no packaging for format '$fmt'" >&2
