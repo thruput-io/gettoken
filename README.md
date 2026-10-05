@@ -254,6 +254,8 @@ docs/
     brew-distribution/
     containers/
       research/
+    shell-streaming/
+      research/
     virtual-macos/
       research/
 scripts/
