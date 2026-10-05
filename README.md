@@ -158,14 +158,6 @@ than on `PATH`, because it is run with the super-token in reach.
 
 ## Install it
 
-Distribution is `apt` and Homebrew, served from
-[`thruput-io/apt`](https://github.com/thruput-io/apt) and
-[`thruput-io/homebrew-tap`](https://github.com/thruput-io/homebrew-tap). Every merge to `main`
-is a release; those repositories pick it up and publish it. The apt archive is
-signed, and the key it was signed with has to be somewhere apt can read rather
-than verification being turned off. The sources file the archive publishes
-carries it inline:
-
 ```sh
 curl -fsSL https://thruput.se/apt/thruput-io.sources \
   | sudo tee /etc/apt/sources.list.d/thruput-io.sources > /dev/null
@@ -173,27 +165,11 @@ sudo apt-get update
 sudo apt-get install integration-test-tool
 ```
 
-On macOS the tap carries one formula per package, wired together the same way:
-
 ```sh
 brew tap thruput-io/tap
 brew trust thruput-io/tap
 brew install integration-test-tool
 ```
-
-The formulae put everything under Homebrew's prefix instead of `/usr/lib`,
-`/usr/share` and `/var/lib` (`docs/adrs/0032`). The store lives in
-`$(brew --prefix)/var/gettoken`, owned by the account that owns brew, and
-`brew uninstall` leaves it in place.
-
-`Signed-By` names the one key that one archive may be signed with. A key put in
-`/etc/apt/trusted.gpg.d` instead would be trusted to sign every other archive on
-that machine, Debian's own included, which is why it does not go there.
-
-Asking for that one package installs the tool, `gettoken`, the privileged half
-behind it, the store, the dispatcher, the two programs that carry a document
-through a contract, and one package per contract. Nothing else is named, and
-nothing else arrives. Purging it takes them all with it, and the store with them.
 
 ### What arrives, and why that is the interesting part
 
