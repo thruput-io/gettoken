@@ -22,7 +22,8 @@ echo "ok: lintian passes on the source and on every package, down to pedantic"
 mkdir -p "$into"
 into=$(CDPATH='' cd "$into" && pwd)
 
-rm -f -- "$into"/*.deb
+rm -f -- "$into"/*.deb "$into"/Packages "$into"/Release
 cp "$build"/*.deb "$into"
+(cd "$into" && apt-ftparchive packages . > Packages && apt-ftparchive release . > "$build/Release" && mv "$build/Release" Release)
 
-echo "$(find "$into" -name '*.deb' | wc -l) packages built in $into"
+echo "$(find "$into" -name '*.deb' | wc -l) packages built and indexed in $into"

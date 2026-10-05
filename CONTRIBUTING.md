@@ -63,8 +63,15 @@ what a real install sees (`docs/adrs/0030`).
 `./agent_build.sh` captures locally what the GitHub pipelines do
 (`docs/adrs/0033`). It needs Docker, and `macos-vm` for the macOS half.
 
-`make package` writes `build/dist/deb/`, holding every `.deb`, and
-`build/dist/brew/`, holding the source tarball and one formula per package.
+`make package` writes `build/dist/deb/`, holding every `.deb` and the `Packages`
+index that makes the directory an apt archive, and `build/dist/brew/`, holding
+the source tarball and one formula per package. Whatever runs the integration
+test first adds what was built as a source the package manager installs from,
+which on Debian is the apt source for `build/dist/deb/` and on macOS the tap the
+formulae are copied into; `test.sh` then installs `integration-test-tool` alone,
+as a user does from the published archive. apt pulls the rest through the
+dependencies the packages declare, so a dependency the packaging got wrong
+fails the test rather than being hidden by installing every `.deb` by hand.
 The version is `version.txt` with the CI run number as its last digit, `0`
 locally.
 

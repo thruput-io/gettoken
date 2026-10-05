@@ -31,7 +31,7 @@ docker run --rm --volume "$volume:/dist:ro" debian:testing-slim tar -cf - -C /di
 say "install on a clean debian, as the Debian stable job does"
 what_a_clean_machine_gets "$built/debian" | docker run -i --rm -e ROOT_DIR=/work -e BUILD_NUMBER debian:testing-slim bash -c '
     mkdir -p /work && cd /work && tar xf -
-    source dynamic.sh > /dev/null && bash src/integration-test/test.sh'
+    source dynamic.sh > /dev/null && bash -ec "$ADD_ARCHIVE" && bash src/integration-test/test.sh'
 
 if command -v macos-vm > /dev/null; then
   say "build on macOS, as the build macOS job does"
@@ -47,7 +47,7 @@ if command -v macos-vm > /dev/null; then
   what_a_clean_machine_gets "$built/macos" | macos-vm shell bash -lc '
     rm -rf "$HOME/gettoken" && mkdir "$HOME/gettoken" && cd "$HOME/gettoken" && tar -xf -
     export ROOT_DIR="$HOME/gettoken"
-    source dynamic.sh > /dev/null && bash src/integration-test/test.sh'
+    source dynamic.sh > /dev/null && bash -ec "$ADD_ARCHIVE" && bash src/integration-test/test.sh'
 fi
 
 say "everything the pipeline does before it releases, done here"

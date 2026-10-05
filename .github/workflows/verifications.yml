@@ -76,6 +76,7 @@ jobs:
         with:
           name: ${{ matrix.dist }}
           path: build/dist
+      - run: source dynamic.sh > /dev/null && bash -ec "$ADD_ARCHIVE"
       - run: source dynamic.sh > /dev/null && bash src/integration-test/test.sh
 
   release:
