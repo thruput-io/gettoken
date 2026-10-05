@@ -34,12 +34,12 @@ STUB
 }
 
 holding_nothing() {
-  printf '%s\n' '#!/bin/sh' 'echo "secret-get: nothing is stored under the key" >&2' 'exit 1' > "$STORE_DIR/secret-get"
+  printf '%s\n' '#!/bin/sh' 'set -eu' 'echo "secret-get: nothing is stored under the key" >&2' 'exit 1' > "$STORE_DIR/secret-get"
   chmod 755 "$STORE_DIR/secret-get"
 }
 
 plugged_in() {
-  printf '%s\n' '#!/bin/sh' "$2" > "$EXCHANGER_DIR/$1"
+  printf '%s\n' '#!/bin/sh' 'set -eu' "$2" > "$EXCHANGER_DIR/$1"
   chmod 755 "$EXCHANGER_DIR/$1"
 }
 

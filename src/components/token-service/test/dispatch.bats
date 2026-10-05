@@ -14,7 +14,7 @@ setup() {
 teardown() { rm -rf "$STUB_DIR"; }
 
 exchanger_that() {
-  printf '%s\n' '#!/bin/sh' 'cat > "$HANDED_FILE"' "$1" > "$STUB_DIR/exchanger"
+  printf '%s\n' '#!/bin/sh' 'set -eu' 'cat > "$HANDED_FILE"' "$1" > "$STUB_DIR/exchanger"
   chmod 755 "$STUB_DIR/exchanger"
 }
 

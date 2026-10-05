@@ -17,7 +17,7 @@ built_for() {
 }
 
 installed_as() {
-  printf '%s\n' '#!/bin/sh' "$2" > "$1"
+  printf '%s\n' '#!/bin/sh' 'set -eu' "$2" > "$1"
   chmod 755 "$1"
 }
 

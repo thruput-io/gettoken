@@ -8,7 +8,7 @@ setup() {
   PATH="$STORE_DIR:$root/src/tools/integration-test-tool/privileged/exchangers:$PATH"
   STORE_ASKED_FILE="$STORE_DIR/the-store-was-asked"
   export PATH STORE_ASKED_FILE
-  printf '%s\n' '#!/bin/sh' 'touch "$STORE_ASKED_FILE"' 'exit 1' > "$STORE_DIR/secret-get"
+  printf '%s\n' '#!/bin/sh' 'set -eu' 'touch "$STORE_ASKED_FILE"' 'exit 1' > "$STORE_DIR/secret-get"
   chmod 755 "$STORE_DIR/secret-get"
 }
 
