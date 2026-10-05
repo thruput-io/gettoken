@@ -150,7 +150,7 @@ build/go-lint.checked: build/go-report.json build/stats.txt
 build/semgrep.checked: build/semgrep-report.json build/stats.txt
 	set -euo pipefail; findings=$$(jq '.results | length' $<); unparsed=$$(jq '.errors | length' $<); \
 	echo "semgrep: $$findings findings, $$unparsed files not fully parsed (max 0/0, $(BASH_SOURCE_FILES) bash files scanned)"; \
-	[ "$$findings" -le 0 ] && [ "$$unparsed" -le 0 ] && [ "$(BASH_SOURCE_FILES)" -gt 0 ]
+	[ "$$findings" -le 0 ] && [ "$$unparsed" -le 0 ] && [ "$(BASH_SOURCE_FILES)" -gt 20 ]
 
 build/lint.checked: build/shellcheck.checked build/make.checked build/schemas.checked build/go-lint.checked build/semgrep.checked
 	@echo "All lint accept checks passed cleanly"
