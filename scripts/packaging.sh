@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
+shopt -s inherit_errexit
 
 source=${1:?packaging.sh: name the source tree to package}
-url=${2:-}
-sha256=${3:-}
 
 self_dir=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 
@@ -62,6 +61,30 @@ needed_by() {
   awk -v want="$1" '$1 == want { for (i = 2; i <= NF; i++) print $i }' "$needs"
 }
 
+written_not_built() {
+  awk '$1 !~ /^build\// { print $1 }' "$1"
+}
+
+must_be_there() {
+  if [ ! -f "$2" ]; then
+    echo "packaging.sh: $1 names $2, which is not there" >&2
+    return 1
+  fi
+}
+
+stated_by_the_tool() {
+  find components tools -type f -name control.in -exec awk -v want="$1" '
+    $1 == "Package:" { package = $2 }
+    /^[A-Za-z-]+:/ { depends = ($1 == "Depends:") }
+    package == want && depends {
+      listed = $0
+      sub(/^Depends:/, "", listed)
+      sub(/@DEPENDS@:.*$/, "", listed)
+      n = split(listed, stated, /[[:space:],]+/)
+      for (i = 1; i <= n; i++) if (stated[i] ~ /^[a-z][a-z0-9+.-]*$/) print stated[i]
+    }' {} +
+}
+
 install_lists | while read -r install; do
   awk -v package="$(basename "$install" .install)" '{ n = split($1, p, "/"); print p[n], package }' "$install"
 done > "$commands"
@@ -78,12 +101,11 @@ done
 install_lists | while read -r install; do
   package=$(basename "$install" .install)
   needed=$(
-    while read -r file _; do
-      if [ -f "$file" ]; then
-        contracts_spoken_in "$file"
-        components_piped_into "$file" "$package"
-      fi
-    done < "$install" | sort -u | tr '\n' ' '
+    written_not_built "$install" | while read -r file; do
+      must_be_there "$install" "$file"
+      contracts_spoken_in "$file"
+      components_piped_into "$file" "$package"
+    done | sort -u | tr '\n' ' '
   )
   printf '%s %s\n' "$package" "$needed" >> "$needs"
 done
@@ -93,7 +115,9 @@ for fmt in ${PACKAGE_FORMATS:?packaging.sh: name the PACKAGE_FORMATS to package 
     deb)
       rm -rf debian
       cp -a "$self_dir/debian" debian
-      find components tools -type f \( -name '*.install' -o -name '*.manpages' -o -name '*.docs' -o -name '*.postrm' \) -exec cp -p {} debian/ \;
+      find components tools -type f \( -name '*.install' -o -name '*.manpages' -o -name '*.docs' -o -name '*.postrm' \) | while read -r said_by_the_tool; do
+        cp -p "$said_by_the_tool" debian/
+      done
 
       mv debian/control.in debian/control
       find components tools -type f -name control.in | sort | while read -r said_by_the_tool; do
@@ -133,19 +157,19 @@ for fmt in ${PACKAGE_FORMATS:?packaging.sh: name the PACKAGE_FORMATS to package 
       ;;
     brew)
       tap=${BREW_TAP:?packaging.sh: name the BREW_TAP the formulae depend on each other through}
-      : "${url:?packaging.sh: name the url the brew tarball is fetched from}"
-      : "${sha256:?packaging.sh: name the sha256 of that tarball}"
+      url=${BREW_URL:?packaging.sh: name the BREW_URL the brew tarball is fetched from}
+      sha256=${BREW_SHA256:?packaging.sh: name the BREW_SHA256 of that tarball}
 
       rm -rf Formula
       mkdir Formula
 
       find components tools -type f -name '*.rb.in' | sort | while read -r said_by_the_tool; do
         package=$(basename "$said_by_the_tool" .rb.in)
-        managed=$(needed_by "$package" | sed "s|.*|  depends_on \"$tap/&\"|")
+        managed=$({ stated_by_the_tool "$package"; needed_by "$package"; } | sort -u | sed "s|.*|  depends_on \"$tap/&\"|")
         export managed
-        awk -v url="$url" -v sha256="$sha256" -v tap="$tap" '
+        awk -v url="$url" -v sha256="$sha256" '
           $0 == "@DEPENDS@" { print ENVIRON["managed"]; next }
-          { gsub(/@URL@/, url); gsub(/@SHA256@/, sha256); gsub(/@BREW_TAP@/, tap); print }
+          { gsub(/@URL@/, url); gsub(/@SHA256@/, sha256); print }
         ' "$said_by_the_tool" | cat -s > "Formula/$package.rb"
       done
 
