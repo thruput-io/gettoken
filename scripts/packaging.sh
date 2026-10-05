@@ -4,9 +4,7 @@ shopt -s inherit_errexit
 
 source=${1:?packaging.sh: name the source tree to package}
 
-self_dir=$(CDPATH='' cd "$(dirname "$0")" && pwd)
-
-cd "$source"
+self_dir=$(dirname "$0")
 
 dpkg_expands_this_one_not_the_shell='$'
 
@@ -16,7 +14,7 @@ trap 'rm -f "$needs" "$commands"' EXIT
 : > "$needs"
 
 install_lists() {
-  find components tools -type f -name '*.install' | sort
+  find "$source/components" "$source/tools" -type f -name '*.install' | sort
 }
 
 class_name() {
@@ -66,14 +64,14 @@ written_not_built() {
 }
 
 must_be_there() {
-  if [ ! -f "$2" ]; then
+  if [ ! -f "$source/$2" ]; then
     echo "packaging.sh: $1 names $2, which is not there" >&2
     return 1
   fi
 }
 
 stated_by_the_tool() {
-  find components tools -type f -name control.in -exec awk -v want="$1" '
+  find "$source/components" "$source/tools" -type f -name control.in -exec awk -v want="$1" '
     $1 == "Package:" { package = $2 }
     /^[A-Za-z-]+:/ { depends = ($1 == "Depends:") }
     package == want && depends {
@@ -89,7 +87,7 @@ install_lists | while read -r install; do
   awk -v package="$(basename "$install" .install)" '{ n = split($1, p, "/"); print p[n], package }' "$install"
 done > "$commands"
 
-for schema in contracts/*.schema.json; do
+for schema in "$source"/contracts/*.schema.json; do
   contract=$(basename "$schema" .schema.json)
   needs_defs=""
   if [ "$contract" != defs ] && grep -q 'defs\.schema\.json' "$schema"; then
@@ -103,8 +101,8 @@ install_lists | while read -r install; do
   needed=$(
     written_not_built "$install" | while read -r file; do
       must_be_there "$install" "$file"
-      contracts_spoken_in "$file"
-      components_piped_into "$file" "$package"
+      contracts_spoken_in "$source/$file"
+      components_piped_into "$source/$file" "$package"
     done | sort -u | tr '\n' ' '
   )
   printf '%s %s\n' "$package" "$needed" >> "$needs"
@@ -113,27 +111,27 @@ done
 for fmt in ${PACKAGE_FORMATS:?packaging.sh: name the PACKAGE_FORMATS to package for}; do
   case "$fmt" in
     deb)
-      rm -rf debian
-      cp -a "$self_dir/debian" debian
-      find components tools -type f \( -name '*.install' -o -name '*.manpages' -o -name '*.docs' -o -name '*.postrm' \) | while read -r said_by_the_tool; do
-        cp -p "$said_by_the_tool" debian/
+      rm -rf "$source/debian"
+      cp -a "$self_dir/debian" "$source/debian"
+      find "$source/components" "$source/tools" -type f \( -name '*.install' -o -name '*.manpages' -o -name '*.docs' -o -name '*.postrm' \) | while read -r said_by_the_tool; do
+        cp -p "$said_by_the_tool" "$source/debian/"
       done
 
-      mv debian/control.in debian/control
-      find components tools -type f -name control.in | sort | while read -r said_by_the_tool; do
+      mv "$source/debian/control.in" "$source/debian/control"
+      find "$source/components" "$source/tools" -type f -name control.in | sort | while read -r said_by_the_tool; do
         printf '\n'
         cat "$said_by_the_tool"
-      done >> debian/control
+      done >> "$source/debian/control"
 
-      for schema in contracts/*.schema.json; do
+      for schema in "$source"/contracts/*.schema.json; do
         package="gettoken-contract-$(basename "$schema" .schema.json)"
-        printf '%s usr/share/gettoken/contracts\n' "$schema" > "debian/$package.install"
+        printf 'contracts/%s usr/share/gettoken/contracts\n' "$(basename "$schema")" > "$source/debian/$package.install"
         {
           printf '\nPackage: %s\nArchitecture: all\n' "$package"
           printf 'Depends: %s{misc:Depends}@DEPENDS@:%s\n' "$dpkg_expands_this_one_not_the_shell" "$package"
           printf 'Description: token broker for AI agents - the %s contract\n' "$(basename "$schema" .schema.json)"
           jq -r '.description' "$schema" | fold -s -w 78 | sed 's/^/ /; s/[[:space:]]*$//'
-        } >> debian/control
+        } >> "$source/debian/control"
       done
 
       awk -v needs="$needs" '
@@ -150,30 +148,30 @@ for fmt in ${PACKAGE_FORMATS:?packaging.sh: name the PACKAGE_FORMATS to package 
           if (where == 0) { print; next }
           printf "%s%s\n", substr($0, 1, where - 1), managed[substr($0, where + length("@DEPENDS@:"))]
         }
-      ' debian/control > debian/control.managed
-      mv debian/control.managed debian/control
+      ' "$source/debian/control" > "$source/debian/control.managed"
+      mv "$source/debian/control.managed" "$source/debian/control"
 
-      echo "deb: $(grep -c '^Package: ' debian/control) packages"
+      echo "deb: $(grep -c '^Package: ' "$source/debian/control") packages"
       ;;
     brew)
       tap=${BREW_TAP:?packaging.sh: name the BREW_TAP the formulae depend on each other through}
       url=${BREW_URL:?packaging.sh: name the BREW_URL the brew tarball is fetched from}
       sha256=${BREW_SHA256:?packaging.sh: name the BREW_SHA256 of that tarball}
 
-      rm -rf Formula
-      mkdir Formula
+      rm -rf "$source/Formula"
+      mkdir "$source/Formula"
 
-      find components tools -type f -name '*.rb.in' | sort | while read -r said_by_the_tool; do
+      find "$source/components" "$source/tools" -type f -name '*.rb.in' | sort | while read -r said_by_the_tool; do
         package=$(basename "$said_by_the_tool" .rb.in)
         managed=$({ stated_by_the_tool "$package"; needed_by "$package"; } | sort -u | sed "s|.*|  depends_on \"$tap/&\"|")
         export managed
         awk -v url="$url" -v sha256="$sha256" '
           $0 == "@DEPENDS@" { print ENVIRON["managed"]; next }
           { gsub(/@URL@/, url); gsub(/@SHA256@/, sha256); print }
-        ' "$said_by_the_tool" | cat -s > "Formula/$package.rb"
+        ' "$said_by_the_tool" | cat -s > "$source/Formula/$package.rb"
       done
 
-      for schema in contracts/*.schema.json; do
+      for schema in "$source"/contracts/*.schema.json; do
         package="gettoken-contract-$(basename "$schema" .schema.json)"
         {
           printf 'class %s < Formula\n' "$(class_name "$package")"
@@ -184,12 +182,12 @@ for fmt in ${PACKAGE_FORMATS:?packaging.sh: name the PACKAGE_FORMATS to package 
           printf '  license "Apache-2.0"\n\n'
           needed_by "$package" | sed "s|.*|  depends_on \"$tap/&\"|"
           printf '\n  def install\n'
-          printf '    (share/"gettoken/contracts").install "%s"\n' "$schema"
+          printf '    (share/"gettoken/contracts").install "contracts/%s"\n' "$(basename "$schema")"
           printf '  end\nend\n'
-        } | cat -s > "Formula/$package.rb"
+        } | cat -s > "$source/Formula/$package.rb"
       done
 
-      echo "brew: $(find Formula -name '*.rb' | wc -l | tr -d ' ') formulae"
+      echo "brew: $(find "$source/Formula" -name '*.rb' | wc -l | tr -d ' ') formulae"
       ;;
     *)
       echo "packaging.sh: no packaging for format '$fmt'" >&2
