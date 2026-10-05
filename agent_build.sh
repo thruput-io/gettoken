@@ -10,7 +10,7 @@ trap 'rm -rf "$built"' EXIT
 
 say() { printf '\n=== %s ===\n' "$1"; }
 
-the_tree() { (git ls-files --cached --others --exclude-standard | grep -v '/$'; find .git) | COPYFILE_DISABLE=1 tar -cf - -T -; }
+the_tree() { (git ls-files --cached --others --exclude-standard | grep -v '/$'; find .git) | COPYFILE_DISABLE=1 tar -cf - --no-recursion -T -; }
 
 what_a_clean_machine_gets() { COPYFILE_DISABLE=1 tar -cf - constants.env version.txt dynamic.sh src/integration-test -C "$1" build/dist; }
 
@@ -19,9 +19,13 @@ docker volume rm -f "$volume" > /dev/null
 docker volume create "$volume" > /dev/null
 
 say "build, as the build job does"
-the_tree | docker run -i --rm -e BUILD_NUMBER --volume "$volume:/work/build/dist" debian:testing-slim sh -ec '
-    mkdir -p /work && cd /work && tar xf -
-    apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
+the_tree | docker run -i --rm -e BUILD_NUMBER --volume "$volume:/work/build/dist" debian:testing-slim sh -c '
+    set -eu
+    mkdir -p /work
+    cd /work
+    tar xf -
+    apt-get update
+    apt-get install -y --no-install-recommends make git ca-certificates
     git config --global --add safe.directory "*"
     make build'
 
@@ -30,15 +34,23 @@ docker run --rm --volume "$volume:/dist:ro" debian:testing-slim tar -cf - -C /di
 
 say "install on a clean debian, as the Debian stable job does"
 what_a_clean_machine_gets "$built/debian" | docker run -i --rm -e ROOT_DIR=/work -e BUILD_NUMBER debian:testing-slim bash -c '
-    mkdir -p /work && cd /work && tar xf -
-    printf "Types: deb\nURIs: file:%s/build/dist/deb\nSuites: ./\nTrusted: yes\n" "$ROOT_DIR" > /etc/apt/sources.list.d/gettoken-dist.sources &&
-    source dynamic.sh > /dev/null && bash src/integration-test/test.sh'
+    set -eu
+    mkdir -p /work
+    cd /work
+    tar xf -
+    source dynamic.sh > /dev/null
+    bash -ec "$ADD_ARCHIVE"
+    bash src/integration-test/test.sh'
 
 if command -v macos-vm > /dev/null; then
   say "build on macOS, as the build macOS job does"
   macos-vm reset > /dev/null
   the_tree | macos-vm shell bash -lc '
-    rm -rf "$HOME/gettoken" && mkdir "$HOME/gettoken" && cd "$HOME/gettoken" && tar -xf -
+    set -eu
+    rm -rf "$HOME/gettoken"
+    mkdir "$HOME/gettoken"
+    cd "$HOME/gettoken"
+    tar -xf -
     make build'
   mkdir -p "$built/macos/build"
   macos-vm shell bash -lc 'COPYFILE_DISABLE=1 tar -cf - -C "$HOME/gettoken/build" dist' | tar -xf - -C "$built/macos/build"
@@ -46,9 +58,14 @@ if command -v macos-vm > /dev/null; then
   say "install on a fresh macOS guest, as the macOS stable job does"
   macos-vm reset > /dev/null
   what_a_clean_machine_gets "$built/macos" | macos-vm shell bash -lc '
-    rm -rf "$HOME/gettoken" && mkdir "$HOME/gettoken" && cd "$HOME/gettoken" && tar -xf -
+    set -eu
+    rm -rf "$HOME/gettoken"
+    mkdir "$HOME/gettoken"
+    cd "$HOME/gettoken"
+    tar -xf -
     export ROOT_DIR="$HOME/gettoken"
-    source dynamic.sh > /dev/null && brew tap-new --no-git "$BREW_TAP" && brew trust "$BREW_TAP" && cp build/dist/brew/*.rb "$(brew --repository "$BREW_TAP")/Formula/" &&
+    source dynamic.sh > /dev/null
+    bash -ec "$ADD_ARCHIVE"
     bash src/integration-test/test.sh'
 fi
 

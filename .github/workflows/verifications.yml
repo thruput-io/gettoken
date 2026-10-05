@@ -24,15 +24,9 @@ jobs:
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: make build
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/upload-reports
         with:
           name: reports
-          path: |
-            build/*.xml
-            build/*.tap
-            build/*.json
-            build/*.checked
-            build/*.txt
       - uses: actions/upload-artifact@v4
         with:
           name: dist-debian
@@ -45,15 +39,9 @@ jobs:
       - uses: actions/checkout@v4
       - run: make build
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/upload-reports
         with:
           name: reports-macos
-          path: |
-            build/*.xml
-            build/*.tap
-            build/*.json
-            build/*.checked
-            build/*.txt
       - uses: actions/upload-artifact@v4
         with:
           name: dist-macos
@@ -68,23 +56,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Debian stable
-            os: ubuntu-latest
-            container: 'debian:testing-slim'
-            dist: dist-debian
-            archive: 'printf "Types: deb\nURIs: file:%s/build/dist/deb\nSuites: ./\nTrusted: yes\n" "$ROOT_DIR" > /etc/apt/sources.list.d/gettoken-dist.sources'
-          - name: macOS stable
-            os: macos-latest
-            container: ''
-            dist: dist-macos
-            archive: 'source dynamic.sh > /dev/null && brew tap-new --no-git "$BREW_TAP" && brew trust "$BREW_TAP" && cp build/dist/brew/*.rb "$(brew --repository "$BREW_TAP")/Formula/"'
+          - { name: Debian stable, os: ubuntu-latest, container: 'debian:testing-slim', dist: dist-debian }
+          - { name: macOS stable,  os: macos-latest,  container: '',                    dist: dist-macos }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.dist }}
           path: build/dist
-      - run: ${{ matrix.archive }}
+      - run: source dynamic.sh > /dev/null && bash -ec "$ADD_ARCHIVE"
       - run: source dynamic.sh > /dev/null && bash src/integration-test/test.sh
 
   release:
@@ -94,6 +74,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      DISTRIBUTION_REPOSITORIES: apt,homebrew-tap
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -101,6 +83,13 @@ jobs:
           pattern: dist-*
           merge-multiple: true
           path: build/dist
+      - id: distribute
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.DISTRIBUTE_APP_ID }}
+          private-key: ${{ secrets.DISTRIBUTE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ env.DISTRIBUTION_REPOSITORIES }}
       - env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -108,18 +97,11 @@ jobs:
           gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" \
             --notes "Built from $GITHUB_SHA by run $GITHUB_RUN_ID." \
             build/dist/deb/*.deb build/dist/brew/*.tar.gz build/dist/brew/*.rb
-      - id: distribute
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.DISTRIBUTE_APP_ID }}
-          private-key: ${{ secrets.DISTRIBUTE_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: apt,homebrew-tap
       - name: tell the distribution repositories there is a release
         env:
           GH_TOKEN: ${{ steps.distribute.outputs.token }}
         run: |
-          for repo in apt homebrew-tap; do
+          for repo in ${DISTRIBUTION_REPOSITORIES//,/ }; do
             gh api "repos/$GITHUB_REPOSITORY_OWNER/$repo/dispatches" \
               -f event_type=release -f "client_payload[repository]=$GITHUB_REPOSITORY"
           done

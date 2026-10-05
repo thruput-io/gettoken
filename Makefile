@@ -198,6 +198,7 @@ build/package.txt: build/unit.txt build/lint.checked
 
 build/integration-test.checked: build/config.mk build/package.txt
 	@mkdir -p $(@D)
+	bash -ec "$$ADD_ARCHIVE"
 	bash src/integration-test/test.sh > $@
 
 build/diagrams.txt: build/sources README.md scripts/mermaid.sh

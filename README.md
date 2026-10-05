@@ -247,6 +247,8 @@ packaging from that.
 <!-- layout -->
 ```
 .github/
+  actions/
+    upload-reports/
   workflows/
 docs/
   adrs/
