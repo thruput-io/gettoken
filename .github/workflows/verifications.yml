@@ -60,37 +60,27 @@ jobs:
           path: build/dist
 
   integration:
-    name: Debian stable
-    needs: build
-    runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
+    needs: [build, build-macos]
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Debian stable, os: ubuntu-latest, container: 'debian:testing-slim', dist: dist-debian }
+          - { name: macOS stable,  os: macos-latest,  container: '',                    dist: dist-macos }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: dist-debian
-          path: build/dist
-      - run: |
-          tar -cf - constants.env version.txt dynamic.sh src/integration-test build/dist \
-            | docker run -i --rm -e ROOT_DIR=/work -e BUILD_NUMBER \
-              debian:testing-slim bash -c '
-                mkdir -p /work && cd /work && tar xf -
-                source dynamic.sh > /dev/null && bash src/integration-test/test.sh'
-
-  macos:
-    name: macOS stable
-    needs: build-macos
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist-macos
+          name: ${{ matrix.dist }}
           path: build/dist
       - run: source dynamic.sh > /dev/null && bash src/integration-test/test.sh
 
   release:
     name: release
-    needs: [integration, macos]
+    needs: integration
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
