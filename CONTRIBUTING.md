@@ -86,12 +86,13 @@ which holds what belongs to no tool. It does so before `dpkg` reads anything,
 because `dpkg` resolves build dependencies out of `debian/control` before any
 rule could act.
 
-A component never spells out where it is installed. It names `@libdir@`,
-`@datadir@` or `@localstatedir@`, and the Makefile beside the source fills them
-in from `prefix`, with the defaults the GNU coding standards give them. The
-Debian rules build for `/usr` with state in `/var`; a formula builds for the
-Homebrew prefix. Run from a checkout nothing is filled in, and the tests name
-the directories they need through the environment.
+A component never spells out where it is installed. It names `@libdir@` or
+`@datadir@`, and the Makefile beside the source fills them in from `prefix`,
+with the defaults the GNU coding standards give them. The Debian rules build
+for `/usr`; a formula builds for the Homebrew prefix. Run from a checkout
+nothing is filled in, and the tests name the directories they need through the
+environment. The store is the one thing kept outside the installation: it is
+`~/secrets` of the account that runs the privileged side.
 
 `scripts/packaging.sh` manages the dependencies, once, for both formats: a
 package depends on the contracts its components speak and on the packages of the

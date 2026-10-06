@@ -3,13 +3,13 @@ bats_require_minimum_version 1.5.0
 setup() {
   root=$ROOT_DIR
   there=$BATS_TEST_TMPDIR/there
-  state=$BATS_TEST_TMPDIR/state
+  home=$BATS_TEST_TMPDIR/home
   built=$BATS_TEST_TMPDIR/source
   stubs=$BATS_TEST_TMPDIR/stubs
   cp -R "$root/src" "$built"
-  mkdir -p "$stubs"
+  mkdir -p "$stubs" "$home"
   CONTRACTS_DIR="$root/src/contracts"
-  export root there state built stubs CONTRACTS_DIR
+  export root there home built stubs CONTRACTS_DIR
 }
 
 built_for() {
@@ -32,12 +32,12 @@ asking_the_exchanger() {
 
 putting_a_secret() {
   jq -nc '{key:"host-privileged/integrationtest",value:"super-sample"}' \
-    | PATH="$root/build/bin:$PATH" "$built/components/secret-manager/secret-put"
+    | HOME="$home" PATH="$root/build/bin:$PATH" "$built/components/secret-manager/secret-put"
 }
 
 getting_the_secret() {
   jq -nc '{key:"host-privileged/integrationtest"}' \
-    | PATH="$root/build/bin:$PATH" "$built/components/secret-manager/secret-get" --with-key
+    | HOME="$home" PATH="$root/build/bin:$PATH" "$built/components/secret-manager/secret-get" --with-key
 }
 
 parsing_without_being_told_where_contracts_are() {
@@ -67,18 +67,13 @@ directory_named_in() {
   [ "$(printf '%s' "$output" | jq -r '.access_token')" = "from-the-library-directory" ]
 }
 
-@test "the store is kept under the state directory it was built for" {
-  built_for configured "prefix=$there" "localstatedir=$state"
-  run -0 putting_a_secret
-  [ "$(cat "$state/lib/gettoken/secrets/host-privileged/integrationtest/0")" = "super-sample" ]
-  run -0 getting_the_secret
-  [ "$(printf '%s' "$output" | jq -r '.value')" = "super-sample" ]
-}
-
-@test "the state directory is var under the prefix unless the build is told otherwise" {
+@test "the store is kept under the home of whoever runs it, whatever the build was told" {
   built_for configured "prefix=$there"
   run -0 putting_a_secret
-  [ "$(cat "$there/var/lib/gettoken/secrets/host-privileged/integrationtest/0")" = "super-sample" ]
+  [ "$(cat "$home/secrets/host-privileged/integrationtest/0")" = "super-sample" ]
+  run -0 getting_the_secret
+  [ "$(printf '%s' "$output" | jq -r '.value')" = "super-sample" ]
+  [ ! -e "$there/var" ]
 }
 
 @test "parse reads the contracts in the data directory it was built for" {
@@ -89,17 +84,15 @@ directory_named_in() {
   [ "$output" = "wants='integrationtest/ci/run'" ]
 }
 
-@test "built for /usr with state in /var, the components look where Debian installs" {
-  built_for configured prefix=/usr localstatedir=/var
+@test "built for /usr, the components look where Debian installs" {
+  built_for configured prefix=/usr
   [ "$(directory_named_in tools/gettoken/bin/gettoken 's|^PATH="\([^:]*\):.*|\1|p')" = "/usr/lib/gettoken" ]
   [ "$(directory_named_in components/exchanger/exchanger 's|^plugins=.*:-\(.*\)}$|\1|p')" = "/usr/lib/gettoken/exchangers" ]
-  [ "$(directory_named_in components/secret-manager/secret-get 's|^store=.*:-\(.*\)}$|\1|p')" = "/var/lib/gettoken/secrets" ]
-  [ "$(directory_named_in components/secret-manager/secret-put 's|^store=.*:-\(.*\)}$|\1|p')" = "/var/lib/gettoken/secrets" ]
   [ "$(directory_named_in components/contract/contract.go 's|^[[:space:]]*return "\(.*/contracts\)"$|\1|p')" = "/usr/share/gettoken/contracts" ]
 }
 
 @test "a built tree leaves no directory undecided" {
   built_for configured "prefix=$there"
-  run -1 grep -rlE '@(libdir|datadir|localstatedir)@' "$built/tools" "$built/components"
+  run -1 grep -rlE '@(libdir|datadir)@' "$built/tools" "$built/components"
   [ "$output" = "" ]
 }

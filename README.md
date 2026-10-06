@@ -94,7 +94,7 @@ flowchart TD
     TS["token-service · authenticates and resolves"]
     EX["exchanger · dispatches on the first segment"]
     PL["plugin · trades the super-token for a narrow one"]
-    SM[("secret-manager · /var/lib/gettoken/secrets")]
+    SM[("secret-manager · ~/secrets of the privileged account")]
   end
 
   AG -->|"gettoken --list"| GT

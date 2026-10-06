@@ -3,13 +3,10 @@ exec_prefix = $(prefix)
 libdir = $(exec_prefix)/lib
 datarootdir = $(prefix)/share
 datadir = $(datarootdir)
-localstatedir = $(prefix)/var
 
 naming_an_installation_directory = \
   tools/gettoken/bin/gettoken \
   components/exchanger/exchanger \
-  components/secret-manager/secret-get \
-  components/secret-manager/secret-put \
   components/contract/contract.go
 
 .PHONY: all configured contract clean
@@ -20,7 +17,7 @@ configured: build/configured
 
 build/configured: $(naming_an_installation_directory)
 	set -e; for named in $(naming_an_installation_directory); do \
-	  sed -e 's|@libdir@|$(libdir)|g' -e 's|@datadir@|$(datadir)|g' -e 's|@localstatedir@|$(localstatedir)|g' "$$named" > "$$named.configured"; \
+	  sed -e 's|@libdir@|$(libdir)|g' -e 's|@datadir@|$(datadir)|g' "$$named" > "$$named.configured"; \
 	  cat "$$named.configured" > "$$named"; \
 	  rm "$$named.configured"; \
 	done

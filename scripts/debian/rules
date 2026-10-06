@@ -7,7 +7,7 @@ GOFLAGS = -trimpath -buildmode=pie -ldflags=-linkmode=external
 export GOFLAGS
 
 override_dh_auto_build:
-	dh_auto_build -- prefix=/usr localstatedir=/var
+	dh_auto_build -- prefix=/usr
 
 override_dh_auto_test:
 
