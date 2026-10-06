@@ -54,6 +54,13 @@ places_the_reports_to_carry_out_are_listed() {
   [ "$(line_of 'actions/create-github-app-token' "$workflow")" -lt "$(line_of 'gh release create' "$workflow")" ]
 }
 
+@test "the release job reads the distribution app's secrets by the names the org stores them under" {
+  [ "$(grep -c 'secrets.DISTRIBUTION_APP_ID }}' "$workflow")" = "1" ]
+  [ "$(grep -c 'secrets.DISTRIBUTION_APP_PRIVATE_KEY }}' "$workflow")" = "1" ]
+  run -1 grep -rl 'DISTRIBUTE_APP' "$root/.github"
+  [ "$output" = "" ]
+}
+
 @test "the distribution repositories are listed once" {
   [ "$(grep -c 'homebrew-tap' "$workflow")" = "1" ]
 }

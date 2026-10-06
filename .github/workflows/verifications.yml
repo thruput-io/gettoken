@@ -86,8 +86,8 @@ jobs:
       - id: distribute
         uses: actions/create-github-app-token@v1
         with:
-          app-id: ${{ secrets.DISTRIBUTE_APP_ID }}
-          private-key: ${{ secrets.DISTRIBUTE_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.DISTRIBUTION_APP_ID }}
+          private-key: ${{ secrets.DISTRIBUTION_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: ${{ env.DISTRIBUTION_REPOSITORIES }}
       - env:
