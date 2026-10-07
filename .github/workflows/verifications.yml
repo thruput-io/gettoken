@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 env:
   BUILD_NUMBER: ${{ github.run_number }}
   ROOT_DIR: ${{ github.workspace }}
@@ -31,6 +34,7 @@ jobs:
         with:
           name: dist-debian
           path: build/dist
+          retention-days: 7
 
   build-macos:
     name: build macOS
@@ -46,6 +50,7 @@ jobs:
         with:
           name: dist-macos
           path: build/dist
+          retention-days: 7
 
   integration:
     name: ${{ matrix.name }}
