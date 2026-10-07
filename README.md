@@ -260,6 +260,7 @@ docs/
       research/
     virtual-macos/
       research/
+gates/
 scripts/
   debian/
     source/
