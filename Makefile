@@ -38,7 +38,7 @@ build/config.mk: dynamic.sh constants.env
 
 build/sources:
 	@mkdir -p $(@D)
-	@find src scripts -type f -exec sha256sum {} + | sort -k 2 > $@.new
+	@find src scripts docs dynamic.sh agent_build.sh Makefile stats.mk -type f -exec sha256sum {} + | sort -k 2 > $@.new
 	@cmp -s $@.new $@ && rm $@.new || mv $@.new $@
 
 build/go-sources:
@@ -72,7 +72,8 @@ build/setup.txt: build/tools.txt build/semgrep.txt build/versions.txt
 build/bin/parse build/bin/format: build/go-sources build/setup.txt
 	bash src/components/contract/build.sh build/bin
 
-SHELL_FILES := $$(find src scripts -type f \( -name '*.sh' -o -name '*.postrm' -o -name 'entitlements' -o -name 'secret-*' -o -name 'token-*' -o -name 'gettoken' -o -name 'exchanger' -o -name 'integrationtest' -o -name 'integration-test*' \) | grep -v -E '\.(json|1|manpages|install|bats|in)$$')
+SHELL_FILES := $$(find src scripts docs -type f \( -name '*.sh' -o -name '*.bash' -o -name '*.postrm' -o -name 'entitlements' -o -name 'secret-*' -o -name 'token-*' -o -name 'gettoken' -o -name 'exchanger' -o -name 'integrationtest' -o -name 'integration-test*' -o -name 'macos-vm*' -o -name 'colima-shared-*' \) | grep -v -E '\.(json|1|manpages|install|bats|in|md)$$') dynamic.sh agent_build.sh
+BATS_FILES  := $$(find src scripts -type f -name '*.bats')
 
 include $(ROOT_DIR)/stats.mk
 
@@ -80,9 +81,9 @@ build/semgrep-report.json: build/sources build/setup.txt
 	@mkdir -p $(@D)
 	semgrep-bash --json-output=$@ $(SHELL_FILES)
 
-build/shellcheck-report.json: build/sources build/setup.txt
+build/shellcheck-report.xml: build/sources build/setup.txt
 	@mkdir -p $(@D)
-	shellcheck -s bash -x -f json $(SHELL_FILES) > $@
+	shellcheck -s bash -x -f checkstyle $(SHELL_FILES) $(BATS_FILES) > $@
 
 build/go-report.json: build/go-sources build/setup.txt
 	@mkdir -p $(@D)
@@ -126,11 +127,11 @@ build/go-coverage.txt: build/go-unit-test.json
         build/bash-unit-test.checked build/bash-coverage.checked build/go-unit-test.checked \
         build/go-coverage.checked build/unit.txt
 
-build/shellcheck.checked: build/shellcheck-report.json build/stats.txt
-	set -euo pipefail; errors=$$(jq '[.[] | select(.level=="error")] | length' $<); \
-	warnings=$$(jq '[.[] | select(.level=="warning")] | length' $<); \
-	echo "shellcheck: $$errors errors, $$warnings warnings (max 0/0, $(BASH_SOURCE_FILES) bash files scanned)"; \
-	[ "$$errors" -le 0 ] && [ "$$warnings" -le 0 ] && [ "$(BASH_SOURCE_FILES)" -gt 20 ]
+build/shellcheck.checked: build/shellcheck-report.xml build/stats.txt
+	set -uo pipefail; files=$$(grep -c -- '^<file ' $<); findings=$$(grep -c -- '^<error ' $<); \
+	expected=$$(( $(BASH_SOURCE_FILES) + $(BATS_TEST_FILES) )); \
+	echo "shellcheck: $$findings findings, $$files files scanned (max 0, stat $$expected)"; \
+	[ "$$findings" -le 0 ] && [ "$$files" -eq "$$expected" ]
 
 build/make.checked: build/make-report.json
 	set -euo pipefail; issues=$$(jq -s 'add | length' $<); \
@@ -149,8 +150,9 @@ build/go-lint.checked: build/go-report.json build/stats.txt
 
 build/semgrep.checked: build/semgrep-report.json build/stats.txt
 	set -euo pipefail; findings=$$(jq '.results | length' $<); unparsed=$$(jq '.errors | length' $<); \
-	echo "semgrep: $$findings findings, $$unparsed files not fully parsed (max 0/0, $(BASH_SOURCE_FILES) bash files scanned)"; \
-	[ "$$findings" -le 0 ] && [ "$$unparsed" -le 0 ] && [ "$(BASH_SOURCE_FILES)" -gt 20 ]
+	scanned=$$(jq '.paths.scanned | length' $<); \
+	echo "semgrep: $$findings findings, $$unparsed files not fully parsed, $$scanned files scanned (max 0/0, stat $(BASH_SOURCE_FILES))"; \
+	[ "$$findings" -le 0 ] && [ "$$unparsed" -le 0 ] && [ "$$scanned" -eq "$(BASH_SOURCE_FILES)" ]
 
 build/lint.checked: build/shellcheck.checked build/make.checked build/schemas.checked build/go-lint.checked build/semgrep.checked
 	@echo "All lint accept checks passed cleanly"
@@ -165,9 +167,9 @@ build/no-branching.checked: build/branching-report.txt build/stats.txt
 	[ "$$sites" -le 0 ] && [ "$(BATS_TEST_FILES)" -gt 0 ]
 
 build/bash-unit-test.checked: build/report.tap build/stats.txt
-	set -uo pipefail; pass=$$(grep -c -- '^ok ' $<); fail=$$(grep -c -- '^not ok ' $<); \
-	echo "bats: $$pass passed, $$fail failed (min 10, stat $(BATS_TESTS))"; \
-	[ "$$fail" -eq 0 ] && [ "$$pass" -ge 10 ] && [ "$$(( $$pass + $$fail ))" -eq "$(BATS_TESTS)" ]
+	set -uo pipefail; pass=$$(grep -c -- '^ok ' $<); fail=$$(grep -c -- '^not ok ' $<); skip=$$(grep -c -- '^ok .* # skip' $<); \
+	echo "bats: $$pass passed, $$fail failed, $$skip skipped (min 10, max 0 skipped, stat $(BATS_TESTS))"; \
+	[ "$$fail" -eq 0 ] && [ "$$skip" -le 0 ] && [ "$$pass" -ge 10 ] && [ "$$(( $$pass + $$fail ))" -eq "$(BATS_TESTS)" ]
 
 build/bash-coverage.checked: build/kcov/bats/coverage.json build/stats.txt
 	set -euo pipefail; percent=$$(jq -r '.percent_covered' $<); \

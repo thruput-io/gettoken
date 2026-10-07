@@ -1,4 +1,4 @@
-BASH_SOURCE_FILES := $(strip $(shell echo $(SHELL_FILES) | wc -w))
+BASH_SOURCE_FILES := $(strip $(shell git ls-files -z --cached --others --exclude-standard | xargs -0 awk 'FNR == 1 { if (FILENAME ~ /\.(sh|bash)$$/ || /^\#!.*[\/ ](ba)?sh([ \t]|$$)/) print FILENAME; nextfile }' | grep -v -c '\.bats$$'))
 GO_SOURCE_FILES   := $(strip $(shell find src -name '*.go' ! -name '*_test.go' | grep -v /vendor/ | wc -l))
 JSON_SCHEMAS      := $(strip $(shell find src/contracts -name '*.schema.json' | wc -l))
 BATS_TEST_FILES   := $(strip $(shell find src scripts -name '*.bats' | wc -l))
