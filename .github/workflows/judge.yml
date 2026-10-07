@@ -2,9 +2,10 @@ name: judge
 
 # The PR's code, judged by main's gates. pull_request_target always runs this
 # file as it is on main, so a pull request cannot change the workflow that
-# judges it. The PR's tree is checked out as the thing under test; every file
-# that decides pass or fail is then replaced by main's copy. A change to a gate
-# therefore has to merge on its own, judged by the gates it replaces.
+# judges it. The PR's tree is checked out as the thing under test; gates/ --
+# every list, stat, report recipe, threshold and check -- is then replaced by
+# main's copy. A change to a gate therefore merges on its own, judged by the
+# gates it replaces.
 
 on:
   pull_request_target:
@@ -16,19 +17,7 @@ permissions:
 env:
   BUILD_NUMBER: ${{ github.run_number }}
   ROOT_DIR: ${{ github.workspace }}
-  # Every file that judges rather than builds. Each one is taken from main.
-  GATE_FILES: >-
-    Makefile
-    stats.mk
-    dynamic.sh
-    constants.env
-    scripts/branching.sh
-    scripts/check-permissions.sh
-    scripts/fetch-semgrep-bash.sh
-    scripts/semgrep-shim.sh
-    scripts/readme.sh
-    scripts/versions.sh
-  # Files that could silence a gate or take make's place ahead of Makefile.
+  # Files that could silence a gate, or that make would read ahead of Makefile.
   # None may differ from main.
   TOOL_CONFIG: '(^|/)(\.shellcheckrc|shellcheckrc|\.semgrepignore|checkmake\.ini|\.checkmake\.ini)$|^(GNUmakefile|makefile)$'
 
@@ -66,15 +55,37 @@ jobs:
             cmp -s "$f" ".judge/$f" || { echo "judge: $f differs from main"; exit 1; }
           done < "$RUNNER_TEMP/tool-config.txt"
           echo "judge: $(wc -l < "$RUNNER_TEMP/tool-config.txt") tool configuration files, all as on main"
-      - name: the gates are main's
+      - name: gates/ is main's
         run: |
           set -euo pipefail
-          for f in $GATE_FILES; do
-            cp -p ".judge/$f" "$f"
-            echo "judge: $f taken from main $(git -C .judge rev-parse --short HEAD)"
-          done
+          rm -rf gates
+          cp -Rp .judge/gates gates
+          echo "judge: gates/ taken from main $(git -C .judge rev-parse --short HEAD)"
           rm -rf .judge
-      - run: make build
+      - name: the gates run, and nothing outside gates/ redefines one
+        run: |
+          set -euo pipefail
+          make build/lint.checked build/unit.txt build 2>&1 | tee "$RUNNER_TEMP/make.log"
+          found=0
+          grep -E 'overriding (recipe|commands)|ignoring old (recipe|commands)' "$RUNNER_TEMP/make.log" > "$RUNNER_TEMP/redefined.txt" || found=$?
+          [ "$found" -le 1 ]
+          echo "judge: $(wc -l < "$RUNNER_TEMP/redefined.txt") gate recipes redefined (max 0)"
+          [ "$(wc -l < "$RUNNER_TEMP/redefined.txt")" -le 0 ]
+      - name: only gates/ sets override variables
+        run: |
+          set -euo pipefail
+          status=0
+          make -p -q build/stats.txt > "$RUNNER_TEMP/make-database.txt" 2>/dev/null || status=$?
+          [ "$status" -le 1 ]
+          found=0
+          grep -E "^# [\`']override' directive \(from [\`']" "$RUNNER_TEMP/make-database.txt" > "$RUNNER_TEMP/overrides.txt" || found=$?
+          [ "$found" -le 1 ]
+          found=0
+          grep -v -E "from [\`']($ROOT_DIR/)?gates/" "$RUNNER_TEMP/overrides.txt" > "$RUNNER_TEMP/outside.txt" || found=$?
+          [ "$found" -le 1 ]
+          cat "$RUNNER_TEMP/outside.txt"
+          echo "judge: $(wc -l < "$RUNNER_TEMP/outside.txt") override variables set outside gates/, $(wc -l < "$RUNNER_TEMP/overrides.txt") in all (max 0 outside)"
+          [ "$(wc -l < "$RUNNER_TEMP/outside.txt")" -le 0 ] && [ "$(wc -l < "$RUNNER_TEMP/overrides.txt")" -gt 0 ]
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -113,15 +124,37 @@ jobs:
             cmp -s "$f" ".judge/$f" || { echo "judge: $f differs from main"; exit 1; }
           done < "$RUNNER_TEMP/tool-config.txt"
           echo "judge: $(wc -l < "$RUNNER_TEMP/tool-config.txt") tool configuration files, all as on main"
-      - name: the gates are main's
+      - name: gates/ is main's
         run: |
           set -euo pipefail
-          for f in $GATE_FILES; do
-            cp -p ".judge/$f" "$f"
-            echo "judge: $f taken from main $(git -C .judge rev-parse --short HEAD)"
-          done
+          rm -rf gates
+          cp -Rp .judge/gates gates
+          echo "judge: gates/ taken from main $(git -C .judge rev-parse --short HEAD)"
           rm -rf .judge
-      - run: make build
+      - name: the gates run, and nothing outside gates/ redefines one
+        run: |
+          set -euo pipefail
+          make build/lint.checked build/unit.txt build 2>&1 | tee "$RUNNER_TEMP/make.log"
+          found=0
+          grep -E 'overriding (recipe|commands)|ignoring old (recipe|commands)' "$RUNNER_TEMP/make.log" > "$RUNNER_TEMP/redefined.txt" || found=$?
+          [ "$found" -le 1 ]
+          echo "judge: $(wc -l < "$RUNNER_TEMP/redefined.txt") gate recipes redefined (max 0)"
+          [ "$(wc -l < "$RUNNER_TEMP/redefined.txt")" -le 0 ]
+      - name: only gates/ sets override variables
+        run: |
+          set -euo pipefail
+          status=0
+          make -p -q build/stats.txt > "$RUNNER_TEMP/make-database.txt" 2>/dev/null || status=$?
+          [ "$status" -le 1 ]
+          found=0
+          grep -E "^# [\`']override' directive \(from [\`']" "$RUNNER_TEMP/make-database.txt" > "$RUNNER_TEMP/overrides.txt" || found=$?
+          [ "$found" -le 1 ]
+          found=0
+          grep -v -E "from [\`']($ROOT_DIR/)?gates/" "$RUNNER_TEMP/overrides.txt" > "$RUNNER_TEMP/outside.txt" || found=$?
+          [ "$found" -le 1 ]
+          cat "$RUNNER_TEMP/outside.txt"
+          echo "judge: $(wc -l < "$RUNNER_TEMP/outside.txt") override variables set outside gates/, $(wc -l < "$RUNNER_TEMP/overrides.txt") in all (max 0 outside)"
+          [ "$(wc -l < "$RUNNER_TEMP/outside.txt")" -le 0 ] && [ "$(wc -l < "$RUNNER_TEMP/overrides.txt")" -gt 0 ]
       - if: always()
         uses: actions/upload-artifact@v4
         with:
