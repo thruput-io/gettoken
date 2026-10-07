@@ -9,7 +9,7 @@ naming_an_installation_directory = \
   components/exchanger/exchanger \
   components/contract/contract.go
 
-.PHONY: all configured contract clean
+.PHONY: all configured contract test clean
 
 all: configured contract
 
@@ -24,6 +24,9 @@ build/configured: $(naming_an_installation_directory)
 
 contract: build/configured
 	./components/contract/build.sh build/bin
+
+test:
+	go -C components/contract test -mod=vendor ./...
 
 clean:
 	rm -rf build
