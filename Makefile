@@ -89,9 +89,9 @@ build/go-report.json: build/go-sources build/setup.txt
 	@mkdir -p $(@D)
 	go -C src/components/contract vet -json -mod=vendor ./... 2> $@
 
-build/make-report.json: Makefile src/Makefile stats.mk build/setup.txt
+build/make-report.json: Makefile src/Makefile stats.mk scripts/debian/rules build/setup.txt
 	@mkdir -p $(@D)
-	checkmake --debug -o json Makefile src/Makefile stats.mk > $@ 2> build/make-report.log
+	checkmake --debug -o json Makefile src/Makefile stats.mk scripts/debian/rules > $@ 2> build/make-report.log
 
 build/schema-report.json: build/schema-sources build/setup.txt
 	@mkdir -p $(@D)
