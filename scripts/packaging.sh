@@ -183,6 +183,9 @@ for fmt in ${PACKAGE_FORMATS:?packaging.sh: name the PACKAGE_FORMATS to package 
           needed_by "$package" | sed "s|.*|  depends_on \"$tap/&\"|"
           printf '\n  def install\n'
           printf '    (share/"gettoken/contracts").install "contracts/%s"\n' "$(basename "$schema")"
+          printf '  end\n\n'
+          printf '  test do\n'
+          printf '    assert_predicate share/"gettoken/contracts/%s", :exist?\n' "$(basename "$schema")"
           printf '  end\nend\n'
         } | cat -s > "$source/Formula/$package.rb"
       done

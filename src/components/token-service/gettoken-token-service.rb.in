@@ -10,4 +10,8 @@ class GettokenTokenService < Formula
   def install
     (lib/"gettoken").install "components/token-service/token-service"
   end
+
+  test do
+    assert_predicate lib/"gettoken/token-service", :exist?
+  end
 end
