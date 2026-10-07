@@ -16,8 +16,8 @@ bash-coverage:    build/bash-coverage.checked
 go-unit-test:     build/go-unit-test.checked
 go-coverage:      build/go-coverage.checked
 
-SHELL_FILES := $$(find src scripts docs gates -type f \( -name '*.sh' -o -name '*.bash' -o -name '*.postrm' -o -name 'entitlements' -o -name 'secret-*' -o -name 'token-*' -o -name 'gettoken' -o -name 'exchanger' -o -name 'integrationtest' -o -name 'integration-test*' -o -name 'macos-vm*' -o -name 'colima-shared-*' \) | grep -v -E '\.(json|1|manpages|install|bats|in|md)$$') dynamic.sh agent_build.sh
-BATS_FILES  := $$(find src scripts -type f -name '*.bats')
+override SHELL_FILES := $$(find src scripts docs gates -type f \( -name '*.sh' -o -name '*.bash' -o -name '*.postrm' -o -name 'entitlements' -o -name 'secret-*' -o -name 'token-*' -o -name 'gettoken' -o -name 'exchanger' -o -name 'integrationtest' -o -name 'integration-test*' -o -name 'macos-vm*' -o -name 'colima-shared-*' \) | grep -v -E '\.(json|1|manpages|install|bats|in|md)$$') dynamic.sh agent_build.sh
+override BATS_FILES  := $$(find src scripts -type f -name '*.bats')
 
 include $(ROOT_DIR)/gates/stats.mk
 
