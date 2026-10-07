@@ -11,15 +11,7 @@ GO_TESTS          := $(shell grep -rc '^func Test' src --include='*_test.go' | a
 
 build/stats.txt: build/sources build/go-sources build/schema-sources
 	@mkdir -p $(@D)
-	{ \
-	  echo "bash source files: $(BASH_SOURCE_FILES)"; \
-	  echo "bash files under src: $(BASH_SRC_FILES)"; \
-	  echo "go source files: $(GO_SOURCE_FILES)"; \
-	  echo "go packages: $(GO_PACKAGES)"; \
-	  echo "makefiles: $(MAKEFILES)"; \
-	  echo "json schemas: $(JSON_SCHEMAS)"; \
-	  echo "bats test files: $(BATS_TEST_FILES)"; \
-	  echo "go test files: $(GO_TEST_FILES)"; \
-	  echo "bats tests: $(BATS_TESTS)"; \
-	  echo "go tests: $(GO_TESTS)"; \
-	} > $@
+	printf '%s\n' "bash source files: $(BASH_SOURCE_FILES)" "bash files under src: $(BASH_SRC_FILES)" \
+	  "go source files: $(GO_SOURCE_FILES)" "go packages: $(GO_PACKAGES)" "makefiles: $(MAKEFILES)" \
+	  "json schemas: $(JSON_SCHEMAS)" "bats test files: $(BATS_TEST_FILES)" "go test files: $(GO_TEST_FILES)" \
+	  "bats tests: $(BATS_TESTS)" "go tests: $(GO_TESTS)" > $@
