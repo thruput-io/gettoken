@@ -9,7 +9,7 @@ naming_an_installation_directory = \
   components/exchanger/exchanger \
   components/contract/contract.go
 
-.PHONY: all configured contract clean
+.PHONY: all configured contract test clean
 
 all: configured contract
 
@@ -17,15 +17,16 @@ configured: build/configured
 
 build/configured: $(naming_an_installation_directory)
 	set -e; for named in $(naming_an_installation_directory); do \
-	  sed -e 's|@libdir@|$(libdir)|g' -e 's|@datadir@|$(datadir)|g' "$$named" > "$$named.configured"; \
-	  cat "$$named.configured" > "$$named"; \
-	  rm "$$named.configured"; \
+	  sed -e 's|@libdir@|$(libdir)|g' -e 's|@datadir@|$(datadir)|g' "$$named" > "$$named.configured"; cat "$$named.configured" > "$$named"; rm "$$named.configured"; \
 	done
 	mkdir -p build
 	touch $@
 
 contract: build/configured
 	./components/contract/build.sh build/bin
+
+test:
+	go -C components/contract test -mod=vendor ./...
 
 clean:
 	rm -rf build

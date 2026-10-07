@@ -86,7 +86,11 @@ getting_version() {
   run -1 --separate-stderr sh -c \
     'printf %s "{\"key\":\"Johans-Laptop\",\"value\":\"super-1\"}" | secret-put'
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: "Johans-Laptop" does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"')
+  expected=$(cat <<'MESSAGE'
+parse: the document does not satisfy secret-put-request.schema.json
+validating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: "Johans-Laptop" does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"
+MESSAGE
+  )
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
@@ -94,7 +98,11 @@ getting_version() {
   run -1 --separate-stderr sh -c \
     'printf %s "{\"key\":\"..\",\"value\":\"super-1\"}" | secret-put'
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: ".." does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"')
+  expected=$(cat <<'MESSAGE'
+parse: the document does not satisfy secret-put-request.schema.json
+validating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: ".." does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"
+MESSAGE
+  )
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
   [ ! -e "$(dirname "$store")/github" ]
 }
@@ -103,7 +111,11 @@ getting_version() {
   run -1 --separate-stderr sh -c \
     'printf %s "{\"key\":\"johans-laptop/github\",\"value\":\"\"}" | secret-put'
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/value: validating /$defs/Secret: minLength: "" contains 0 Unicode code points, fewer than 1')
+  expected=$(cat <<'MESSAGE'
+parse: the document does not satisfy secret-put-request.schema.json
+validating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/value: validating /$defs/Secret: minLength: "" contains 0 Unicode code points, fewer than 1
+MESSAGE
+  )
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 

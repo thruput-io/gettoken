@@ -35,8 +35,11 @@ setup() {
 
 @test "a value carrying what would break a document is written whole" {
   key=johans-laptop/github
-  value='super "1" \ and
-a second line'
+  value=$(cat <<'VALUE'
+super "1" \ and
+a second line
+VALUE
+  )
   export key value
   document=$(format secret-put-request.schema.json key value)
   [ "$(printf '%s' "$document" | jq -r '.value')" = "$value" ]
@@ -82,7 +85,11 @@ a second line'
   export version value
   run -1 --separate-stderr format secret-get-response.schema.json version value
   [ "$output" = "" ]
-  expected=$(printf 'format: the document does not satisfy secret-get-response.schema.json\nvalidating https://thruput.io/gettoken/secret-response.schema.json: validating /properties/version: validating /$defs/Version: type: x has type "string", want "integer"')
+  expected=$(cat <<'MESSAGE'
+format: the document does not satisfy secret-get-response.schema.json
+validating https://thruput.io/gettoken/secret-response.schema.json: validating /properties/version: validating /$defs/Version: type: x has type "string", want "integer"
+MESSAGE
+  )
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
