@@ -10,4 +10,8 @@ class GettokenEntitlements < Formula
   def install
     (lib/"gettoken").install "components/entitlements/entitlements"
   end
+
+  test do
+    assert_predicate lib/"gettoken/entitlements", :exist?
+  end
 end

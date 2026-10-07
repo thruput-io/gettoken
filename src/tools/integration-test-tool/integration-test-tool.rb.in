@@ -10,4 +10,8 @@ class IntegrationTestTool < Formula
   def install
     bin.install "tools/integration-test-tool/bin/integration-test-tool"
   end
+
+  test do
+    assert_predicate bin/"integration-test-tool", :exist?
+  end
 end

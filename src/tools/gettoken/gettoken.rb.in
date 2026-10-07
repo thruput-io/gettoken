@@ -11,4 +11,8 @@ class Gettoken < Formula
     system "make", "configured", "prefix=#{HOMEBREW_PREFIX}"
     bin.install "tools/gettoken/bin/gettoken"
   end
+
+  test do
+    assert_predicate bin/"gettoken", :exist?
+  end
 end

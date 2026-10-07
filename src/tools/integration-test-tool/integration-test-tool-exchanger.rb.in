@@ -10,4 +10,8 @@ class IntegrationTestToolExchanger < Formula
   def install
     (lib/"gettoken/exchangers").install "tools/integration-test-tool/privileged/exchangers/integrationtest"
   end
+
+  test do
+    assert_predicate lib/"gettoken/exchangers/integrationtest", :exist?
+  end
 end

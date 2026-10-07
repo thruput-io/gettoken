@@ -11,4 +11,8 @@ class GettokenExchanger < Formula
     system "make", "configured", "prefix=#{HOMEBREW_PREFIX}"
     (lib/"gettoken").install "components/exchanger/exchanger"
   end
+
+  test do
+    assert_predicate lib/"gettoken/exchanger", :exist?
+  end
 end
