@@ -1,0 +1,61 @@
+name: release
+
+on:
+  workflow_run:
+    workflows: ["verifications"]
+    types:
+      - completed
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  BUILD_NUMBER: ${{ github.event.workflow_run.run_number }}
+  ROOT_DIR: ${{ github.workspace }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release:
+    name: release
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      DISTRIBUTION_REPOSITORIES: apt,homebrew-tap
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          merge-multiple: true
+          path: build/dist
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - id: distribute
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.DISTRIBUTION_APP_ID }}
+          private-key: ${{ secrets.DISTRIBUTION_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ env.DISTRIBUTION_REPOSITORIES }}
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          source dynamic.sh > /dev/null
+          gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" \
+            --notes "Built from $GITHUB_SHA by run $GITHUB_RUN_ID." \
+            build/dist/deb/*.deb build/dist/brew/*.tar.gz build/dist/brew/*.rb
+      - name: tell the distribution repositories there is a release
+        env:
+          GH_TOKEN: ${{ steps.distribute.outputs.token }}
+        run: |
+          for repo in ${DISTRIBUTION_REPOSITORIES//,/ }; do
+            gh api "repos/$GITHUB_REPOSITORY_OWNER/$repo/dispatches" \
+              -f event_type=release -f "client_payload[repository]=$GITHUB_REPOSITORY"
+          done
