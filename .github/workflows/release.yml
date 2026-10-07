@@ -1,6 +1,7 @@
 name: release
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["verifications"]
     types:
@@ -12,7 +13,7 @@ permissions:
   contents: read
 
 env:
-  BUILD_NUMBER: ${{ github.event.workflow_run.run_number }}
+  BUILD_NUMBER: ${{ github.event.workflow_run.run_number || github.run_number }}
   ROOT_DIR: ${{ github.workspace }}
 
 defaults:
@@ -22,7 +23,7 @@ defaults:
 jobs:
   release:
     name: release
-    if: github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -31,12 +32,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
+        if: github.event_name == 'workflow_run'
         with:
           pattern: dist-*
           merge-multiple: true
           path: build/dist
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
+      - name: build packages if manually dispatched
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work debian:testing-slim sh -c '
+            set -eu
+            apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
+            git config --global --add safe.directory "*"
+            make build'
       - id: distribute
         uses: actions/create-github-app-token@v1
         with:
