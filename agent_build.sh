@@ -45,6 +45,7 @@ what_a_clean_machine_gets "$built/debian" | docker run -i --rm -e ROOT_DIR=/work
 if command -v macos-vm > /dev/null; then
   say "build on macOS, as the build macOS job does"
   macos-vm reset > /dev/null
+  # shellcheck disable=SC2016 # expands in the macOS guest, not here
   the_tree | macos-vm shell bash -lc '
     set -eu
     rm -rf "$HOME/gettoken"
@@ -53,10 +54,12 @@ if command -v macos-vm > /dev/null; then
     tar -xf -
     make build'
   mkdir -p "$built/macos/build"
+  # shellcheck disable=SC2016 # expands in the macOS guest, not here
   macos-vm shell bash -lc 'COPYFILE_DISABLE=1 tar -cf - -C "$HOME/gettoken/build" dist' | tar -xf - -C "$built/macos/build"
 
   say "install on a fresh macOS guest, as the macOS stable job does"
   macos-vm reset > /dev/null
+  # shellcheck disable=SC2016 # expands in the macOS guest, not here
   what_a_clean_machine_gets "$built/macos" | macos-vm shell bash -lc '
     set -eu
     rm -rf "$HOME/gettoken"
