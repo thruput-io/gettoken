@@ -87,15 +87,15 @@ build/shellcheck-report.xml: build/sources build/setup.txt
 
 build/go-report.json: build/go-sources build/setup.txt
 	@mkdir -p $(@D)
-	go -C src/components/contract vet -json -mod=vendor ./... > $@
+	go -C src/components/contract vet -json -mod=vendor ./... 2> $@
 
-build/make-report.json: Makefile build/setup.txt
+build/make-report.json: Makefile src/Makefile stats.mk build/setup.txt
 	@mkdir -p $(@D)
-	checkmake -o json Makefile > $@
+	checkmake --debug -o json Makefile src/Makefile stats.mk > $@ 2> build/make-report.log
 
 build/schema-report.json: build/schema-sources build/setup.txt
 	@mkdir -p $(@D)
-	check-jsonschema --check-metaschema --output-format=json src/contracts/*.schema.json > $@
+	check-jsonschema --verbose --check-metaschema --output-format=json src/contracts/*.schema.json > $@
 
 build/check-permissions.txt: build/sources build/setup.txt
 	@mkdir -p $(@D)
@@ -133,20 +133,20 @@ build/shellcheck.checked: build/shellcheck-report.xml build/stats.txt
 	echo "shellcheck: $$findings findings, $$files files scanned (max 0, stat $$expected)"; \
 	[ "$$findings" -le 0 ] && [ "$$files" -eq "$$expected" ]
 
-build/make.checked: build/make-report.json
-	set -euo pipefail; issues=$$(jq -s 'add | length' $<); \
-	echo "checkmake: $$issues issues (max 0)"; \
-	[ "$$issues" -le 0 ]
+build/make.checked: build/make-report.json build/stats.txt
+	set -uo pipefail; issues=$$(jq -s 'add | length' $<); parsed=$$(grep -c 'Parsing file' build/make-report.log); \
+	echo "checkmake: $$issues issues, $$parsed makefiles parsed (max 0, stat $(MAKEFILES))"; \
+	[ "$$issues" -le 0 ] && [ "$$parsed" -eq "$(MAKEFILES)" ]
 
 build/schemas.checked: build/schema-report.json build/stats.txt
-	set -euo pipefail; status=$$(jq -r '.status' $<); errors=$$(jq '.errors | length' $<); \
-	echo "schemas: $$errors errors, status=$$status (max 0, $(JSON_SCHEMAS) schemas checked)"; \
-	[ "$$status" = "ok" ] && [ "$$errors" -le 0 ] && [ "$(JSON_SCHEMAS)" -gt 0 ]
+	set -euo pipefail; status=$$(jq -r '.status' $<); errors=$$(jq '.errors | length' $<); checked=$$(jq '.checked_paths | length' $<); \
+	echo "schemas: $$errors errors, status=$$status, $$checked schemas checked (max 0, stat $(JSON_SCHEMAS))"; \
+	[ "$$status" = "ok" ] && [ "$$errors" -le 0 ] && [ "$$checked" -eq "$(JSON_SCHEMAS)" ]
 
 build/go-lint.checked: build/go-report.json build/stats.txt
-	set -euo pipefail; issues=$$(jq -s '[.[][][][]] | length' $<); \
-	echo "go vet: $$issues issues (max 0, $(GO_SOURCE_FILES) go files scanned)"; \
-	[ "$$issues" -le 0 ] && [ "$(GO_SOURCE_FILES)" -gt 0 ]
+	set -euo pipefail; issues=$$(grep -v '^#' $< | jq -s '[.[][][][]] | length'); packages=$$(grep -c '^# [^[]' $<); \
+	echo "go vet: $$issues issues, $$packages packages vetted (max 0, stat $(GO_PACKAGES))"; \
+	[ "$$issues" -le 0 ] && [ "$$packages" -eq "$(GO_PACKAGES)" ]
 
 build/semgrep.checked: build/semgrep-report.json build/stats.txt
 	set -euo pipefail; findings=$$(jq '.results | length' $<); unparsed=$$(jq '.errors | length' $<); \
@@ -162,9 +162,9 @@ build/branching-report.txt: build/sources build/setup.txt
 	bash scripts/branching.sh . > $@
 
 build/no-branching.checked: build/branching-report.txt build/stats.txt
-	set -euo pipefail; sites=$$(wc -l < $< | tr -d ' '); \
-	echo "no-branching: $$sites sites branch or default in tests (max 0, $(BATS_TEST_FILES) test files scanned)"; \
-	[ "$$sites" -le 0 ] && [ "$(BATS_TEST_FILES)" -gt 0 ]
+	set -uo pipefail; sites=$$(grep -vc ': scanned$$' $<); scanned=$$(grep -c ': scanned$$' $<); \
+	echo "no-branching: $$sites sites branch or default in tests, $$scanned files scanned (max 0, stat $(BATS_TEST_FILES))"; \
+	[ "$$sites" -le 0 ] && [ "$$scanned" -eq "$(BATS_TEST_FILES)" ]
 
 build/bash-unit-test.checked: build/report.tap build/stats.txt
 	set -uo pipefail; pass=$$(grep -c -- '^ok ' $<); fail=$$(grep -c -- '^not ok ' $<); skip=$$(grep -c -- '^ok .* # skip' $<); \
@@ -174,14 +174,14 @@ build/bash-unit-test.checked: build/report.tap build/stats.txt
 build/bash-coverage.checked: build/kcov/bats/coverage.json build/stats.txt
 	set -euo pipefail; percent=$$(jq -r '.percent_covered' $<); \
 	files=$$(jq -r '.files | length' $<); \
-	echo "bash-coverage: $$percent% covered, floor 22%, $$files files (stat $(BASH_SOURCE_FILES))"; \
-	[ "$${percent%.*}" -ge 22 ] && [ "$$files" -gt 0 ]
+	echo "bash-coverage: $$percent% covered, floor 22%, $$files files (stat $(BASH_SRC_FILES))"; \
+	[ "$${percent%.*}" -ge 22 ] && [ "$$files" -eq "$(BASH_SRC_FILES)" ]
 
 build/go-coverage.checked: build/go-coverage.txt build/stats.txt
 	set -euo pipefail; percent=$$(grep '^total:' $< | grep -oE '[0-9.]+%$$' | tr -d '%'); \
-	files=$$(grep -v '^total:' $< | cut -d: -f1 | sort -u | wc -l); \
+	files=$$(grep -v '^total:' $< | cut -d: -f1 | sort -u | wc -l | tr -d ' '); \
 	echo "go-coverage: $$percent% covered, floor 44%, $$files files (stat $(GO_SOURCE_FILES))"; \
-	[ "$${percent%.*}" -ge 44 ] && [ "$$files" -gt 0 ]
+	[ "$${percent%.*}" -ge 44 ] && [ "$$files" -eq "$(GO_SOURCE_FILES)" ]
 
 build/go-unit-test.checked: build/go-unit-test.json build/stats.txt
 	set -uo pipefail; pass=$$(grep -c -- '--- PASS:' $<); fail=$$(grep -c -- '--- FAIL:' $<); ran=$$(grep -c -- '=== RUN' $<); \
