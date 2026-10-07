@@ -49,9 +49,10 @@ and the programs that reach the store.
 One exchanger per service, named for the first segment of the capability it
 serves. Installed by the package that integrates that service.
 .TP
-.I /var/lib/gettoken/secrets
-The super-tokens a human placed on the privileged side. No account but that one
-can read it, and nothing an agent runs reaches it.
+.I ~/secrets
+The super-tokens a human placed on the privileged side, in the home of the
+privileged account. No account but that one can read it, and nothing an agent
+runs reaches it.
 .SH SEE ALSO
 The design and the vocabulary are described in the README under
 .IR /usr/share/doc/gettoken .

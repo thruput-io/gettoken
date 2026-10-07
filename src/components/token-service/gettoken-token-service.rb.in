@@ -1,0 +1,13 @@
+class GettokenTokenService < Formula
+  desc "Token broker for AI agents - gettoken-token-service"
+  homepage "https://github.com/thruput-io/gettoken"
+  url "@URL@"
+  sha256 "@SHA256@"
+  license "Apache-2.0"
+
+@DEPENDS@
+
+  def install
+    (lib/"gettoken").install "components/token-service/token-service"
+  end
+end

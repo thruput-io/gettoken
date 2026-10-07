@@ -9,4 +9,3 @@ check-jsonschema --version
 bats --version
 kcov --version
 jq --version
-gpg --version

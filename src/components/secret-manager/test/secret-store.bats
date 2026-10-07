@@ -5,12 +5,12 @@ load "$ROOT_DIR/scripts/test/helper"
 setup() {
   root=$ROOT_DIR
   PATH="$root/src/components/secret-manager:$root/build/bin:$PATH"
-  SECRET_DIR="$(mktemp -d)/secrets"
+  HOME=$BATS_TEST_TMPDIR/home
+  mkdir "$HOME"
+  store=$HOME/secrets
   CONTRACTS_DIR="$root/src/contracts"
-  export PATH SECRET_DIR CONTRACTS_DIR
+  export PATH HOME CONTRACTS_DIR
 }
-
-teardown() { rm -rf "$(dirname "$SECRET_DIR")"; }
 
 putting() {
   key=$1 value=$2
@@ -96,7 +96,7 @@ getting_version() {
   [ "$output" = "" ]
   expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: ".." does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"')
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
-  [ ! -e "$(dirname "$SECRET_DIR")/github" ]
+  [ ! -e "$(dirname "$store")/github" ]
 }
 
 @test "storing a secret with no value is refused" {
@@ -116,19 +116,19 @@ getting_version() {
 
 @test "every directory the store is made of is closed to everyone but its owner" {
   putting johans-laptop/github super-1
-  run -0 --separate-stderr find "$SECRET_DIR" -type d -perm 700
-  [ "$(printf '%s\n' "$output" | sort)" = "$(printf '%s\n' "$SECRET_DIR" "$SECRET_DIR/johans-laptop" "$SECRET_DIR/johans-laptop/github" | sort)" ]
+  run -0 --separate-stderr find "$store" -type d -perm 700
+  [ "$(printf '%s\n' "$output" | sort)" = "$(printf '%s\n' "$store" "$store/johans-laptop" "$store/johans-laptop/github" | sort)" ]
 }
 
 @test "the stored secret is closed to everyone but its owner" {
   putting johans-laptop/github super-1
-  run -0 --separate-stderr find "$SECRET_DIR" -type f -perm 600
-  [ "$output" = "$SECRET_DIR/johans-laptop/github/0" ]
+  run -0 --separate-stderr find "$store" -type f -perm 600
+  [ "$output" = "$store/johans-laptop/github/0" ]
 }
 
 @test "an entry that is not a file is not a version the store can hand back" {
   putting johans-laptop/github super-1
-  mkdir "$SECRET_DIR/johans-laptop/github/1"
+  mkdir "$store/johans-laptop/github/1"
   run -0 --separate-stderr getting johans-laptop/github
   [ "$(printf '%s' "$output" | jq -r '.version')" = "0" ]
   [ "$(printf '%s' "$output" | jq -r '.value')" = "super-1" ]

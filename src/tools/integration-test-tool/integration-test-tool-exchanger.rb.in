@@ -1,0 +1,13 @@
+class IntegrationTestToolExchanger < Formula
+  desc "Token broker for AI agents - integration-test-tool-exchanger"
+  homepage "https://github.com/thruput-io/gettoken"
+  url "@URL@"
+  sha256 "@SHA256@"
+  license "Apache-2.0"
+
+@DEPENDS@
+
+  def install
+    (lib/"gettoken/exchangers").install "tools/integration-test-tool/privileged/exchangers/integrationtest"
+  end
+end

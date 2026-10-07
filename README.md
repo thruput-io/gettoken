@@ -47,13 +47,13 @@ Fixed faces (name + concern). The implementation of each evolves left to right.
 |---|-----------|---------|-----------|--------|
 | 1 | `gettoken` | agent's entry point; `--list` and `<capability>` | forwarder | stable |
 | 2 | `token-requester` | privileged half; builds the request | local root/dev | gh app signing → orchestrator/container id |
-| 3 | `token-service` | authenticate, resolve, hand the capability to an exchanger | transitive trust, as-is | verify `signed` → off-the-shelf OAuth2 STS |
+| 3 | `token-service` | authenticate, resolve, hand the capability to the exchanger | transitive trust, as-is | verify `signed` → off-the-shelf OAuth2 STS |
 | 4 | `notifier` | summon a human to renew | beep + shell | 2FA/phone → mostly automated |
 | 5 | `auth-canvas` | surface the human acts on | prepped shell (`gh auth login`) | mobile/web |
 | 6 | `secret-manager` | holds super-tokens on the privileged side, keyed by who holds them and which service they are for | privileged folder | secrets manager |
 | 7 | `entitlements` | what an agent may equip | script entry | operator-managed |
 | 8 | `agent-identity-authority` | proves who the agent is | local OS user | gh app signed → GCP service principal |
-| 9 | `exchanger` | turns a super-token into a narrow one for one service | one per capability segment, found in `/usr/lib/gettoken/exchangers` | its own package, beside the tool it integrates |
+| 9 | `exchanger` | trades a super-token for a narrow one, through the plugin installed for the service | one plugin per capability segment, found in `/usr/lib/gettoken/exchangers` | a plugin is its own package, beside the tool it integrates |
 | 10 | `renewer` | obtains a fresh super-token for one service, with a human present | runs the tool's own login | device flow → phone approval |
 
 Components 1–8 are shared. 9 and 10 are shipped once per integrated tool: each
@@ -66,19 +66,18 @@ message to a credential. The agent asks again every time it needs a token — it
 not told when one expires and does not track one. Caching belongs to the
 privileged half.
 
-`token-service` dispatches on the first segment of the capability, and the
-exchanger registered for that segment performs the exchange. An exchanger
+`token-service` hands the request to the exchanger, which dispatches on the
+first segment of the capability to the plugin installed for that segment. A plugin
 translates the capability into whatever that service actually wants — for GitHub a
 set of permissions on the repository named in the capability, not GitHub's own
-coarse scopes. It issues a token that lives as short a time as possible, ideally
-two minutes.
+coarse scopes. The token lives as short a time as possible, ideally two minutes.
 
 ## Architecture
 
 The request path. `gettoken` is the only face the agent sees; everything past
 the privilege boundary is the trusted half. The super-token never crosses back —
-the exchanger is the only thing that touches it, and what comes back is the
-narrow token it issued.
+the exchanger reads it from the store and hands it to the plugin, and what comes
+back is the narrow token the plugin wrote.
 
 ```mermaid
 flowchart TD
@@ -92,9 +91,10 @@ flowchart TD
   subgraph PRIV["privileged half · kernel is the trust root"]
     TR["token-requester"]
     EN["entitlements · baked-in capability list"]
-    TS["token-service · dispatches on the first segment"]
-    EX["exchanger · trades the super-token for a narrow one"]
-    SM[("secret-manager · /var/lib/gettoken/secrets")]
+    TS["token-service · authenticates and resolves"]
+    EX["exchanger · dispatches on the first segment"]
+    PL["plugin · trades the super-token for a narrow one"]
+    SM[("secret-manager · ~/secrets of the privileged account")]
   end
 
   AG -->|"gettoken --list"| GT
@@ -102,8 +102,9 @@ flowchart TD
   GT -->|"exec"| TR
   TR -->|"exec, when --list"| EN
   TR -->|"who, doing, wants, signed · stdin"| TS
-  TS -->|"capability"| EX
+  TS -->|"who, wants · stdin"| EX
   EX -->|"read super-token"| SM
+  EX -->|"capability · argument, super-token · stdin"| PL
   EN -->|"capability list · stdout"| AG
   TS -->|"response · stdout"| AG
   AG -->|"narrow token · environment"| TL
@@ -148,37 +149,33 @@ segment of **`doing`**, and the deployment is where that key is put.
 }
 ```
 
-An exchanger is a component like any other, so contracts govern both ends of it.
-`token-service` finds it in `/usr/lib/gettoken/exchangers`, named for the first
-segment of the capability, hands it an `exchange-request` on standard input and
-reads a `token-response` back. It is told who is asking and what for, and neither
-the signature the request was signed with nor what the agent was doing, because
-those are not an exchanger's to see. It is looked up in that one directory rather
-than on `PATH`, because it is run with the super-token in reach.
+The exchanger is a component like any other, so contracts govern both ends of it:
+`token-service` hands it an `exchange-request` on standard input and reads a
+`token-response` back. It is told who is asking and what for, and neither the
+signature the request was signed with nor what the agent was doing, because those
+are not the exchanger's to see.
+
+A plugin is part of the exchanger, not a component, so no contract governs it. The
+exchanger finds it in `/usr/lib/gettoken/exchangers`, named for the first segment
+of the capability, names the capability as its argument, hands it the super-token
+on standard input, and reads the narrow token on standard output. It is looked up
+in that one directory rather than on `PATH`, because it is run with the
+super-token in hand.
 
 ## Install it
 
-Distribution is `apt`. Every branch publishes a signed archive under a suite
-named after the branch, and `main`'s suite is the release. The archive is signed,
-and the key it was signed with has to be somewhere apt can read rather than
-verification being turned off. The sources file the archive publishes carries it
-inline:
-
 ```sh
-curl -fsSL https://thruput.se/gettoken/apt/dists/main/gettoken.sources \
-  | sudo tee /etc/apt/sources.list.d/gettoken.sources > /dev/null
+curl -fsSL https://thruput.se/apt/thruput-io.sources \
+  | sudo tee /etc/apt/sources.list.d/thruput-io.sources > /dev/null
 sudo apt-get update
 sudo apt-get install integration-test-tool
 ```
 
-`Signed-By` names the one key that one archive may be signed with. A key put in
-`/etc/apt/trusted.gpg.d` instead would be trusted to sign every other archive on
-that machine, Debian's own included, which is why it does not go there.
-
-Asking for that one package installs the tool, `gettoken`, the privileged half
-behind it, the store, the dispatcher, the two programs that carry a document
-through a contract, and one package per contract. Nothing else is named, and
-nothing else arrives. Purging it takes them all with it, and the store with them.
+```sh
+brew tap thruput-io/tap
+brew trust thruput-io/tap
+brew install integration-test-tool
+```
 
 ### What arrives, and why that is the interesting part
 
@@ -193,8 +190,8 @@ apt-cache depends gettoken-secret-manager | grep contract
 The store depends on the five documents it reads and writes and on nothing else.
 `gettoken`, which is what an agent invokes, depends on the two asks it builds and
 on neither the token nor the entitlements contracts, because those belong to the
-privileged half it hands the ask to. An exchanger that has no business seeing a
-signature does not depend on the contract carrying one.
+privileged half it hands the ask to. The exchanger, which has no business seeing a
+signature, does not depend on the contract carrying one.
 
 `parse` and `format` are separate packages carrying no contract of their own, so a
 component that only ever reads a document does not install the program that writes
@@ -205,11 +202,11 @@ privileged side lives in `/usr/lib/gettoken`, which `gettoken` puts on `PATH`
 before it crosses over; a human working on that side puts it on their own.
 
 Integrating a tool means publishing a package that depends on `gettoken` and
-installs one exchanger into `/usr/lib/gettoken/exchangers`. Where the tool is one
+installs one exchanger plugin into `/usr/lib/gettoken/exchangers`. Where the tool is one
 someone else already packages, that is a second package alongside theirs, because
 theirs is not ours to change — `gh-gettoken` next to `gh`. `integration-test-tool`
-stands in for that: the tool and the exchanger beside it are two packages, because
-the tool is not ours to speak for and the exchanger is.
+stands in for that: the tool and the plugin beside it are two packages, because
+the tool is not ours to speak for and the plugin is.
 
 ## Vision
 
@@ -243,13 +240,15 @@ flowchart LR
 implements yet carries a `SEAT.md` saying what it is for, so the list stays whole.
 A tool lives under `tools/` and owns its own privileged half, so the boundary sits
 inside the tool rather than across the top of the tree. Man pages live with what
-they document. `debian/` says which of these goes into which
-package, and it is one directory because Debian builds many packages from one
-source tree.
+they document. Each tool and component says beside its own files which of them
+go into which package, for apt and for brew, and the build assembles the
+packaging from that.
 
 <!-- layout -->
 ```
 .github/
+  actions/
+    upload-reports/
   workflows/
 docs/
   adrs/
@@ -257,9 +256,13 @@ docs/
     brew-distribution/
     containers/
       research/
+    shell-streaming/
+      research/
     virtual-macos/
       research/
 scripts/
+  debian/
+    source/
   docker/
   fixtures/
   test/
@@ -274,14 +277,14 @@ src/
       test/
     entitlements/
       test/
+    exchanger/
+      test/
     notifier/
     secret-manager/
       test/
     token-service/
       test/
   contracts/
-  debian/
-    source/
   integration-test/
   tools/
     gettoken/

@@ -1,0 +1,7 @@
+Package: gettoken-entitlements
+Architecture: all
+Depends: ${misc:Depends}@DEPENDS@:gettoken-entitlements
+Description: token broker for AI agents - capability inventory
+ entitlements answers what an agent has to work with. It is what
+ "gettoken --list" shows, and it is also the control: a request for a
+ capability it does not list is refused.

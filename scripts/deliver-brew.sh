@@ -1,34 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-into=${1:?deliver-brew.sh: name a directory to deliver the formula into}
+into=${1:?deliver-brew.sh: name a directory to deliver the formulae into}
+version=${VERSION:?deliver-brew.sh: name the VERSION}
+
+root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
+
+build=$root/build/package/brew
+rm -rf "$build"
+mkdir -p "$build"
+
+name=gettoken-$version
+cp -a "$root/src" "$build/$name"
+cp "$root/README.md" "$build/$name/README.md"
 
 mkdir -p "$into"
 into=$(CDPATH='' cd "$into" && pwd)
 
-version=$(sed -n '1s/.*(\(.*\)).*/\1/p' src/debian/changelog)
+tarball=$into/$name.tar.gz
+COPYFILE_DISABLE=1 tar -czf "$tarball" -C "$build" "$name"
+sha256=$(shasum -a 256 < "$tarball" | cut -d" " -f1)
 
-cat > "$into/gettoken.rb" <<FORMULA
-class Gettoken < Formula
-  desc "Token broker for AI agents"
-  homepage "https://github.com/thruput-io/gettoken"
-  version "$version"
-  url "https://github.com/thruput-io/gettoken/archive/refs/tags/$version.tar.gz"
-  sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+BREW_URL="file://$tarball" BREW_SHA256="$sha256" "$root/scripts/packaging.sh" "$build/$name"
 
-  def install
-    libexec.install Dir["*"]
-    bin.install_symlink libexec/"src/tools/gettoken/bin/gettoken"
-  end
+rm -f -- "$into"/*.rb
+cp "$build/$name"/Formula/*.rb "$into"
 
-  test do
-    system bin/"gettoken"
-  end
-end
-FORMULA
-
-echo "TODO: this formula is a placeholder. The url and sha256 name no release," \
-     "nothing is built from source, and the bottle is never produced." \
-     > "$into/gettoken.rb.todo"
-
-echo "wrote a placeholder formula for $version in $into, see gettoken.rb.todo"
+echo "$(find "$into" -name '*.rb' | wc -l | tr -d ' ') formulae for $version in $into"

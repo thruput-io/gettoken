@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PATH="/usr/lib/gettoken:/usr/bin:/bin:$PATH"
+PATH="@libdir@/gettoken:/usr/bin:/bin:$PATH"
 export PATH
 
 if [ $# -ne 1 ]; then

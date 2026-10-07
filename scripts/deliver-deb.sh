@@ -2,15 +2,18 @@
 set -euo pipefail
 
 into=${1:?deliver-deb.sh: name a directory to deliver the packages into}
+version=${VERSION:?deliver-deb.sh: name the VERSION}
 
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd)
 
-build=$(mktemp -d)
-trap 'rm -rf "$build"' EXIT
+build=$root/build/package/deb
+rm -rf "$build"
+mkdir -p "$build"
 
 cp -a "$root/src" "$build/source"
 cp "$root/README.md" "$build/source/README.md"
 "$root/scripts/packaging.sh" "$build/source"
+sed -i "1s/(.*)/($version)/" "$build/source/debian/changelog"
 
 (cd "$build/source" && dpkg-buildpackage -us -uc)
 
@@ -20,7 +23,8 @@ echo "ok: lintian passes on the source and on every package, down to pedantic"
 mkdir -p "$into"
 into=$(CDPATH='' cd "$into" && pwd)
 
-rm -f -- "$into"/*.deb
+rm -f -- "$into"/*.deb "$into"/Packages "$into"/Release
 cp "$build"/*.deb "$into"
+(cd "$into" && apt-ftparchive packages . > Packages && apt-ftparchive release . > "$build/Release" && mv "$build/Release" Release)
 
-echo "$(find "$into" -name '*.deb' | wc -l) packages built in $into"
+echo "$(find "$into" -name '*.deb' | wc -l) packages built and indexed in $into"

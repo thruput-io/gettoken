@@ -6,8 +6,7 @@ on:
     branches: [main]
 
 env:
-  BRANCH: ${{ github.head_ref || github.ref_name }}
-  ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
+  BUILD_NUMBER: ${{ github.run_number }}
   ROOT_DIR: ${{ github.workspace }}
 
 defaults:
@@ -19,48 +18,91 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     container: debian:testing-slim
-    permissions:
-      contents: write
     steps:
       - run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
       - uses: actions/checkout@v4
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: make build
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/upload-reports
         with:
           name: reports
-          path: |
-            build/*.xml
-            build/*.tap
-            build/*.json
-            build/*.checked
-            build/*.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-debian
+          path: build/dist
+
+  build-macos:
+    name: build macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make build
+      - if: always()
+        uses: ./.github/actions/upload-reports
+        with:
+          name: reports-macos
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-macos
           path: build/dist
 
   integration:
-    name: Debian stable
-    needs: build
-    runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
+    needs: [build, build-macos]
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Debian stable, os: ubuntu-latest, container: 'debian:testing-slim', dist: dist-debian }
+          - { name: macOS stable,  os: macos-latest,  container: '',                    dist: dist-macos }
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          tar -cf - constants.env dynamic.sh src/integration-test/test.sh \
-            | docker run -i --rm -e CI=true -e ROOT_DIR=/work -e BRANCH -e ARCHIVE_SIGNING_KEY \
-              debian:testing-slim bash -c '
-                mkdir -p /work && cd /work && tar xf -
-                source dynamic.sh && bash src/integration-test/test.sh'
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.dist }}
+          path: build/dist
+      - run: source dynamic.sh > /dev/null && bash -ec "$ADD_ARCHIVE"
+      - run: source dynamic.sh > /dev/null && bash src/integration-test/test.sh
 
-  macos:
-    name: macOS stable
-    needs: build
-    runs-on: macos-latest
-    continue-on-error: true
+  release:
+    name: release
+    needs: integration
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      DISTRIBUTION_REPOSITORIES: apt,homebrew-tap
     steps:
       - uses: actions/checkout@v4
-      - name: verify dynamic configuration
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          merge-multiple: true
+          path: build/dist
+      - id: distribute
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.DISTRIBUTION_APP_ID }}
+          private-key: ${{ secrets.DISTRIBUTION_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ env.DISTRIBUTION_REPOSITORIES }}
+      - env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          source dynamic.sh
+          source dynamic.sh > /dev/null
+          gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" \
+            --notes "Built from $GITHUB_SHA by run $GITHUB_RUN_ID." \
+            build/dist/deb/*.deb build/dist/brew/*.tar.gz build/dist/brew/*.rb
+      - name: tell the distribution repositories there is a release
+        env:
+          GH_TOKEN: ${{ steps.distribute.outputs.token }}
+        run: |
+          for repo in ${DISTRIBUTION_REPOSITORIES//,/ }; do
+            gh api "repos/$GITHUB_REPOSITORY_OWNER/$repo/dispatches" \
+              -f event_type=release -f "client_payload[repository]=$GITHUB_REPOSITORY"
+          done
+

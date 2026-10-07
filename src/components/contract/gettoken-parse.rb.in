@@ -1,0 +1,15 @@
+class GettokenParse < Formula
+  desc "Token broker for AI agents - gettoken-parse"
+  homepage "https://github.com/thruput-io/gettoken"
+  url "@URL@"
+  sha256 "@SHA256@"
+  license "Apache-2.0"
+
+  depends_on "go" => :build
+@DEPENDS@
+
+  def install
+    system "make", "contract", "prefix=#{HOMEBREW_PREFIX}"
+    (lib/"gettoken").install "build/bin/parse"
+  end
+end

@@ -1,0 +1,12 @@
+Package: gettoken-secret-manager
+Architecture: all
+Depends: ${misc:Depends}@DEPENDS@:gettoken-secret-manager
+Description: token broker for AI agents - super-token store
+ The store holds the super-tokens a human placed on the privileged side,
+ keyed by who holds them and which service they are for, and keeps every
+ version that was put in.
+ .
+ The store is ~/secrets of the privileged account, and no account but that one
+ can read it. Nothing an agent runs reaches it; only the exchanger does, to
+ hand a plugin the super-token it trades for a narrow one. The store belongs
+ to the account, so removing this package leaves it in place.
