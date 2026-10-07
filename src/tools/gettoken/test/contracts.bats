@@ -54,6 +54,10 @@ admits() { printf '%s' "$2" | parse "$1"; }
 @test "an ask whose capability is not one is refused" {
   run -1 --separate-stderr admits agent-capability-request.schema.json '{"wants":"../../bin/sh"}'
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy agent-capability-request.schema.json\nvalidating https://thruput.io/gettoken/ask-capability.schema.json: validating /properties/wants: validating /$defs/Capability: pattern: "../../bin/sh" does not match regular expression "^[a-z0-9-]+(/[a-z0-9._-]+)+$"')
+  expected=$(cat <<'MESSAGE'
+parse: the document does not satisfy agent-capability-request.schema.json
+validating https://thruput.io/gettoken/ask-capability.schema.json: validating /properties/wants: validating /$defs/Capability: pattern: "../../bin/sh" does not match regular expression "^[a-z0-9-]+(/[a-z0-9._-]+)+$"
+MESSAGE
+  )
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }

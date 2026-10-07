@@ -19,6 +19,7 @@ reading() {
 @test "a document satisfying its contract yields the fields it was asked for" {
   fields=$(printf '%s' '{"key":"johans-laptop/github","value":"super-1"}' \
     | parse secret-put-request.schema.json key value)
+  local key value
   eval "$fields"
   [ "$key" = "johans-laptop/github" ]
   [ "$value" = "super-1" ]
@@ -27,6 +28,7 @@ reading() {
 @test "a field the document does not carry yields an empty value" {
   fields=$(printf '%s' '{"key":"johans-laptop/github","version":0}' \
     | parse secret-get-request-version.schema.json key version)
+  local key version
   eval "$fields"
   [ "$key" = "johans-laptop/github" ]
   [ "$version" = "0" ]
@@ -35,6 +37,7 @@ reading() {
 @test "a field that is false yields false rather than nothing" {
   fields=$(printf '%s' '{"version":2,"value":"super-1"}' \
     | parse secret-get-response.schema.json version value)
+  local version value
   eval "$fields"
   [ "$version" = "2" ]
   [ "$value" = "super-1" ]
@@ -45,6 +48,7 @@ reading() {
   document=$(jq -nc --arg signed "$want" \
     '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:$signed}')
   fields=$(printf '%s' "$document" | parse token-request.schema.json signed)
+  local signed
   eval "$fields"
   [ "$signed" = "$want" ]
   [ ! -e "$BATS_TEST_TMPDIR/escaped" ]
@@ -69,7 +73,11 @@ reading() {
   run -1 --separate-stderr reading secret-put-request.schema.json \
     '{"key":"Johans-Laptop","value":"super-1"}' key
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: "Johans-Laptop" does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"')
+  expected=$(cat <<'MESSAGE'
+parse: the document does not satisfy secret-put-request.schema.json
+validating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: "Johans-Laptop" does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"
+MESSAGE
+  )
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
@@ -77,7 +85,11 @@ reading() {
   run -1 --separate-stderr reading secret-get-request-version.schema.json \
     '{"key":"johans-laptop/github","version":-1}' version
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy secret-get-request-version.schema.json\nvalidating https://thruput.io/gettoken/secret-request-key.schema.json: validating /properties/version: validating /$defs/Version: minimum: -1/1 is less than 0.000000')
+  expected=$(cat <<'MESSAGE'
+parse: the document does not satisfy secret-get-request-version.schema.json
+validating https://thruput.io/gettoken/secret-request-key.schema.json: validating /properties/version: validating /$defs/Version: minimum: -1/1 is less than 0.000000
+MESSAGE
+  )
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 

@@ -36,14 +36,22 @@ admits() { printf '%s' "$2" | parse "$1"; }
 @test "a version before the first one the store can hold is refused" {
   run -1 --separate-stderr admits secret-get-request-version.schema.json '{"key":"johans-laptop/github","version":-1}'
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy secret-get-request-version.schema.json\nvalidating https://thruput.io/gettoken/secret-request-key.schema.json: validating /properties/version: validating /$defs/Version: minimum: -1/1 is less than 0.000000')
+  expected=$(cat <<'MESSAGE'
+parse: the document does not satisfy secret-get-request-version.schema.json
+validating https://thruput.io/gettoken/secret-request-key.schema.json: validating /properties/version: validating /$defs/Version: minimum: -1/1 is less than 0.000000
+MESSAGE
+  )
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
 @test "a version past the last one the store can hold is refused" {
   run -1 --separate-stderr admits secret-get-request-version.schema.json '{"key":"johans-laptop/github","version":1000001}'
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy secret-get-request-version.schema.json\nvalidating https://thruput.io/gettoken/secret-request-key.schema.json: validating /properties/version: validating /$defs/Version: maximum: 1000001/1 is greater than 1000000.000000')
+  expected=$(cat <<'MESSAGE'
+parse: the document does not satisfy secret-get-request-version.schema.json
+validating https://thruput.io/gettoken/secret-request-key.schema.json: validating /properties/version: validating /$defs/Version: maximum: 1000001/1 is greater than 1000000.000000
+MESSAGE
+  )
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 

@@ -39,7 +39,7 @@ holding_nothing() {
 }
 
 plugged_in() {
-  printf '%s\n' '#!/bin/sh' 'set -eu' "$2" > "$EXCHANGER_DIR/$1"
+  { printf '%s\n' '#!/bin/sh' 'set -eu'; cat; } > "$EXCHANGER_DIR/$1"
   chmod 755 "$EXCHANGER_DIR/$1"
 }
 
@@ -48,7 +48,9 @@ exchanging() {
 }
 
 @test "the plugin installed for the first segment is told the whole capability" {
-  plugged_in integrationtest 'cat > /dev/null; echo "$1"'
+  plugged_in integrationtest <<'STUB'
+cat > /dev/null; echo "$1"
+STUB
   run -0 --separate-stderr exchanging integrationtest/ci/run
   [ "$(printf '%s' "$output" | jq -r '.access_token')" = "integrationtest/ci/run" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
@@ -56,19 +58,25 @@ exchanging() {
 
 @test "the plugin is handed the secret the store holds for its service on standard input" {
   holding super-9b1e
-  plugged_in integrationtest 'cat'
+  plugged_in integrationtest <<'STUB'
+cat
+STUB
   run -0 --separate-stderr exchanging integrationtest/ci/run
   [ "$(printf '%s' "$output" | jq -r '.access_token')" = "super-9b1e" ]
 }
 
 @test "what the plugin writes is the token, and it lives two minutes" {
-  plugged_in integrationtest 'cat > /dev/null; echo narrow-token'
+  plugged_in integrationtest <<'STUB'
+cat > /dev/null; echo narrow-token
+STUB
   run -0 --separate-stderr exchanging integrationtest/ci/run
   [ "$(printf '%s' "$output" | jq -c -S .)" = '{"access_token":"narrow-token","expires_in":120}' ]
 }
 
 @test "the store is asked for the key the service is keyed by, and for no version" {
-  plugged_in integrationtest 'cat > /dev/null; echo narrow-token'
+  plugged_in integrationtest <<'STUB'
+cat > /dev/null; echo narrow-token
+STUB
   run -0 --separate-stderr exchanging integrationtest/ci/run
   [ "$(jq -r '.key' < "$ASKED_FILE")" = "host-privileged/integrationtest" ]
   [ "$(cat "$ARGS_FILE")" = "--with-key" ]
@@ -76,7 +84,9 @@ exchanging() {
 
 @test "a service the store holds nothing for hands over nothing, and its plugin never runs" {
   holding_nothing
-  plugged_in integrationtest 'touch "$RAN_FILE"; echo narrow-token'
+  plugged_in integrationtest <<'STUB'
+touch "$RAN_FILE"; echo narrow-token
+STUB
   run -1 --separate-stderr exchanging integrationtest/ci/run
   [ "$output" = "" ]
   [ ! -f "$RAN_FILE" ]
@@ -90,14 +100,18 @@ exchanging() {
 }
 
 @test "a plugin that fails takes the request down, and says so" {
-  plugged_in integrationtest 'exit 1'
+  plugged_in integrationtest <<'STUB'
+exit 1
+STUB
   run -1 --separate-stderr exchanging integrationtest/ci/run
   [ "$output" = "" ]
   assert_equal "$(without_kcov_trace "$stderr")" "exchanger: the plugin serving integrationtest/ci/run failed"
 }
 
 @test "a plugin that writes nothing hands over nothing" {
-  plugged_in integrationtest 'cat > /dev/null'
+  plugged_in integrationtest <<'STUB'
+cat > /dev/null
+STUB
   run -1 --separate-stderr exchanging integrationtest/ci/run
   [ "$output" = "" ]
 }
@@ -105,7 +119,11 @@ exchanging() {
 @test "a capability whose first segment climbs out of the plugin directory never reaches the lookup" {
   run -1 --separate-stderr exchanging ../../bin/sh
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy exchange-request.schema.json\nvalidating https://thruput.io/gettoken/exchange-request.schema.json: validating /properties/wants: validating /$defs/Capability: pattern: "../../bin/sh" does not match regular expression "^[a-z0-9-]+(/[a-z0-9._-]+)+$"')
+  expected=$(cat <<'MESSAGE'
+parse: the document does not satisfy exchange-request.schema.json
+validating https://thruput.io/gettoken/exchange-request.schema.json: validating /properties/wants: validating /$defs/Capability: pattern: "../../bin/sh" does not match regular expression "^[a-z0-9-]+(/[a-z0-9._-]+)+$"
+MESSAGE
+  )
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
   [ ! -f "$ASKED_FILE" ]
 }
