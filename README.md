@@ -265,6 +265,9 @@ scripts/
     source/
   docker/
   fixtures/
+  protected/
+    checkers/
+    reporters/
   test/
 src/
   components/

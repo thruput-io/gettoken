@@ -3,13 +3,12 @@ set -euo pipefail
 
 umask 002
 
-: "${1:?check-permissions.sh: name the roots to scan}"
-roots=("$@")
+inventory=${1:?permissions.sh: name the inventory to scan}
 
 candidates=$(mktemp)
 trap 'rm -f "$candidates"' EXIT
 
-find "${roots[@]}" -path "*/.git" -prune -o -path "*/build" -prune -o -path "*/.idea" -prune -o -path "*/.claude" -prune -o -type f -print > "$candidates"
+cut -f2 "$inventory" > "$candidates"
 
 errors=0
 

@@ -1,10 +1,9 @@
 name: judge
 
-# The PR's code, judged by main's gates. pull_request_target always runs this
-# file as it is on main, so a pull request cannot change the workflow that
-# judges it. The PR's tree is checked out as the thing under test; every file
-# that decides pass or fail is then replaced by main's copy. A change to a gate
-# therefore has to merge on its own, judged by the gates it replaces.
+# The PR's code, judged by main's scripts/protected. pull_request_target always
+# runs this file as it is on main, so a pull request cannot change the workflow
+# that judges it. The PR's tree is checked out, scripts/protected is replaced
+# by main's copy, and make runs as it would anywhere else.
 
 on:
   pull_request_target:
@@ -16,21 +15,6 @@ permissions:
 env:
   BUILD_NUMBER: ${{ github.run_number }}
   ROOT_DIR: ${{ github.workspace }}
-  # Every file that judges rather than builds. Each one is taken from main.
-  GATE_FILES: >-
-    Makefile
-    stats.mk
-    dynamic.sh
-    constants.env
-    scripts/branching.sh
-    scripts/check-permissions.sh
-    scripts/fetch-semgrep-bash.sh
-    scripts/semgrep-shim.sh
-    scripts/readme.sh
-    scripts/versions.sh
-  # Files that could silence a gate or take make's place ahead of Makefile.
-  # None may differ from main.
-  TOOL_CONFIG: '(^|/)(\.shellcheckrc|shellcheckrc|\.semgrepignore|checkmake\.ini|\.checkmake\.ini)$|^(GNUmakefile|makefile)$'
 
 defaults:
   run:
@@ -38,13 +22,20 @@ defaults:
 
 jobs:
   judge:
-    name: judge
-    # Fork PRs never run in this job: it would execute their code in main's context.
+    name: judge ${{ matrix.name }}
+    # Fork PRs never run here: it would execute their code in main's context.
     if: github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    container: debian:testing-slim
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Debian, os: ubuntu-latest, container: 'debian:testing-slim' }
+          - { name: macOS,  os: macos-latest,  container: '' }
     steps:
-      - run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
+      - if: matrix.container != ''
+        run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -55,57 +46,18 @@ jobs:
           path: .judge
           persist-credentials: false
       - run: git config --global --add safe.directory '*'
-      - name: no tool configuration differs from main
+      - name: scripts/protected is main's
         run: |
           set -euo pipefail
-          { git ls-files; git -C .judge ls-files; } | sort -u > "$RUNNER_TEMP/files.txt"
-          found=0
-          grep -E "$TOOL_CONFIG" "$RUNNER_TEMP/files.txt" > "$RUNNER_TEMP/tool-config.txt" || found=$?
-          [ "$found" -le 1 ]
-          while read -r f; do
-            cmp -s "$f" ".judge/$f" || { echo "judge: $f differs from main"; exit 1; }
-          done < "$RUNNER_TEMP/tool-config.txt"
-          echo "judge: $(wc -l < "$RUNNER_TEMP/tool-config.txt") tool configuration files, all as on main"
-      - name: gate changes must be in a dedicated PR
-        run: |
-          set -euo pipefail
-          git diff --name-only .judge HEAD > "$RUNNER_TEMP/changed_files.txt"
-          gate_changed=0
-          other_changed=0
-          while read -r f; do
-            [ -z "$f" ] && continue
-            is_gate=0
-            for g in $GATE_FILES; do
-              if [ "$f" = "$g" ]; then
-                is_gate=1
-                break
-              fi
-            done
-            if [ "$is_gate" -eq 1 ]; then
-              echo "judge: detected gate file change in $f"
-              gate_changed=1
-            else
-              other_changed=1
-            fi
-          done < "$RUNNER_TEMP/changed_files.txt"
-          if [ "$gate_changed" -eq 1 ] && [ "$other_changed" -eq 1 ]; then
-            echo "judge ERROR: PR modifies both gate files and other repository files."
-            echo "judge ERROR: Gate file changes must be submitted in a separate, dedicated PR."
-            exit 1
-          fi
-      - name: the gates are main's
-        run: |
-          set -euo pipefail
-          for f in $GATE_FILES; do
-            cp -p ".judge/$f" "$f"
-            echo "judge: $f taken from main $(git -C .judge rev-parse --short HEAD)"
-          done
+          rm -rf scripts/protected
+          cp -Rp .judge/scripts/protected scripts/protected
+          echo "judge: scripts/protected taken from main $(git -C .judge rev-parse --short HEAD)"
           rm -rf .judge
-      - run: make build
+      - run: make test
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: judge-reports
+          name: judge-reports-${{ matrix.name }}
           retention-days: 7
           path: |
             build/*.xml
@@ -114,77 +66,4 @@ jobs:
             build/*.log
             build/*.checked
             build/*.txt
-
-  judge-macos:
-    name: judge macOS
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          persist-credentials: false
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.sha }}
-          path: .judge
-          persist-credentials: false
-      - name: no tool configuration differs from main
-        run: |
-          set -euo pipefail
-          { git ls-files; git -C .judge ls-files; } | sort -u > "$RUNNER_TEMP/files.txt"
-          found=0
-          grep -E "$TOOL_CONFIG" "$RUNNER_TEMP/files.txt" > "$RUNNER_TEMP/tool-config.txt" || found=$?
-          [ "$found" -le 1 ]
-          while read -r f; do
-            cmp -s "$f" ".judge/$f" || { echo "judge: $f differs from main"; exit 1; }
-          done < "$RUNNER_TEMP/tool-config.txt"
-          echo "judge: $(wc -l < "$RUNNER_TEMP/tool-config.txt") tool configuration files, all as on main"
-      - name: gate changes must be in a dedicated PR
-        run: |
-          set -euo pipefail
-          git diff --name-only .judge HEAD > "$RUNNER_TEMP/changed_files.txt"
-          gate_changed=0
-          other_changed=0
-          while read -r f; do
-            [ -z "$f" ] && continue
-            is_gate=0
-            for g in $GATE_FILES; do
-              if [ "$f" = "$g" ]; then
-                is_gate=1
-                break
-              fi
-            done
-            if [ "$is_gate" -eq 1 ]; then
-              echo "judge: detected gate file change in $f"
-              gate_changed=1
-            else
-              other_changed=1
-            fi
-          done < "$RUNNER_TEMP/changed_files.txt"
-          if [ "$gate_changed" -eq 1 ] && [ "$other_changed" -eq 1 ]; then
-            echo "judge ERROR: PR modifies both gate files and other repository files."
-            echo "judge ERROR: Gate file changes must be submitted in a separate, dedicated PR."
-            exit 1
-          fi
-      - name: the gates are main's
-        run: |
-          set -euo pipefail
-          for f in $GATE_FILES; do
-            cp -p ".judge/$f" "$f"
-            echo "judge: $f taken from main $(git -C .judge rev-parse --short HEAD)"
-          done
-          rm -rf .judge
-      - run: make build
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: judge-reports-macos
-          retention-days: 7
-          path: |
-            build/*.xml
-            build/*.tap
-            build/*.json
-            build/*.log
-            build/*.checked
-            build/*.txt
+            build/*.tsv

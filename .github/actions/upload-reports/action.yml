@@ -19,3 +19,4 @@ runs:
           build/*.json
           build/*.checked
           build/*.txt
+          build/*.tsv
