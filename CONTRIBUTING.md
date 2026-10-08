@@ -67,10 +67,10 @@ Docker, and `macos-vm` for the macOS half.
 index that makes the directory an apt archive, and `build/dist/brew/`, holding
 the source tarball and one formula per package. Whatever runs the integration
 test first adds what was built as a source the package manager installs from.
-`ADD_ARCHIVE` in `constants.env` is the one command that does it, per platform:
-the apt source for `build/dist/deb/` on Debian, the tap the formulae are copied
-into on macOS. The pipeline, `agent_build.sh` and `make test` all run that
-command, so nobody does it by hand. `test.sh` then installs
+`scripts/add-archive.sh` does it for every format in `PACKAGE_FORMATS`, through
+`scripts/add-archive-<format>.sh`: the apt source for `build/dist/deb/` on
+Debian, the tap the formulae are copied into on macOS. The pipeline,
+`agent_build.sh` and `make test` all run it, so nobody does it by hand. `test.sh` then installs
 `integration-test-tool` alone, as a user does from the published archive and
 tap. apt and brew pull the rest through the dependencies the packages declare,
 so a dependency the packaging got wrong fails the test rather than being hidden

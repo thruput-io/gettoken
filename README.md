@@ -254,12 +254,6 @@ docs/
   adrs/
   plans/
     brew-distribution/
-    containers/
-      research/
-    shell-streaming/
-      research/
-    virtual-macos/
-      research/
 scripts/
   debian/
     source/

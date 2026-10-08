@@ -15,6 +15,7 @@ linter_of() {
     *.schema.json) echo schema; return ;;
     *.json) echo json; return ;;
     *.go|go.mod) echo go; return ;;
+    *.env) echo env; return ;;
     *.sh|*.bash|*.bats) echo shell; return ;;
     Makefile|GNUmakefile|makefile) echo make; return ;;
     *.mk) echo make-fragment; return ;;

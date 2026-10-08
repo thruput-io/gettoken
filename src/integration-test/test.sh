@@ -21,4 +21,4 @@ test "$ran_on" = "$carried"
 
 rm -rf "$HOME/secrets/host-privileged/integrationtest"
 
-bash -ec "${REMOVE_PACKAGES:?test.sh: name the REMOVE_PACKAGES command}"
+bash scripts/remove-packages.sh

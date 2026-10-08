@@ -4,7 +4,7 @@ export ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 export PATH := build/bin:$(PATH_PREFIX)$(PATH)
 
-.PHONY: all clean test diagrams stats config setup unit build contract lint lint-semgrep lint-shellcheck lint-go lint-make lint-schemas lint-inventory lint-json lint-workflows lint-permissions no-branching check-readme bash-unit-test bash-coverage go-unit-test go-coverage package integration-test readme build/unit.txt
+.PHONY: all clean test diagrams stats config setup unit build contract lint lint-semgrep lint-shellcheck lint-go lint-make lint-schemas lint-inventory lint-json lint-env lint-workflows lint-permissions no-branching check-readme bash-unit-test bash-coverage go-unit-test go-coverage package integration-test readme build/unit.txt
 
 all:              test
 build:            package
@@ -23,6 +23,7 @@ lint-make:        build/make.checked
 lint-schemas:     build/schemas.checked
 lint-inventory:   build/inventory.checked
 lint-json:        build/json.checked
+lint-env:         build/env.checked
 lint-workflows:   build/workflows.checked build/actions.checked
 lint-permissions: build/check-permissions.txt
 package:          build/package.txt
@@ -89,6 +90,9 @@ build/actions-report.json: build/sources build/setup.txt
 build/json-report.tsv: build/sources build/setup.txt
 	$(REPORT)/json.sh $(INVENTORY) $@
 
+build/env-report.tsv: build/sources build/setup.txt
+	$(REPORT)/env.sh $(INVENTORY) $@
+
 build/go-report.json: build/sources build/setup.txt
 	$(REPORT)/go-vet.sh $(INVENTORY) $@ src/components/contract
 
@@ -115,7 +119,7 @@ build/go-coverage.txt: build/go-unit-test.json
 
 .PHONY: build/inventory.checked build/shellcheck.checked build/semgrep.checked build/make.checked
 .PHONY: build/make-fragments.checked build/schemas.checked build/workflows.checked build/actions.checked
-.PHONY: build/json.checked build/go-lint.checked build/lint.checked build/no-branching.checked
+.PHONY: build/json.checked build/env.checked build/go-lint.checked build/lint.checked build/no-branching.checked
 .PHONY: build/bash-unit-test.checked build/bash-coverage.checked build/go-unit-test.checked
 .PHONY: build/go-coverage.checked build/unit.txt
 
@@ -146,12 +150,16 @@ build/actions.checked: build/actions-report.json build/stats.txt
 build/json.checked: build/json-report.tsv build/stats.txt
 	$(CHECK)/json.sh $^
 
+build/env.checked: build/env-report.tsv build/stats.txt
+	$(CHECK)/env.sh $^
+
 build/go-lint.checked: build/go-report.json build/stats.txt
 	$(CHECK)/go-lint.sh $^
 
 build/lint.checked: build/inventory.checked build/shellcheck.checked build/semgrep.checked \
                     build/make.checked build/make-fragments.checked build/schemas.checked \
-                    build/workflows.checked build/actions.checked build/json.checked build/go-lint.checked
+                    build/workflows.checked build/actions.checked build/json.checked build/env.checked \
+                    build/go-lint.checked
 	@echo "lint: all checks passed"
 
 build/no-branching.checked: build/branching-report.txt build/stats.txt
@@ -181,7 +189,7 @@ build/package.txt: build/unit.txt build/lint.checked
 
 build/integration-test.checked: build/config.mk build/package.txt
 	@mkdir -p $(@D)
-	bash -ec "$$ADD_ARCHIVE"
+	bash scripts/add-archive.sh
 	bash src/integration-test/test.sh > $@
 
 build/diagrams.txt: build/sources
