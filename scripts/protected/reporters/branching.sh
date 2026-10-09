@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # shellcheck source=scripts/protected/reporters/common.sh
-source "$(dirname "$0")/common.sh"
+source "${ROOT_DIR:?branching.sh: name the ROOT_DIR}/scripts/protected/reporters/common.sh"
 
 report=${2:?branching.sh: name the report to write}
 files_of shell | grep '\.bats$' | tr '\n' '\0' | xargs -0 awk '

@@ -106,7 +106,7 @@ build/check-readme.txt: build/sources build/setup.txt
 	$(CHECK)/readme.sh . --check > $@
 
 build/report.tap: build/sources build/bin/parse build/bin/format build/setup.txt
-	$(REPORT)/bats.sh $(INVENTORY) $@
+	$(REPORT)/bats.sh $(INVENTORY) $@ $(ROOT_DIR)/build
 
 build/kcov/bats/coverage.json: build/sources build/bin/parse build/bin/format build/setup.txt
 	$(REPORT)/kcov.sh $(INVENTORY) build/kcov-report.txt build/kcov

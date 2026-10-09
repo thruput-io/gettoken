@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # shellcheck source=scripts/protected/checkers/common.sh
-source "$(dirname "$0")/common.sh"
+source "${ROOT_DIR:?shellcheck.sh: name the ROOT_DIR}/scripts/protected/checkers/common.sh"
 
 report=${1:?shellcheck.sh: name the report to check}
 

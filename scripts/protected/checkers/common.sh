@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # shellcheck source=scripts/protected/thresholds.mk
-source "$(dirname "${BASH_SOURCE[0]}")/../thresholds.mk"
+source "${ROOT_DIR:?checkers: name the ROOT_DIR}/scripts/protected/thresholds.mk"
 
 stats=${2:?checkers: name the stats file to read}
 

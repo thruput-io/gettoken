@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # shellcheck source=scripts/protected/reporters/common.sh
-source "$(dirname "$0")/common.sh"
+source "${ROOT_DIR:?go-test.sh: name the ROOT_DIR}/scripts/protected/reporters/common.sh"
 
 report=${2:?go-test.sh: name the report to write}
 module=${3:?go-test.sh: name the module to test}

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # shellcheck source=scripts/protected/reporters/common.sh
-source "$(dirname "$0")/common.sh"
+source "${ROOT_DIR:?kcov.sh: name the ROOT_DIR}/scripts/protected/reporters/common.sh"
 
 report=${2:?kcov.sh: name the report to write}
 outdir=${3:?kcov.sh: name the directory to write coverage into}
