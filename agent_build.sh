@@ -39,7 +39,7 @@ what_a_clean_machine_gets "$built/debian" | docker run -i --rm -e ROOT_DIR=/work
     cd /work
     tar xf -
     source dynamic.sh > /dev/null
-    bash -ec "$ADD_ARCHIVE"
+    bash scripts/add-archive.sh
     bash src/integration-test/test.sh'
 
 if command -v macos-vm > /dev/null; then
@@ -65,7 +65,7 @@ if command -v macos-vm > /dev/null; then
     tar -xf -
     export ROOT_DIR="$HOME/gettoken"
     source dynamic.sh > /dev/null
-    bash -ec "$ADD_ARCHIVE"
+    bash scripts/add-archive.sh
     bash src/integration-test/test.sh'
 fi
 

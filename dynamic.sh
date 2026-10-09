@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2034,SC2163
 set -euo pipefail
 
 ensure_bash5() {
@@ -10,6 +9,7 @@ ensure_bash5() {
 }
 
 required() {
+  local var_name
   for var_name in "$@"; do
     if [[ -z "${!var_name:-}" ]]; then
       echo "Error: Environment variable '$var_name' is required but unset or empty." >&2
@@ -18,51 +18,65 @@ required() {
   done
 }
 
+read_constants() {
+  local file=$1 line
+  local name='(BREW_TAP|DEBIAN_[A-Z0-9_]+|DARWIN_[A-Z0-9_]+)'
+  local single="^${name}='([^']*)'\$"
+  local double="^${name}=\"([^\"\$\`\\\\]*)\"\$"
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    if [[ -z "$line" ]]; then
+      continue
+    elif [[ "$line" =~ $single || "$line" =~ $double ]]; then
+      printf -v "${BASH_REMATCH[1]}" '%s' "${BASH_REMATCH[2]}"
+    else
+      echo "Error: $file may hold only NAME='literal' or NAME=\"literal\" lines, found: $line" >&2
+      exit 1
+    fi
+  done < "$file"
+}
+
 expose() {
+  local var_name val
   echo "# Generated from dynamic.sh"
 
   for var_name in "$@"; do
     val="${!var_name}"
+    if [[ "$val" == *$'\n'* || "$val" == *'#'* || "$val" == *\\ ]]; then
+      echo "Error: $var_name holds a newline, a '#' or a trailing backslash, which make would not read as written." >&2
+      exit 1
+    fi
     val=${val//\$/\$\$}
     printf 'export %s\n' "$var_name"
-    if [[ "$val" == *$'\n'* ]]; then
-      printf 'define %s\n%s\nendef\n' "$var_name" "$val"
-    else
-      printf '%s := %s\n' "$var_name" "$val"
-    fi
+    printf '%s := %s\n' "$var_name" "$val"
   done
 }
 
 required ROOT_DIR
-source "$ROOT_DIR/constants.env"
+read_constants "$ROOT_DIR/constants.env"
 
 VERSION=$(< "$ROOT_DIR/version.txt").${BUILD_NUMBER:-0}
+if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Error: VERSION '$VERSION' is not MAJOR.MINOR.BUILD_NUMBER in digits; check version.txt and BUILD_NUMBER." >&2
+  exit 1
+fi
 
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 
 if [ "$OS" = "linux" ]; then
-  PACKAGE_FORMATS=$DEBIAN_PACKAGE_FORMATS
-  INSTALL_COMMAND=$DEBIAN_INSTALL_COMMAND
-  BUILD_DEPS=$DEBIAN_BUILD_DEPS
-  SEMGREP_INSTALL_COMMAND=$DEBIAN_SEMGREP_INSTALL_COMMAND
-  BATS_LIB_PATH=$DEBIAN_BATS_LIB_PATH
-  PATH_PREFIX=$DEBIAN_PATH_PREFIX
-  ADD_ARCHIVE=$DEBIAN_ADD_ARCHIVE
-  REMOVE_PACKAGES=$DEBIAN_REMOVE_PACKAGES
+  platform=DEBIAN
 elif [ "$OS" = "darwin" ]; then
-  PACKAGE_FORMATS=$DARWIN_PACKAGE_FORMATS
-  INSTALL_COMMAND=$DARWIN_INSTALL_COMMAND
-  BUILD_DEPS=$DARWIN_BUILD_DEPS
-  SEMGREP_INSTALL_COMMAND=$DARWIN_SEMGREP_INSTALL_COMMAND
-  BATS_LIB_PATH=$DARWIN_BATS_LIB_PATH
-  PATH_PREFIX=$DARWIN_PATH_PREFIX
-  ADD_ARCHIVE=$DARWIN_ADD_ARCHIVE
-  REMOVE_PACKAGES=$DARWIN_REMOVE_PACKAGES
+  platform=DARWIN
 else
   echo "Unsupported OS: '$OS'" >&2
   exit 1
 fi
 
-required ROOT_DIR VERSION BREW_TAP PACKAGE_FORMATS INSTALL_COMMAND BUILD_DEPS SEMGREP_INSTALL_COMMAND BATS_LIB_PATH PATH_PREFIX ADD_ARCHIVE REMOVE_PACKAGES
-export ROOT_DIR VERSION BREW_TAP PACKAGE_FORMATS INSTALL_COMMAND BUILD_DEPS SEMGREP_INSTALL_COMMAND BATS_LIB_PATH PATH_PREFIX ADD_ARCHIVE REMOVE_PACKAGES
-expose ROOT_DIR VERSION BREW_TAP PACKAGE_FORMATS INSTALL_COMMAND BUILD_DEPS SEMGREP_INSTALL_COMMAND BATS_LIB_PATH PATH_PREFIX ADD_ARCHIVE REMOVE_PACKAGES
+for setting in PACKAGE_FORMATS INSTALL_COMMAND BUILD_DEPS SEMGREP_INSTALL_COMMAND BATS_LIB_PATH PATH_PREFIX; do
+  platform_name=${platform}_$setting
+  required "$platform_name"
+  printf -v "$setting" '%s' "${!platform_name}"
+done
+
+required ROOT_DIR VERSION BREW_TAP PACKAGE_FORMATS INSTALL_COMMAND BUILD_DEPS SEMGREP_INSTALL_COMMAND BATS_LIB_PATH PATH_PREFIX
+export ROOT_DIR VERSION BREW_TAP PACKAGE_FORMATS INSTALL_COMMAND BUILD_DEPS SEMGREP_INSTALL_COMMAND BATS_LIB_PATH PATH_PREFIX
+expose ROOT_DIR VERSION BREW_TAP PACKAGE_FORMATS INSTALL_COMMAND BUILD_DEPS SEMGREP_INSTALL_COMMAND BATS_LIB_PATH PATH_PREFIX

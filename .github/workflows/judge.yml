@@ -1,0 +1,69 @@
+name: judge
+
+# The PR's code, judged by main's scripts/protected. pull_request_target always
+# runs this file as it is on main, so a pull request cannot change the workflow
+# that judges it. The PR's tree is checked out, scripts/protected is replaced
+# by main's copy, and make runs as it would anywhere else.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+env:
+  BUILD_NUMBER: ${{ github.run_number }}
+  ROOT_DIR: ${{ github.workspace }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  judge:
+    name: judge ${{ matrix.name }}
+    # Fork PRs never run here: it would execute their code in main's context.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Debian, os: ubuntu-latest, container: 'debian:testing-slim' }
+          - { name: macOS,  os: macos-latest,  container: '' }
+    steps:
+      - if: matrix.container != ''
+        run: apt-get update && apt-get install -y --no-install-recommends make git ca-certificates
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: .judge
+          persist-credentials: false
+      - run: git config --global --add safe.directory '*'
+      - name: scripts/protected is main's
+        run: |
+          set -euo pipefail
+          rm -rf scripts/protected
+          cp -Rp .judge/scripts/protected scripts/protected
+          echo "judge: scripts/protected taken from main $(git -C .judge rev-parse --short HEAD)"
+          rm -rf .judge
+      - run: make test
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: judge-reports-${{ matrix.name }}
+          retention-days: 7
+          path: |
+            build/*.xml
+            build/*.tap
+            build/*.json
+            build/*.log
+            build/*.checked
+            build/*.txt
+            build/*.tsv
