@@ -3,12 +3,10 @@ set -euo pipefail
 
 umask 002
 
-inventory=${1:?permissions.sh: name the inventory to scan}
-
 candidates=$(mktemp)
 trap 'rm -f "$candidates"' EXIT
 
-cut -f2 "$inventory" > "$candidates"
+git ls-files --cached --others --exclude-standard > "$candidates"
 
 errors=0
 

@@ -4,7 +4,7 @@ export ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 export PATH := build/bin:$(PATH_PREFIX)$(PATH)
 
-.PHONY: all clean test diagrams stats config setup unit build contract lint lint-semgrep lint-shellcheck lint-go lint-make lint-schemas lint-inventory lint-json lint-env lint-workflows lint-permissions no-branching check-readme bash-unit-test bash-coverage go-unit-test go-coverage package integration-test readme build/unit.txt
+.PHONY: all clean test diagrams stats config setup unit build contract lint lint-semgrep lint-shellcheck lint-go lint-make lint-schemas lint-json lint-env lint-workflows lint-permissions no-branching check-readme bash-unit-test bash-coverage go-unit-test go-coverage package integration-test readme build/unit.txt
 
 all:              test
 build:            package
@@ -21,7 +21,6 @@ lint-shellcheck:  build/shellcheck.checked
 lint-go:          build/go-lint.checked
 lint-make:        build/make.checked
 lint-schemas:     build/schemas.checked
-lint-inventory:   build/inventory.checked
 lint-json:        build/json.checked
 lint-env:         build/env.checked
 lint-workflows:   build/workflows.checked build/actions.checked
@@ -62,69 +61,65 @@ build/bin/parse build/bin/format: build/sources build/setup.txt
 PROTECTED := scripts/protected
 REPORT    := bash $(PROTECTED)/reporters
 CHECK     := bash $(PROTECTED)/checkers
-INVENTORY := build/inventory-report.tsv
 
 include $(ROOT_DIR)/$(PROTECTED)/stats.mk
 
 build/shellcheck-report.json: build/sources build/setup.txt
-	$(REPORT)/shellcheck.sh $(INVENTORY) $@
+	$(REPORT)/shellcheck.sh $@
 
 build/semgrep-report.json: build/sources build/setup.txt
-	$(REPORT)/semgrep.sh $(INVENTORY) $@
+	$(REPORT)/semgrep.sh $@
 
 build/make-report.json: build/sources build/setup.txt
-	$(REPORT)/checkmake.sh $(INVENTORY) $@ make $(PROTECTED)/checkmake.ini
+	$(REPORT)/checkmake.sh $@ $(PROTECTED)/checkmake.ini
 
 build/make-fragments-report.json: build/sources build/setup.txt
-	$(REPORT)/checkmake.sh $(INVENTORY) $@ make-fragment $(PROTECTED)/checkmake-fragments.ini
+	$(REPORT)/checkmake-fragments.sh $@ $(PROTECTED)/checkmake-fragments.ini
 
 build/schema-report.json: build/sources build/setup.txt
-	$(REPORT)/jsonschema.sh $(INVENTORY) $@ --check-metaschema schema
+	$(REPORT)/jsonschema.sh $@ --check-metaschema '*.schema.json'
 
 build/workflows-report.json: build/sources build/setup.txt
-	$(REPORT)/jsonschema.sh $(INVENTORY) $@ --builtin-schema=vendor.github-workflows workflow
+	$(REPORT)/jsonschema.sh $@ --builtin-schema=vendor.github-workflows '.github/workflows/*.yml'
 
 build/actions-report.json: build/sources build/setup.txt
-	$(REPORT)/jsonschema.sh $(INVENTORY) $@ --builtin-schema=vendor.github-actions action
+	$(REPORT)/jsonschema.sh $@ --builtin-schema=vendor.github-actions '.github/actions/*/action.yml'
 
 build/json-report.tsv: build/sources build/setup.txt
-	$(REPORT)/json.sh $(INVENTORY) $@
+	$(REPORT)/json.sh $@
 
 build/env-report.tsv: build/sources build/setup.txt
-	$(REPORT)/env.sh $(INVENTORY) $@
+	$(REPORT)/env.sh $@
 
 build/go-report.json: build/sources build/setup.txt
-	$(REPORT)/go-vet.sh $(INVENTORY) $@ src/components/contract
+	$(REPORT)/go-vet.sh $@ src/components/contract
 
 build/branching-report.txt: build/sources build/setup.txt
-	$(REPORT)/branching.sh $(INVENTORY) $@
+	$(REPORT)/branching.sh $@
 
 build/check-permissions.txt: build/sources build/setup.txt
-	umask 002 && $(CHECK)/permissions.sh $(INVENTORY) > $@
+	umask 002 && $(CHECK)/permissions.sh > $@
 
 build/check-readme.txt: build/sources build/setup.txt
 	$(CHECK)/readme.sh . --check > $@
 
 build/report.tap: build/sources build/bin/parse build/bin/format build/setup.txt
-	$(REPORT)/bats.sh $(INVENTORY) $@ $(ROOT_DIR)/build
+	$(REPORT)/bats.sh $@ $(ROOT_DIR)/build
 
 build/kcov/bats/coverage.json: build/sources build/bin/parse build/bin/format build/setup.txt
-	$(REPORT)/kcov.sh $(INVENTORY) build/kcov-report.txt build/kcov
+	$(REPORT)/kcov.sh build/kcov-report.txt build/kcov
 
 build/go-unit-test.json: build/sources build/setup.txt
-	$(REPORT)/go-test.sh $(INVENTORY) $@ src/components/contract $(ROOT_DIR)/build/go.coverprofile
+	$(REPORT)/go-test.sh $@ src/components/contract $(ROOT_DIR)/build/go.coverprofile
 
 build/go-coverage.txt: build/go-unit-test.json
-	$(REPORT)/go-coverage.sh $(INVENTORY) $@ src/components/contract $(ROOT_DIR)/build/go.coverprofile
+	$(REPORT)/go-coverage.sh $@ src/components/contract $(ROOT_DIR)/build/go.coverprofile
 
-.PHONY: build/inventory.checked build/shellcheck.checked build/semgrep.checked build/make.checked
+.PHONY: build/shellcheck.checked build/semgrep.checked build/make.checked
 .PHONY: build/make-fragments.checked build/schemas.checked build/workflows.checked build/actions.checked
 .PHONY: build/json.checked build/env.checked build/go-lint.checked build/lint.checked build/no-branching.checked
 .PHONY: build/bash-unit-test.checked build/bash-coverage.checked build/go-unit-test.checked
 .PHONY: build/go-coverage.checked build/unit.txt
-
-build/inventory.checked: build/inventory-report.tsv build/stats.txt
-	$(CHECK)/inventory.sh $^
 
 build/shellcheck.checked: build/shellcheck-report.json build/stats.txt
 	$(CHECK)/shellcheck.sh $^
@@ -156,7 +151,7 @@ build/env.checked: build/env-report.tsv build/stats.txt
 build/go-lint.checked: build/go-report.json build/stats.txt
 	$(CHECK)/go-lint.sh $^
 
-build/lint.checked: build/inventory.checked build/shellcheck.checked build/semgrep.checked \
+build/lint.checked: build/shellcheck.checked build/semgrep.checked \
                     build/make.checked build/make-fragments.checked build/schemas.checked \
                     build/workflows.checked build/actions.checked build/json.checked build/env.checked \
                     build/go-lint.checked
