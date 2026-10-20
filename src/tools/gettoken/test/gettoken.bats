@@ -38,6 +38,7 @@ STUB
   capturing
   run -0 --separate-stderr gettoken integrationtest/ci/run
   [ "$output" = "stub-token" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
   [ "$(cat "$ASK_FILE")" = '{"wants":"integrationtest/ci/run"}' ]
 }
 
@@ -45,5 +46,6 @@ STUB
   capturing
   run -0 --separate-stderr gettoken --list
   [ "$output" = "stub-token" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
   [ "$(cat "$ASK_FILE")" = '{"query":"list"}' ]
 }

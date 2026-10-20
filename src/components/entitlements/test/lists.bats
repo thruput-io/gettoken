@@ -15,7 +15,7 @@ asking() {
 
 @test "the capability the integrated tool is asked for is one the agent may equip" {
   run -0 --separate-stderr asking
-  [ "$(printf '%s' "$output" | jq -r '.entitlements[] | select(.capability == "integrationtest/ci/run") | .capability')" = "integrationtest/ci/run" ]
+  [ "$output" = '{"entitlements":[{"capability":"integrationtest/ci/run","description":"Run the integration test suite on CI.","variables":[]}]}' ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
@@ -23,9 +23,12 @@ asking() {
   run -0 --separate-stderr asking
   [ "$(printf '%s' "$output" | jq -r '.entitlements[] | select(.description == "") | .capability')" = "" ]
   [ "$(printf '%s' "$output" | jq '[.entitlements[] | select(has("description") | not)] | length')" = 0 ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "a request naming a capability is refused, because none is being asked for" {
   run -1 --separate-stderr sh -c 'printf "%s" "{\"who\":\"tore\",\"doing\":\"mac.lan\",\"signed\":\"host-privileged\",\"wants\":\"integrationtest/ci/run\"}" | entitlements'
   [ "$output" = "" ]
+  expected=$(printf "parse: the document does not satisfy entitlements-request.schema.json\nvalidating https://thruput.io/gettoken/entitlements-request.schema.json: unexpected additional properties [\"wants\"]")
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
