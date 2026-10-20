@@ -1,4 +1,5 @@
-# shellcheck shell=bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 cd "${ROOT_DIR:?reporters: name the ROOT_DIR}" || exit 1
 
