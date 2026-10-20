@@ -66,7 +66,11 @@ asking() {
 }
 
 @test "the list is asked for by who is asking and from where, and handed back whole" {
-  printf '%s\n' '#!/bin/sh' 'cat > "$REQUEST_FILE"' 'printf "%s\n" "{\"entitlements\":[]}"' > "$stub/entitlements"
+  cat > "$stub/entitlements" <<'STUB'
+#!/bin/sh
+cat > "$REQUEST_FILE"
+printf '%s\n' '{"entitlements":[]}'
+STUB
   chmod 755 "$stub/entitlements"
   run -0 --separate-stderr sh -c 'printf %s "{\"query\":\"list\"}" | token-requester --list'
   [ "$output" = '{"entitlements":[]}' ]

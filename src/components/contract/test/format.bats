@@ -109,7 +109,11 @@ LITERAL
 }
 
 @test "a secret that reads as quoted JSON text is stored with its quotes" {
-  key=johans-laptop/github value='"super-1"'
+  key=johans-laptop/github
+  value=$(cat <<'LITERAL'
+"super-1"
+LITERAL
+)
   export key value
   run -0 --separate-stderr format secret-put-request.schema.json key value
   [ "$output" = '{"key":"johans-laptop/github","value":"\"super-1\""}' ]
