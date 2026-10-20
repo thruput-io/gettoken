@@ -36,18 +36,18 @@ $(ROOT_DIR)/build/config.mk: $(ROOT_DIR)/dynamic.sh $(ROOT_DIR)/constants.env
 	@mkdir -p $(@D)
 	bash $(ROOT_DIR)/dynamic.sh > $@
 
-$(ROOT_DIR)/build/sources:
+$(ROOT_DIR)/build/sources: $(shell find $(ROOT_DIR)/src $(ROOT_DIR)/scripts -type f)
 	@mkdir -p $(@D)
 	@find $(ROOT_DIR)/src $(ROOT_DIR)/scripts -type f -exec sha256sum {} + | sort -k 2 > $@.new
 	@cmp -s $@.new $@ && rm $@.new || mv $@.new $@
 
-$(ROOT_DIR)/build/go-sources:
+$(ROOT_DIR)/build/go-sources: $(shell find $(ROOT_DIR)/src/components/contract -type f \( -name '*.go' -o -name 'go.mod' -o -name 'go.sum' \))
 	@mkdir -p $(@D)
 	@find $(ROOT_DIR)/src/components/contract -type f \( -name '*.go' -o -name 'go.mod' -o -name 'go.sum' \) \
 	  -exec sha256sum {} + | sort -k 2 > $@.new
 	@cmp -s $@.new $@ && rm $@.new || mv $@.new $@
 
-$(ROOT_DIR)/build/schema-sources:
+$(ROOT_DIR)/build/schema-sources: $(wildcard $(ROOT_DIR)/src/contracts/*.schema.json)
 	@mkdir -p $(@D)
 	@find $(ROOT_DIR)/src/contracts -type f -name '*.schema.json' \
 	  -exec sha256sum {} + | sort -k 2 > $@.new
