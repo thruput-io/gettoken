@@ -59,12 +59,25 @@ exchanging() {
   plugged_in integrationtest 'cat'
   run -0 --separate-stderr exchanging integrationtest/ci/run
   [ "$(printf '%s' "$output" | jq -r '.access_token')" = "super-9b1e" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+}
+
+@test "the plugin is handed the stored secret byte for byte" {
+  printf -v secret '%s\n' super-9b1e
+  holding "$secret"
+  plugged_in integrationtest "cat > \"\$RAN_FILE\"; echo narrow-token"
+  run -0 --separate-stderr exchanging integrationtest/ci/run
+  [ "$output" = '{"access_token":"narrow-token","expires_in":120}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+  run -0 --separate-stderr cmp "$RAN_FILE" <(printf '%s' "$secret")
+  [ "$output" = "" ]
 }
 
 @test "what the plugin writes is the token, and it lives two minutes" {
   plugged_in integrationtest 'cat > /dev/null; echo narrow-token'
   run -0 --separate-stderr exchanging integrationtest/ci/run
   [ "$(printf '%s' "$output" | jq -c -S .)" = '{"access_token":"narrow-token","expires_in":120}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "the store is asked for the key the service is keyed by, and for no version" {
@@ -73,6 +86,7 @@ exchanging() {
   [ "$(printf '%s' "$output" | jq -r '.access_token')" = "narrow-token" ]
   [ "$(jq -r '.key' < "$ASKED_FILE")" = "host-privileged/integrationtest" ]
   [ "$(cat "$ARGS_FILE")" = "--with-key" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "a service the store holds nothing for hands over nothing, and its plugin never runs" {
@@ -80,6 +94,7 @@ exchanging() {
   plugged_in integrationtest "touch \"\$RAN_FILE\"; echo narrow-token"
   run -1 --separate-stderr exchanging integrationtest/ci/run
   [ "$output" = "" ]
+  assert_equal "$(without_kcov_trace "$stderr")" "secret-get: nothing is stored under the key"
   [ ! -f "$RAN_FILE" ]
 }
 
@@ -101,6 +116,8 @@ exchanging() {
   plugged_in integrationtest 'cat > /dev/null'
   run -1 --separate-stderr exchanging integrationtest/ci/run
   [ "$output" = "" ]
+  expected=$(printf "format: the document does not satisfy token-response.schema.json\nvalidating https://thruput.io/gettoken/response.schema.json: validating /properties/access_token: validating /\$defs/AccessToken: minLength: \"\" contains 0 Unicode code points, fewer than 1")
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
 @test "a capability whose first segment climbs out of the plugin directory never reaches the lookup" {
