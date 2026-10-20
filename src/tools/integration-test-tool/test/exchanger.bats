@@ -27,11 +27,13 @@ trading() {
 @test "a different super-token yields a different narrow token" {
   run -0 --separate-stderr trading integrationtest/ci/run super-9b1e
   [ "$output" = "9b1e-ci-run-allowed" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "it trades what it was handed and never asks the store" {
   run -0 --separate-stderr trading integrationtest/ci/run super-sample-token-123
   [ "$output" = "sample-token-123-ci-run-allowed" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
   [ ! -f "$STORE_ASKED_FILE" ]
 }
 
@@ -44,6 +46,7 @@ trading() {
 @test "a secret that is only the prefix is refused" {
   run -1 --separate-stderr trading integrationtest/ci/run super-
   [ "$output" = "" ]
+  assert_equal "$(without_kcov_trace "$stderr")" "integrationtest: the secret it was handed is not a super-token it can trade"
 }
 
 @test "a capability it does not serve is refused" {
