@@ -1,5 +1,7 @@
 bats_require_minimum_version 1.5.0
 
+load "$ROOT_DIR/scripts/test/helper"
+
 setup() {
   root=$ROOT_DIR
   there=$BATS_TEST_TMPDIR/there
@@ -54,8 +56,9 @@ directory_named_in() {
   mkdir -p "$there/lib/gettoken"
   cp "$root/build/bin/format" "$there/lib/gettoken/format"
   installed_as "$there/lib/gettoken/token-requester" 'cat > /dev/null; echo "the token-requester in the library directory ran"'
-  run -0 asking_gettoken
+  run -0 --separate-stderr asking_gettoken
   [ "$output" = "the token-requester in the library directory ran" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "the exchanger runs the plugins in the library directory it was built for" {
@@ -63,16 +66,20 @@ directory_named_in() {
   mkdir -p "$there/lib/gettoken/exchangers"
   installed_as "$there/lib/gettoken/exchangers/integrationtest" 'cat > /dev/null; echo from-the-library-directory'
   installed_as "$stubs/secret-get" 'version=0; value=super-sample; export version value; format secret-get-response.schema.json version value'
-  run -0 asking_the_exchanger
-  [ "$(printf '%s' "$output" | jq -r '.access_token')" = "from-the-library-directory" ]
+  run -0 --separate-stderr asking_the_exchanger
+  [ "$output" = '{"access_token":"from-the-library-directory","expires_in":120}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "the store is kept under the home of whoever runs it, whatever the build was told" {
   built_for configured "prefix=$there"
-  run -0 putting_a_secret
+  run -0 --separate-stderr putting_a_secret
+  [ "$output" = '{"value":"super-sample","version":0}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
   [ "$(cat "$home/secrets/host-privileged/integrationtest/0")" = "super-sample" ]
-  run -0 getting_the_secret
-  [ "$(printf '%s' "$output" | jq -r '.value')" = "super-sample" ]
+  run -0 --separate-stderr getting_the_secret
+  [ "$output" = '{"value":"super-sample","version":0}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
   [ ! -e "$there/var" ]
 }
 
@@ -80,8 +87,9 @@ directory_named_in() {
   built_for contract "prefix=$there"
   mkdir -p "$there/share/gettoken"
   cp -R "$root/src/contracts" "$there/share/gettoken/contracts"
-  run -0 parsing_without_being_told_where_contracts_are
+  run -0 --separate-stderr parsing_without_being_told_where_contracts_are
   [ "$output" = "wants='integrationtest/ci/run'" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "built for /usr, the components look where Debian installs" {
@@ -93,6 +101,7 @@ directory_named_in() {
 
 @test "a built tree leaves no directory undecided" {
   built_for configured "prefix=$there"
-  run -1 grep -rlE '@(libdir|datadir)@' "$built/tools" "$built/components"
+  run -1 --separate-stderr grep -rlE '@(libdir|datadir)@' "$built/tools" "$built/components"
   [ "$output" = "" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
