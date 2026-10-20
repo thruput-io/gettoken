@@ -14,20 +14,11 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/thruput-io/gettoken/components/contract"
 )
-
-func written(value string) any {
-	var already any
-	if err := json.Unmarshal([]byte(value), &already); err != nil {
-		return value
-	}
-	return already
-}
 
 func run() error {
 	if len(os.Args) < 2 {
@@ -46,7 +37,11 @@ func run() error {
 		if !set {
 			return fmt.Errorf("%s is not set, so there is no value for the field of that name", field)
 		}
-		values[field] = written(text)
+		typed, err := governing.Typed(field, text)
+		if err != nil {
+			return err
+		}
+		values[field] = typed
 	}
 	document, err := governing.Build(values)
 	if err != nil {

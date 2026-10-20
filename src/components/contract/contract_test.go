@@ -126,3 +126,49 @@ func TestADocumentCannotBeChangedThroughWhatBuiltItOrWhatItAnswers(t *testing.T)
 		t.Errorf("the document no longer reads as it was admitted: %s", document.JSON())
 	}
 }
+
+func TestTextForAStringFieldIsKeptAsTheTextItIs(t *testing.T) {
+	governing := open(t, "secret-put-request.schema.json")
+	for _, text := range []string{"12345", `"super-1"`, "true", "null"} {
+		value, err := governing.Typed("value", text)
+		if err != nil {
+			t.Fatalf("typing %q: %v", text, err)
+		}
+		if value != text {
+			t.Errorf("the secret %q was typed as %#v", text, value)
+		}
+	}
+}
+
+func TestTextForAnIntegerFieldIsReadAsTheNumberItSpells(t *testing.T) {
+	governing := open(t, "secret-get-response.schema.json")
+	value, err := governing.Typed("version", "2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if value != 2.0 {
+		t.Errorf("version 2 was typed as %#v", value)
+	}
+}
+
+func TestTextForAnArrayFieldIsReadAsTheJSONItSpells(t *testing.T) {
+	governing := open(t, "entitlements-response.schema.json")
+	value, err := governing.Typed("entitlements", `[]`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if items, read := value.([]any); !read || len(items) != 0 {
+		t.Errorf("an empty list was typed as %#v", value)
+	}
+}
+
+func TestTextForAnIntegerFieldThatIsNotANumberIsLeftForTheContractToRefuse(t *testing.T) {
+	governing := open(t, "secret-get-response.schema.json")
+	value, err := governing.Typed("version", "x")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if value != "x" {
+		t.Errorf("x was typed as %#v", value)
+	}
+}

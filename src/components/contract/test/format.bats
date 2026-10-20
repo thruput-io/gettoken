@@ -12,10 +12,10 @@ setup() {
 @test "a value that is not JSON is the one that gets quoted" {
   who=tore doing=mac.lan wants=integrationtest/ci/run signed=host-privileged
   export who doing wants signed
-  document=$(format token-request.schema.json who doing wants signed)
-  [ "$(printf '%s' "$document" | jq -r '.who | type')" = "string" ]
-  [ "$(printf '%s' "$document" | jq -r '.wants | type')" = "string" ]
-  [ "$(printf '%s' "$document" | jq -r '.who')" = "tore" ]
+  run -0 --separate-stderr format token-request.schema.json who doing wants signed
+  [ "$(printf '%s' "$output" | jq -r '.who | type')" = "string" ]
+  [ "$(printf '%s' "$output" | jq -r '.wants | type')" = "string" ]
+  [ "$(printf '%s' "$output" | jq -r '.who')" = "tore" ]
 }
 
 @test "a value that is a number goes in as a number" {
@@ -95,4 +95,28 @@ LITERAL
   run -1 --separate-stderr format no-such-contract.schema.json who
   [ "$output" = "" ]
   assert_equal "$(without_kcov_trace "$stderr")" "format: no contract named no-such-contract.schema.json in $root/src/contracts"
+}
+
+@test "a secret made of digits only is stored as the text it is" {
+  key=johans-laptop/github value=12345
+  export key value
+  run -0 --separate-stderr format secret-put-request.schema.json key value
+  [ "$output" = '{"key":"johans-laptop/github","value":"12345"}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+}
+
+@test "a secret that reads as quoted JSON text is stored with its quotes" {
+  key=johans-laptop/github value='"super-1"'
+  export key value
+  run -0 --separate-stderr format secret-put-request.schema.json key value
+  [ "$output" = '{"key":"johans-laptop/github","value":"\"super-1\""}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+}
+
+@test "a secret spelled true is stored as the word, not as a boolean" {
+  key=johans-laptop/github value=true
+  export key value
+  run -0 --separate-stderr format secret-put-request.schema.json key value
+  [ "$output" = '{"key":"johans-laptop/github","value":"true"}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
