@@ -85,7 +85,7 @@ LITERAL
   export version value
   run -1 --separate-stderr format secret-get-response.schema.json version value
   [ "$output" = "" ]
-  expected=$(printf 'format: the document does not satisfy secret-get-response.schema.json\nvalidating https://thruput.io/gettoken/secret-response.schema.json: validating /properties/version: validating /$defs/Version: type: x has type "string", want "integer"')
+  expected=$(printf "format: the document does not satisfy secret-get-response.schema.json\nvalidating https://thruput.io/gettoken/secret-response.schema.json: validating /properties/version: validating /\$defs/Version: type: x has type \"string\", want \"integer\"")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 

@@ -48,7 +48,7 @@ exchanging() {
 }
 
 @test "the plugin installed for the first segment is told the whole capability" {
-  plugged_in integrationtest 'cat > /dev/null; echo "$1"'
+  plugged_in integrationtest "cat > /dev/null; echo \"\$1\""
   run -0 --separate-stderr exchanging integrationtest/ci/run
   [ "$(printf '%s' "$output" | jq -r '.access_token')" = "integrationtest/ci/run" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
@@ -76,7 +76,7 @@ exchanging() {
 
 @test "a service the store holds nothing for hands over nothing, and its plugin never runs" {
   holding_nothing
-  plugged_in integrationtest 'touch "$RAN_FILE"; echo narrow-token'
+  plugged_in integrationtest "touch \"\$RAN_FILE\"; echo narrow-token"
   run -1 --separate-stderr exchanging integrationtest/ci/run
   [ "$output" = "" ]
   [ ! -f "$RAN_FILE" ]
@@ -105,7 +105,7 @@ exchanging() {
 @test "a capability whose first segment climbs out of the plugin directory never reaches the lookup" {
   run -1 --separate-stderr exchanging ../../bin/sh
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy exchange-request.schema.json\nvalidating https://thruput.io/gettoken/exchange-request.schema.json: validating /properties/wants: validating /$defs/Capability: pattern: "../../bin/sh" does not match regular expression "^[a-z0-9-]+(/[a-z0-9._-]+)+$"')
+  expected=$(printf "parse: the document does not satisfy exchange-request.schema.json\nvalidating https://thruput.io/gettoken/exchange-request.schema.json: validating /properties/wants: validating /\$defs/Capability: pattern: \"../../bin/sh\" does not match regular expression \"^[a-z0-9-]+(/[a-z0-9._-]+)+\$\"")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
   [ ! -f "$ASKED_FILE" ]
 }

@@ -73,7 +73,7 @@ reading() {
   run -1 --separate-stderr reading secret-put-request.schema.json \
     '{"key":"Johans-Laptop","value":"super-1"}' key
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: "Johans-Laptop" does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"')
+  expected=$(printf "parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /\$defs/Key: pattern: \"Johans-Laptop\" does not match regular expression \"^[a-z0-9-]+(/[a-z0-9-]+)*\$\"")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
@@ -81,7 +81,7 @@ reading() {
   run -1 --separate-stderr reading secret-get-request-version.schema.json \
     '{"key":"johans-laptop/github","version":-1}' version
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy secret-get-request-version.schema.json\nvalidating https://thruput.io/gettoken/secret-request-key.schema.json: validating /properties/version: validating /$defs/Version: minimum: -1/1 is less than 0.000000')
+  expected=$(printf "parse: the document does not satisfy secret-get-request-version.schema.json\nvalidating https://thruput.io/gettoken/secret-request-key.schema.json: validating /properties/version: validating /\$defs/Version: minimum: -1/1 is less than 0.000000")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 

@@ -7,7 +7,7 @@ tracked() {
 }
 
 first_line() {
-  tracked | tr '\n' '\0' | xargs -0 awk -v re="$1" 'FNR == 1 && $0 ~ re { print FILENAME } { nextfile }'
+  tracked | tr '\n' '\0' | xargs -0 awk -v re="$1" "FNR == 1 && \$0 ~ re { print FILENAME } { nextfile }"
 }
 
 shell_files() {

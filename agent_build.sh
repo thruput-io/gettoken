@@ -45,28 +45,28 @@ what_a_clean_machine_gets "$built/debian" | docker run -i --rm -e ROOT_DIR=/work
 if command -v macos-vm > /dev/null; then
   say "build on macOS, as the build macOS job does"
   macos-vm reset > /dev/null
-  the_tree | macos-vm shell bash -lc '
+  the_tree | macos-vm shell bash -lc "
     set -eu
-    rm -rf "$HOME/gettoken"
-    mkdir "$HOME/gettoken"
-    cd "$HOME/gettoken"
+    rm -rf \"\$HOME/gettoken\"
+    mkdir \"\$HOME/gettoken\"
+    cd \"\$HOME/gettoken\"
     tar -xf -
-    make build'
+    make build"
   mkdir -p "$built/macos/build"
-  macos-vm shell bash -lc 'COPYFILE_DISABLE=1 tar -cf - -C "$HOME/gettoken/build" dist' | tar -xf - -C "$built/macos/build"
+  macos-vm shell bash -lc "COPYFILE_DISABLE=1 tar -cf - -C \"\$HOME/gettoken/build\" dist" | tar -xf - -C "$built/macos/build"
 
   say "install on a fresh macOS guest, as the macOS stable job does"
   macos-vm reset > /dev/null
-  what_a_clean_machine_gets "$built/macos" | macos-vm shell bash -lc '
+  what_a_clean_machine_gets "$built/macos" | macos-vm shell bash -lc "
     set -eu
-    rm -rf "$HOME/gettoken"
-    mkdir "$HOME/gettoken"
-    cd "$HOME/gettoken"
+    rm -rf \"\$HOME/gettoken\"
+    mkdir \"\$HOME/gettoken\"
+    cd \"\$HOME/gettoken\"
     tar -xf -
-    export ROOT_DIR="$HOME/gettoken"
+    export ROOT_DIR=\"\$HOME/gettoken\"
     source dynamic.sh > /dev/null
-    bash -ec "$ADD_ARCHIVE"
-    bash src/integration-test/test.sh'
+    bash -ec \"\$ADD_ARCHIVE\"
+    bash src/integration-test/test.sh"
 fi
 
 say "everything the pipeline does before it releases, done here"
