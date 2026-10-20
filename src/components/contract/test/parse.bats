@@ -19,6 +19,7 @@ reading() {
 @test "a document satisfying its contract yields the fields it was asked for" {
   fields=$(printf '%s' '{"key":"johans-laptop/github","value":"super-1"}' \
     | parse secret-put-request.schema.json key value)
+  key='' value=''
   eval "$fields"
   [ "$key" = "johans-laptop/github" ]
   [ "$value" = "super-1" ]
@@ -27,6 +28,7 @@ reading() {
 @test "a field the document does not carry yields an empty value" {
   fields=$(printf '%s' '{"key":"johans-laptop/github","version":0}' \
     | parse secret-get-request-version.schema.json key version)
+  key='' version=''
   eval "$fields"
   [ "$key" = "johans-laptop/github" ]
   [ "$version" = "0" ]
@@ -35,6 +37,7 @@ reading() {
 @test "a field that is false yields false rather than nothing" {
   fields=$(printf '%s' '{"version":2,"value":"super-1"}' \
     | parse secret-get-response.schema.json version value)
+  version='' value=''
   eval "$fields"
   [ "$version" = "2" ]
   [ "$value" = "super-1" ]
@@ -45,6 +48,7 @@ reading() {
   document=$(jq -nc --arg signed "$want" \
     '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:$signed}')
   fields=$(printf '%s' "$document" | parse token-request.schema.json signed)
+  signed=''
   eval "$fields"
   [ "$signed" = "$want" ]
   [ ! -e "$BATS_TEST_TMPDIR/escaped" ]

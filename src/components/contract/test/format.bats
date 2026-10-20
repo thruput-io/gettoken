@@ -35,8 +35,11 @@ setup() {
 
 @test "a value carrying what would break a document is written whole" {
   key=johans-laptop/github
-  value='super "1" \ and
-a second line'
+  value=$(cat <<'LITERAL'
+super "1" \ and
+a second line
+LITERAL
+)
   export key value
   document=$(format secret-put-request.schema.json key value)
   [ "$(printf '%s' "$document" | jq -r '.value')" = "$value" ]
