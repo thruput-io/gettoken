@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2034,SC2163
 set -euo pipefail
 
 ensure_bash5() {
@@ -21,8 +20,9 @@ required() {
 expose() {
   echo "# Generated from dynamic.sh"
 
-  for var_name in "$@"; do
-    val="${!var_name}"
+  for pair in "$@"; do
+    var_name=${pair%%=*}
+    val=${pair#*=}
     val=${val//\$/\$\$}
     if [[ "$val" == *$'\n'* ]]; then
       printf 'define %s\n%s\nendef\nexport %s\n' "$var_name" "$val" "$var_name"
@@ -63,4 +63,15 @@ else
 fi
 
 required ROOT_DIR VERSION BREW_TAP PACKAGE_FORMATS INSTALL_COMMAND BUILD_DEPS SEMGREP_INSTALL_COMMAND BATS_LIB_PATH PATH_PREFIX ADD_ARCHIVE REMOVE_PACKAGES
-expose ROOT_DIR VERSION BREW_TAP PACKAGE_FORMATS INSTALL_COMMAND BUILD_DEPS SEMGREP_INSTALL_COMMAND BATS_LIB_PATH PATH_PREFIX ADD_ARCHIVE REMOVE_PACKAGES
+expose \
+  "ROOT_DIR=$ROOT_DIR" \
+  "VERSION=$VERSION" \
+  "BREW_TAP=$BREW_TAP" \
+  "PACKAGE_FORMATS=$PACKAGE_FORMATS" \
+  "INSTALL_COMMAND=$INSTALL_COMMAND" \
+  "BUILD_DEPS=$BUILD_DEPS" \
+  "SEMGREP_INSTALL_COMMAND=$SEMGREP_INSTALL_COMMAND" \
+  "BATS_LIB_PATH=$BATS_LIB_PATH" \
+  "PATH_PREFIX=$PATH_PREFIX" \
+  "ADD_ARCHIVE=$ADD_ARCHIVE" \
+  "REMOVE_PACKAGES=$REMOVE_PACKAGES"
