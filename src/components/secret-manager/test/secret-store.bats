@@ -101,6 +101,23 @@ LITERAL
   putting johans-laptop/github super-1
   run -0 --separate-stderr getting johans-laptop/github
   [ "$output" = '{"value":"super-1","version":0}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+}
+
+@test "asking by key alone hands back the latest secret and its version" {
+  putting johans-laptop/github super-1
+  putting johans-laptop/github super-2
+  run -0 --separate-stderr getting johans-laptop/github
+  [ "$output" = '{"value":"super-2","version":1}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+}
+
+@test "a secret ending in a newline comes back with that newline" {
+  printf -v secret '%s\n' super-1
+  putting johans-laptop/github "$secret"
+  run -0 --separate-stderr getting johans-laptop/github
+  [ "$output" = "$(jq -cn --arg value "$secret" '{value: $value, version: 0}')" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "the secret never appears on stderr" {
@@ -166,6 +183,6 @@ LITERAL
   putting johans-laptop/github super-1
   mkdir "$store/johans-laptop/github/1"
   run -0 --separate-stderr getting johans-laptop/github
-  [ "$(printf '%s' "$output" | jq -r '.version')" = "0" ]
-  [ "$(printf '%s' "$output" | jq -r '.value')" = "super-1" ]
+  [ "$output" = '{"value":"super-1","version":0}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
