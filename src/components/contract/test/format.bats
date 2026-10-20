@@ -16,21 +16,23 @@ setup() {
   [ "$(printf '%s' "$output" | jq -r '.who | type')" = "string" ]
   [ "$(printf '%s' "$output" | jq -r '.wants | type')" = "string" ]
   [ "$(printf '%s' "$output" | jq -r '.who')" = "tore" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "a value that is a number goes in as a number" {
   access_token=narrow expires_in=120
   export access_token expires_in
-  document=$(format token-response.schema.json access_token expires_in)
-  [ "$(printf '%s' "$document" | jq -r '.expires_in | type')" = "number" ]
-  [ "$(printf '%s' "$document" | jq -r '.access_token | type')" = "string" ]
+  run -0 --separate-stderr format token-response.schema.json access_token expires_in
+  [ "$output" = '{"access_token":"narrow","expires_in":120}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "a secret reaches a document without passing a command line" {
   key=johans-laptop/github value=super-1
   export key value
-  document=$(format secret-put-request.schema.json key value)
-  [ "$(printf '%s' "$document" | jq -r '.value')" = "super-1" ]
+  run -0 --separate-stderr format secret-put-request.schema.json key value
+  [ "$output" = '{"key":"johans-laptop/github","value":"super-1"}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "a value carrying what would break a document is written whole" {
@@ -41,8 +43,9 @@ a second line
 LITERAL
 )
   export key value
-  document=$(format secret-put-request.schema.json key value)
-  [ "$(printf '%s' "$document" | jq -r '.value')" = "$value" ]
+  run -0 --separate-stderr format secret-put-request.schema.json key value
+  [ "$output" = "$(jq -cn --arg key "$key" --arg value "$value" '{key: $key, value: $value}')" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "a field whose variable is not set is refused" {
