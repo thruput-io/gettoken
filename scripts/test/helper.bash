@@ -1,4 +1,5 @@
-# shellcheck shell=bash
+#!/usr/bin/env bash
+set -euo pipefail
 bats_load_library bats-support
 bats_load_library bats-assert
 
