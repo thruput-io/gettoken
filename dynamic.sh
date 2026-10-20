@@ -24,11 +24,10 @@ expose() {
   for var_name in "$@"; do
     val="${!var_name}"
     val=${val//\$/\$\$}
-    printf 'export %s\n' "$var_name"
     if [[ "$val" == *$'\n'* ]]; then
-      printf 'define %s\n%s\nendef\n' "$var_name" "$val"
+      printf 'define %s\n%s\nendef\nexport %s\n' "$var_name" "$val" "$var_name"
     else
-      printf '%s := %s\n' "$var_name" "$val"
+      printf 'export %s := %s\n' "$var_name" "$val"
     fi
   done
 }
