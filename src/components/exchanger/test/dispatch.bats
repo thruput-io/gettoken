@@ -70,6 +70,7 @@ exchanging() {
 @test "the store is asked for the key the service is keyed by, and for no version" {
   plugged_in integrationtest 'cat > /dev/null; echo narrow-token'
   run -0 --separate-stderr exchanging integrationtest/ci/run
+  [ "$(printf '%s' "$output" | jq -r '.access_token')" = "narrow-token" ]
   [ "$(jq -r '.key' < "$ASKED_FILE")" = "host-privileged/integrationtest" ]
   [ "$(cat "$ARGS_FILE")" = "--with-key" ]
 }

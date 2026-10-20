@@ -9,7 +9,7 @@ setup() {
   export PATH CONTRACTS_DIR
 }
 
-admits() { printf '%s' "$2" | parse "$1"; }
+admits() { printf '%s' "$2" | parse "$1" "${@:3}"; }
 
 requesting() {
   jq -nc --arg signed "$1" \
@@ -17,7 +17,8 @@ requesting() {
 }
 
 @test "a request whose signature is ordinary text is admitted" {
-  run -0 --separate-stderr admits token-request.schema.json "$(requesting host-privileged)"
+  run -0 --separate-stderr admits token-request.schema.json "$(requesting host-privileged)" signed
+  [ "$output" = "signed='host-privileged'" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
@@ -60,9 +61,11 @@ requesting() {
 }
 
 @test "a minute and a day are both admitted as lifetimes" {
-  run -0 --separate-stderr admits token-response.schema.json '{"access_token":"narrow","expires_in":60}'
+  run -0 --separate-stderr admits token-response.schema.json '{"access_token":"narrow","expires_in":60}' expires_in
+  [ "$output" = "expires_in='60'" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
-  run -0 --separate-stderr admits token-response.schema.json '{"access_token":"narrow","expires_in":86400}'
+  run -0 --separate-stderr admits token-response.schema.json '{"access_token":"narrow","expires_in":86400}' expires_in
+  [ "$output" = "expires_in='86400'" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
@@ -90,7 +93,8 @@ requesting() {
 
 @test "an exchange request naming who is asking and what for is admitted" {
   run -0 --separate-stderr admits exchange-request.schema.json \
-    '{"who":"tore","wants":"integrationtest/ci/run"}'
+    '{"who":"tore","wants":"integrationtest/ci/run"}' who wants
+  [ "$output" = "$(printf "who='tore'\nwants='integrationtest/ci/run'")" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 

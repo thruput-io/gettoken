@@ -41,6 +41,7 @@ asking() {
   export wants
   run -0 --separate-stderr sh -c \
     'format agent-capability-request.schema.json wants | USER=impostor token-requester'
+  [ "$output" = "stub-token" ]
   [ "$(cat "$REQUEST_FILE")" = "{\"doing\":\"$(hostname)\",\"signed\":\"host-privileged\",\"wants\":\"integrationtest/ci/run\",\"who\":\"$(id -un)\"}" ]
 }
 

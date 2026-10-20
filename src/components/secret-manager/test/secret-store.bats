@@ -73,6 +73,7 @@ getting_version() {
 @test "the secret never appears on stderr" {
   putting johans-laptop/github super-1
   run -0 --separate-stderr getting johans-laptop/github
+  [ "$(printf '%s' "$output" | jq -r '.value')" = "super-1" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 

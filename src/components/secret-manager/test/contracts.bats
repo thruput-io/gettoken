@@ -9,7 +9,7 @@ setup() {
   export PATH CONTRACTS_DIR
 }
 
-admits() { printf '%s' "$2" | parse "$1"; }
+admits() { printf '%s' "$2" | parse "$1" "${@:3}"; }
 
 @test "a secret response carrying no secret is refused, because there is no such answer" {
   run -1 --separate-stderr admits secret-get-response.schema.json '{"version":1}'
@@ -27,9 +27,11 @@ admits() { printf '%s' "$2" | parse "$1"; }
 }
 
 @test "the first version and the last one the store can hold are both admitted" {
-  run -0 --separate-stderr admits secret-get-request-version.schema.json '{"key":"johans-laptop/github","version":0}'
+  run -0 --separate-stderr admits secret-get-request-version.schema.json '{"key":"johans-laptop/github","version":0}' key version
+  [ "$output" = "$(printf "key='johans-laptop/github'\nversion='0'")" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
-  run -0 --separate-stderr admits secret-get-request-version.schema.json '{"key":"johans-laptop/github","version":1000000}'
+  run -0 --separate-stderr admits secret-get-request-version.schema.json '{"key":"johans-laptop/github","version":1000000}' key version
+  [ "$output" = "$(printf "key='johans-laptop/github'\nversion='1000000'")" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
@@ -49,6 +51,7 @@ admits() { printf '%s' "$2" | parse "$1"; }
 
 @test "a secret response says which version and value it carried" {
   run -0 --separate-stderr admits secret-get-response.schema.json \
-    '{"version":0,"value":"super-1"}'
+    '{"version":0,"value":"super-1"}' version value
+  [ "$output" = "$(printf "version='0'\nvalue='super-1'")" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
 }

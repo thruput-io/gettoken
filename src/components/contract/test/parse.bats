@@ -47,9 +47,9 @@ reading() {
   want="'; touch $BATS_TEST_TMPDIR/escaped; '"
   document=$(jq -nc --arg signed "$want" \
     '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run",signed:$signed}')
-  fields=$(printf '%s' "$document" | parse token-request.schema.json signed)
+  run -0 --separate-stderr reading token-request.schema.json "$document" signed
   signed=''
-  eval "$fields"
+  eval "$output"
   [ "$signed" = "$want" ]
   [ ! -e "$BATS_TEST_TMPDIR/escaped" ]
 }

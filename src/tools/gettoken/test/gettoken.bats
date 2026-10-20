@@ -44,5 +44,6 @@ STUB
 @test "the ask for the list says it is the list being asked for" {
   capturing
   run -0 --separate-stderr gettoken --list
+  [ "$output" = "stub-token" ]
   [ "$(cat "$ASK_FILE")" = '{"query":"list"}' ]
 }
