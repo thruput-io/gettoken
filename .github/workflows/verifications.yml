@@ -61,14 +61,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: Debian stable, os: ubuntu-latest, container: 'debian:testing-slim', dist: dist-debian }
-          - { name: macOS stable,  os: macos-latest,  container: '',                    dist: dist-macos }
+          - { name: Debian stable, os: ubuntu-latest, container: 'debian:testing-slim', dist: dist-debian, platform: DEBIAN }
+          - { name: macOS stable,  os: macos-latest,  container: '',                    dist: dist-macos,  platform: DARWIN }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.dist }}
           path: build/dist
-      - run: source dynamic.sh > /dev/null && bash -ec "$ADD_ARCHIVE"
-      - run: source dynamic.sh > /dev/null && bash src/integration-test/test.sh
+      - run: |
+          source constants.env
+          BREW_TAP="$BREW_TAP" bash -ec "$${{ matrix.platform }}_ADD_ARCHIVE"
+      - run: |
+          source constants.env
+          BREW_TAP="$BREW_TAP" INSTALL_COMMAND="$${{ matrix.platform }}_INSTALL_COMMAND" REMOVE_PACKAGES="$${{ matrix.platform }}_REMOVE_PACKAGES" bash src/integration-test/test.sh
 

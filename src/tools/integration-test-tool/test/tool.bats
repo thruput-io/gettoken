@@ -15,6 +15,7 @@ running() {
 @test "the tool writes back what the narrow token carries, and nothing else" {
   run -0 --separate-stderr running sample-token-123-ci-run-allowed
   [ "$output" = "sample-token-123" ]
+  assert_equal "$(without_kcov_trace "$stderr")" "integration-test-tool: ran integrationtest/ci/run"
 }
 
 @test "the super-token that token was traded for is refused" {
@@ -26,19 +27,23 @@ running() {
 @test "no token at all is refused, and hands over nothing" {
   run -1 --separate-stderr sh -c 'unset INTEGRATIONTEST_TOKEN; integration-test-tool'
   [ "$output" = "" ]
+  assert_equal "$(without_kcov_trace "$stderr")" "integration-test-tool: INTEGRATIONTEST_TOKEN does not allow integrationtest/ci/run"
 }
 
 @test "a token allowing something else is refused" {
   run -1 --separate-stderr running sample-token-123-ci-run-denied
   [ "$output" = "" ]
+  assert_equal "$(without_kcov_trace "$stderr")" "integration-test-tool: INTEGRATIONTEST_TOKEN does not allow integrationtest/ci/run"
 }
 
 @test "a token carrying nothing but the suffix is refused" {
   run -1 --separate-stderr running -ci-run-allowed
   [ "$output" = "" ]
+  assert_equal "$(without_kcov_trace "$stderr")" "integration-test-tool: INTEGRATIONTEST_TOKEN does not allow integrationtest/ci/run"
 }
 
 @test "a token that is nearly the right one is refused, because it is not it" {
   run -1 --separate-stderr running sample-token-123-ci-run-allowed-too
   [ "$output" = "" ]
+  assert_equal "$(without_kcov_trace "$stderr")" "integration-test-tool: INTEGRATIONTEST_TOKEN does not allow integrationtest/ci/run"
 }

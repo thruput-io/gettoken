@@ -9,11 +9,12 @@ setup() {
   export PATH CONTRACTS_DIR
 }
 
-admits() { printf '%s' "$2" | parse "$1"; }
+admits() { printf '%s' "$2" | parse "$1" "${@:3}"; }
 
 @test "entitlements naming what they are and what their variables mean are admitted" {
-  run -0 --separate-stderr admits entitlements-response.schema.json \
-    '{"entitlements":[{"capability":"github/{org}/{repo}/pr/create","description":"Open a pull request.","variables":[{"name":"org","description":"The organisation that owns the repository."},{"name":"repo","description":"The repository to open the pull request against."}]}]}'
+  document='{"entitlements":[{"capability":"github/{org}/{repo}/pr/create","description":"Open a pull request.","variables":[{"name":"org","description":"The organisation that owns the repository."},{"name":"repo","description":"The repository to open the pull request against."}]}]}'
+  run -0 --separate-stderr admits entitlements-response.schema.json "$document" entitlements
+  [ "$output" = "entitlements='$(printf '%s' "$document" | jq -cS .entitlements)'" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 

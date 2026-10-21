@@ -12,34 +12,40 @@ setup() {
 @test "a value that is not JSON is the one that gets quoted" {
   who=tore doing=mac.lan wants=integrationtest/ci/run signed=host-privileged
   export who doing wants signed
-  document=$(format token-request.schema.json who doing wants signed)
-  [ "$(printf '%s' "$document" | jq -r '.who | type')" = "string" ]
-  [ "$(printf '%s' "$document" | jq -r '.wants | type')" = "string" ]
-  [ "$(printf '%s' "$document" | jq -r '.who')" = "tore" ]
+  run -0 --separate-stderr format token-request.schema.json who doing wants signed
+  [ "$(printf '%s' "$output" | jq -r '.who | type')" = "string" ]
+  [ "$(printf '%s' "$output" | jq -r '.wants | type')" = "string" ]
+  [ "$(printf '%s' "$output" | jq -r '.who')" = "tore" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "a value that is a number goes in as a number" {
   access_token=narrow expires_in=120
   export access_token expires_in
-  document=$(format token-response.schema.json access_token expires_in)
-  [ "$(printf '%s' "$document" | jq -r '.expires_in | type')" = "number" ]
-  [ "$(printf '%s' "$document" | jq -r '.access_token | type')" = "string" ]
+  run -0 --separate-stderr format token-response.schema.json access_token expires_in
+  [ "$output" = '{"access_token":"narrow","expires_in":120}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "a secret reaches a document without passing a command line" {
   key=johans-laptop/github value=super-1
   export key value
-  document=$(format secret-put-request.schema.json key value)
-  [ "$(printf '%s' "$document" | jq -r '.value')" = "super-1" ]
+  run -0 --separate-stderr format secret-put-request.schema.json key value
+  [ "$output" = '{"key":"johans-laptop/github","value":"super-1"}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "a value carrying what would break a document is written whole" {
   key=johans-laptop/github
-  value='super "1" \ and
-a second line'
+  value=$(cat <<'LITERAL'
+super "1" \ and
+a second line
+LITERAL
+)
   export key value
-  document=$(format secret-put-request.schema.json key value)
-  [ "$(printf '%s' "$document" | jq -r '.value')" = "$value" ]
+  run -0 --separate-stderr format secret-put-request.schema.json key value
+  [ "$output" = "$(jq -cn --arg key "$key" --arg value "$value" '{key: $key, value: $value}')" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "a field whose variable is not set is refused" {
@@ -82,7 +88,7 @@ a second line'
   export version value
   run -1 --separate-stderr format secret-get-response.schema.json version value
   [ "$output" = "" ]
-  expected=$(printf 'format: the document does not satisfy secret-get-response.schema.json\nvalidating https://thruput.io/gettoken/secret-response.schema.json: validating /properties/version: validating /$defs/Version: type: x has type "string", want "integer"')
+  expected=$(printf "format: the document does not satisfy secret-get-response.schema.json\nvalidating https://thruput.io/gettoken/secret-response.schema.json: validating /properties/version: validating /\$defs/Version: type: x has type \"string\", want \"integer\"")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
@@ -92,4 +98,32 @@ a second line'
   run -1 --separate-stderr format no-such-contract.schema.json who
   [ "$output" = "" ]
   assert_equal "$(without_kcov_trace "$stderr")" "format: no contract named no-such-contract.schema.json in $root/src/contracts"
+}
+
+@test "a secret made of digits only is stored as the text it is" {
+  key=johans-laptop/github value=12345
+  export key value
+  run -0 --separate-stderr format secret-put-request.schema.json key value
+  [ "$output" = '{"key":"johans-laptop/github","value":"12345"}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+}
+
+@test "a secret that reads as quoted JSON text is stored with its quotes" {
+  key=johans-laptop/github
+  value=$(cat <<'LITERAL'
+"super-1"
+LITERAL
+)
+  export key value
+  run -0 --separate-stderr format secret-put-request.schema.json key value
+  [ "$output" = '{"key":"johans-laptop/github","value":"\"super-1\""}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+}
+
+@test "a secret spelled true is stored as the word, not as a boolean" {
+  key=johans-laptop/github value=true
+  export key value
+  run -0 --separate-stderr format secret-put-request.schema.json key value
+  [ "$output" = '{"key":"johans-laptop/github","value":"true"}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }

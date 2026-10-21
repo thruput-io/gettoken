@@ -9,15 +9,17 @@ setup() {
   export PATH CONTRACTS_DIR
 }
 
-admits() { printf '%s' "$2" | parse "$1"; }
+admits() { printf '%s' "$2" | parse "$1" "${@:3}"; }
 
 @test "an ask naming a capability is admitted" {
-  run -0 --separate-stderr admits agent-capability-request.schema.json '{"wants":"integrationtest/ci/run"}'
+  run -0 --separate-stderr admits agent-capability-request.schema.json '{"wants":"integrationtest/ci/run"}' wants
+  [ "$output" = "wants='integrationtest/ci/run'" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "an ask for the list is admitted" {
-  run -0 --separate-stderr admits agent-list-request.schema.json '{"query":"list"}'
+  run -0 --separate-stderr admits agent-list-request.schema.json '{"query":"list"}' query
+  [ "$output" = "query='list'" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
@@ -54,6 +56,6 @@ admits() { printf '%s' "$2" | parse "$1"; }
 @test "an ask whose capability is not one is refused" {
   run -1 --separate-stderr admits agent-capability-request.schema.json '{"wants":"../../bin/sh"}'
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy agent-capability-request.schema.json\nvalidating https://thruput.io/gettoken/ask-capability.schema.json: validating /properties/wants: validating /$defs/Capability: pattern: "../../bin/sh" does not match regular expression "^[a-z0-9-]+(/[a-z0-9._-]+)+$"')
+  expected=$(printf "parse: the document does not satisfy agent-capability-request.schema.json\nvalidating https://thruput.io/gettoken/ask-capability.schema.json: validating /properties/wants: validating /\$defs/Capability: pattern: \"../../bin/sh\" does not match regular expression \"^[a-z0-9-]+(/[a-z0-9._-]+)+\$\"")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }

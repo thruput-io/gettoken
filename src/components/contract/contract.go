@@ -1,9 +1,10 @@
 // Package contract holds JSON documents to the schemas that govern them.
 //
 // The schemas in contracts/ are the whole statement of what a document may
-// carry. This package restates none of it: it names no field, knows no domain
-// type and derives nothing from a schema's shape. It reads a schema, hands a
-// document to it, and reports what the schema said.
+// carry. This package restates none of it: it names no field and knows no
+// domain type. It reads a schema, hands a document to it, and reports what the
+// schema said, and it reads the type a schema declares for a field so that
+// text given for that field becomes a value of that type.
 //
 // A document therefore exists in one form only, the held form. Hold and Build
 // both check before they return, so holding a Document is itself the proof that
@@ -19,6 +20,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/google/jsonschema-go/jsonschema"
 )
@@ -34,6 +36,10 @@ type Contract interface {
 	// them as a Document. The values are copied, so the caller cannot reach
 	// into the Document afterwards.
 	Build(values map[string]any) (Document, error)
+	// Typed reads text given for field as the type the contract declares for
+	// it: a string field keeps the text as it is, any other field reads it as
+	// JSON. Text that is not JSON is kept as text, for the contract to refuse.
+	Typed(field, text string) (any, error)
 }
 
 // A Document is a JSON object that its contract has admitted. It cannot be
@@ -48,8 +54,9 @@ type Document interface {
 }
 
 type held struct {
-	name     string
-	resolved *jsonschema.Resolved
+	name      string
+	directory string
+	resolved  *jsonschema.Resolved
 }
 
 type admitted struct {
@@ -98,7 +105,7 @@ func Open(directory, name string) (Contract, error) {
 	if err != nil {
 		return nil, fmt.Errorf("contract %s does not resolve: %w", name, err)
 	}
-	return held{name: name, resolved: resolved}, nil
+	return held{name: name, directory: directory, resolved: resolved}, nil
 }
 
 func (h held) admit(document any, raw []byte) (Document, error) {
@@ -134,6 +141,45 @@ func (h held) Build(values map[string]any) (Document, error) {
 		return nil, err
 	}
 	return h.admit(document, raw)
+}
+
+func (h held) declared(field string) (string, error) {
+	property, governed := h.resolved.Schema().Properties[field]
+	if !governed {
+		return "", nil
+	}
+	if property.Ref == "" {
+		return property.Type, nil
+	}
+	reference, err := url.Parse(property.Ref)
+	if err != nil {
+		return "", err
+	}
+	schema, err := read(h.directory, filepath.Base(reference.Path))
+	if err != nil {
+		return "", err
+	}
+	name := strings.TrimPrefix(reference.Fragment, "/$defs/")
+	definition, defined := schema.Defs[name]
+	if !defined {
+		return "", fmt.Errorf("%s names %s for %s, which %s does not define", h.name, property.Ref, field, reference.Path)
+	}
+	return definition.Type, nil
+}
+
+func (h held) Typed(field, text string) (any, error) {
+	declared, err := h.declared(field)
+	if err != nil {
+		return nil, err
+	}
+	if declared == "string" {
+		return text, nil
+	}
+	var read any
+	if err := json.Unmarshal([]byte(text), &read); err != nil {
+		return text, nil
+	}
+	return read, nil
 }
 
 func (a admitted) Value(key string) (any, bool) {

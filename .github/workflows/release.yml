@@ -11,10 +11,6 @@ on:
 permissions:
   contents: read
 
-env:
-  BUILD_NUMBER: ${{ github.event.workflow_run.run_number }}
-  ROOT_DIR: ${{ github.workspace }}
-
 defaults:
   run:
     shell: bash
@@ -47,8 +43,9 @@ jobs:
       - env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          source dynamic.sh > /dev/null
-          gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" \
+          shipped=$(basename build/dist/brew/gettoken-*.tar.gz .tar.gz)
+          version=${shipped#gettoken-}
+          gh release create "v$version" --target "$GITHUB_SHA" --title "v$version" \
             --notes "Built from $GITHUB_SHA by run $GITHUB_RUN_ID." \
             build/dist/deb/*.deb build/dist/brew/*.tar.gz build/dist/brew/*.rb
       - name: tell the distribution repositories there is a release

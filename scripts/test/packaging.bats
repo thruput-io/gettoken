@@ -10,11 +10,11 @@ install_lists() {
 }
 
 installed_into() {
-  install_lists | xargs awk -v want="$1" '$2 == want { n = split($1, p, "/"); print p[n] }' | sort
+  install_lists | xargs awk -v want="$1" "\$2 == want { n = split(\$1, p, \"/\"); print p[n] }" | sort
 }
 
 destinations() {
-  install_lists | xargs awk '{ print $2 }' | sort -u
+  install_lists | xargs awk "{ print \$2 }" | sort -u
 }
 
 destinations_reachable_without_gettoken_on_path() {

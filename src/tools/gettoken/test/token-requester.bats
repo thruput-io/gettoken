@@ -32,6 +32,7 @@ asking() {
   answering '{"access_token":"stub-token","expires_in":60}'
   run -0 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "stub-token" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
   [ "$(cat "$REQUEST_FILE")" = "{\"doing\":\"$(hostname)\",\"signed\":\"host-privileged\",\"wants\":\"integrationtest/ci/run\",\"who\":\"$(id -un)\"}" ]
 }
 
@@ -41,6 +42,8 @@ asking() {
   export wants
   run -0 --separate-stderr sh -c \
     'format agent-capability-request.schema.json wants | USER=impostor token-requester'
+  [ "$output" = "stub-token" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
   [ "$(cat "$REQUEST_FILE")" = "{\"doing\":\"$(hostname)\",\"signed\":\"host-privileged\",\"wants\":\"integrationtest/ci/run\",\"who\":\"$(id -un)\"}" ]
 }
 
@@ -49,6 +52,8 @@ asking() {
   run -1 --separate-stderr sh -c \
     'printf %s "{\"wants\":\"a\\\",\\\"signed\\\":\\\"forged-by-agent\"}" | token-requester'
   [ "$output" = "" ]
+  expected=$(printf "parse: the document does not satisfy agent-capability-request.schema.json\nvalidating https://thruput.io/gettoken/ask-capability.schema.json: validating /properties/wants: validating /\$defs/Capability: pattern: \"a\\\\\",\\\\\"signed\\\\\":\\\\\"forged-by-agent\" does not match regular expression \"^[a-z0-9-]+(/[a-z0-9._-]+)+\$\"")
+  assert_equal "$(without_kcov_trace "$stderr")" "$expected"
   [ ! -f "$REQUEST_FILE" ]
 }
 
@@ -58,4 +63,17 @@ asking() {
   [ "$output" = "" ]
   expected=$(printf 'parse: the document does not satisfy token-response.schema.json\nvalidating https://thruput.io/gettoken/response.schema.json: required: missing properties: ["access_token"]')
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
+}
+
+@test "the list is asked for by who is asking and from where, and handed back whole" {
+  cat > "$stub/entitlements" <<'STUB'
+#!/bin/sh
+cat > "$REQUEST_FILE"
+printf '%s\n' '{"entitlements":[]}'
+STUB
+  chmod 755 "$stub/entitlements"
+  run -0 --separate-stderr sh -c 'printf %s "{\"query\":\"list\"}" | token-requester --list'
+  [ "$output" = '{"entitlements":[]}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+  [ "$(cat "$REQUEST_FILE")" = "{\"doing\":\"$(hostname)\",\"signed\":\"host-privileged\",\"who\":\"$(id -un)\"}" ]
 }

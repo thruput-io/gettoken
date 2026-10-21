@@ -14,7 +14,7 @@ setup() {
 teardown() { rm -rf "$STUB_DIR"; }
 
 exchanger_that() {
-  printf '%s\n' '#!/bin/sh' 'set -eu' 'cat > "$HANDED_FILE"' "$1" > "$STUB_DIR/exchanger"
+  printf '%s\n' '#!/bin/sh' 'set -eu' "cat > \"\$HANDED_FILE\"" "$1" > "$STUB_DIR/exchanger"
   chmod 755 "$STUB_DIR/exchanger"
 }
 
@@ -39,7 +39,7 @@ asking() { dispatch "$(wanting "$1")"; }
   exchanger_that 'echo "{\"access_token\":\"narrow-token\",\"expires_in\":1}"'
   run -1 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy token-response.schema.json\nvalidating https://thruput.io/gettoken/response.schema.json: validating /properties/expires_in: validating /$defs/ExpiresIn: minimum: 1/1 is less than 60.000000')
+  expected=$(printf "parse: the document does not satisfy token-response.schema.json\nvalidating https://thruput.io/gettoken/response.schema.json: validating /properties/expires_in: validating /\$defs/ExpiresIn: minimum: 1/1 is less than 60.000000")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
@@ -47,7 +47,7 @@ asking() { dispatch "$(wanting "$1")"; }
   exchanger_that 'echo "{\"access_token\":\"narrow-token\",\"expires_in\":86401}"'
   run -1 --separate-stderr asking integrationtest/ci/run
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy token-response.schema.json\nvalidating https://thruput.io/gettoken/response.schema.json: validating /properties/expires_in: validating /$defs/ExpiresIn: maximum: 86401/1 is greater than 86400.000000')
+  expected=$(printf "parse: the document does not satisfy token-response.schema.json\nvalidating https://thruput.io/gettoken/response.schema.json: validating /properties/expires_in: validating /\$defs/ExpiresIn: maximum: 86401/1 is greater than 86400.000000")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
@@ -64,7 +64,7 @@ asking() { dispatch "$(wanting "$1")"; }
   exchanger_that 'echo "{\"access_token\":\"narrow-token\",\"expires_in\":120}"'
   run -1 --separate-stderr asking ../../bin/sh
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy token-request.schema.json\nvalidating https://thruput.io/gettoken/request.schema.json: validating /properties/wants: validating /$defs/Capability: pattern: "../../bin/sh" does not match regular expression "^[a-z0-9-]+(/[a-z0-9._-]+)+$"')
+  expected=$(printf "parse: the document does not satisfy token-request.schema.json\nvalidating https://thruput.io/gettoken/request.schema.json: validating /properties/wants: validating /\$defs/Capability: pattern: \"../../bin/sh\" does not match regular expression \"^[a-z0-9-]+(/[a-z0-9._-]+)+\$\"")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
   [ ! -f "$HANDED_FILE" ]
 }
@@ -73,7 +73,7 @@ asking() { dispatch "$(wanting "$1")"; }
   exchanger_that 'echo "{\"access_token\":\"narrow-token\",\"expires_in\":120}"'
   run -1 --separate-stderr asking ./ci/run
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy token-request.schema.json\nvalidating https://thruput.io/gettoken/request.schema.json: validating /properties/wants: validating /$defs/Capability: pattern: "./ci/run" does not match regular expression "^[a-z0-9-]+(/[a-z0-9._-]+)+$"')
+  expected=$(printf "parse: the document does not satisfy token-request.schema.json\nvalidating https://thruput.io/gettoken/request.schema.json: validating /properties/wants: validating /\$defs/Capability: pattern: \"./ci/run\" does not match regular expression \"^[a-z0-9-]+(/[a-z0-9._-]+)+\$\"")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
   [ ! -f "$HANDED_FILE" ]
 }
@@ -83,7 +83,7 @@ asking() { dispatch "$(wanting "$1")"; }
   run -1 --separate-stderr dispatch \
     "$(jq -nc '{who:"tore",doing:"mac.lan",wants:"integrationtest/ci/run\n",signed:"host-privileged"}')"
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy token-request.schema.json\nvalidating https://thruput.io/gettoken/request.schema.json: validating /properties/wants: validating /$defs/Capability: pattern: "integrationtest/ci/run\\n" does not match regular expression "^[a-z0-9-]+(/[a-z0-9._-]+)+$"')
+  expected=$(printf "parse: the document does not satisfy token-request.schema.json\nvalidating https://thruput.io/gettoken/request.schema.json: validating /properties/wants: validating /\$defs/Capability: pattern: \"integrationtest/ci/run\\\n\" does not match regular expression \"^[a-z0-9-]+(/[a-z0-9._-]+)+\$\"")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
   [ ! -f "$HANDED_FILE" ]
 }

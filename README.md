@@ -114,54 +114,6 @@ flowchart TD
   AIA["agent-identity-authority"] -.->|"real proof behind signed"| TR
 ```
 
-## Vocabulary
-
-A **capability** is a name, and it is not a secret:
-
-```
-github/thruput-io/gettoken/pr/create
-```
-
-**`entitlements`** is a file named for the agent, listing the capabilities that
-agent has. It is the inventory — it answers "what do I have to work with", and it
-is what `gettoken --list` shows. It is also the control: a request for a
-capability that is not in the file is refused.
-
-**`signed`** names what vouched for the request. `host-privileged` means the
-request was produced on the privileged side of this host. That is accepted here,
-because it is true here; nothing off this host accepts it, because nothing off
-this host can know it. The key that signs a request is one-to-one with the first
-segment of **`doing`**, and the deployment is where that key is put.
-
-## Contracts
-
-- `contracts/token-request.schema.json` — the request: `who`, `doing`, `wants`, `signed`.
-- `contracts/token-response.schema.json` — the response: `access_token`, `expires_in`.
-- `contracts/defs.schema.json` — every domain object defined once; the request
-  and response only `$ref` these, never inline a constraint.
-
-```json
-{
-  "who":    "rasmus",
-  "doing":  "johans-laptop/review",
-  "wants":  "github/thruput-io/gettoken/pr/create",
-  "signed": "host-privileged"
-}
-```
-
-The exchanger is a component like any other, so contracts govern both ends of it:
-`token-service` hands it an `exchange-request` on standard input and reads a
-`token-response` back. It is told who is asking and what for, and neither the
-signature the request was signed with nor what the agent was doing, because those
-are not the exchanger's to see.
-
-A plugin is part of the exchanger, not a component, so no contract governs it. The
-exchanger finds it in `/usr/lib/gettoken/exchangers`, named for the first segment
-of the capability, names the capability as its argument, hands it the super-token
-on standard input, and reads the narrow token on standard output. It is looked up
-in that one directory rather than on `PATH`, because it is run with the
-super-token in hand.
-
 ## Install it
 
 ```sh
@@ -176,37 +128,6 @@ brew tap thruput-io/tap
 brew trust thruput-io/tap
 brew install integration-test-tool
 ```
-
-### What arrives, and why that is the interesting part
-
-A contract is an interface, so it is a package, and a component depends on the
-contracts it speaks. That dependency is the statement of what may reach what, and
-`apt` answers it:
-
-```sh
-apt-cache depends gettoken-secret-manager | grep contract
-```
-
-The store depends on the five documents it reads and writes and on nothing else.
-`gettoken`, which is what an agent invokes, depends on the two asks it builds and
-on neither the token nor the entitlements contracts, because those belong to the
-privileged half it hands the ask to. The exchanger, which has no business seeing a
-signature, does not depend on the contract carrying one.
-
-`parse` and `format` are separate packages carrying no contract of their own, so a
-component that only ever reads a document does not install the program that writes
-one — `gettoken` depends on `gettoken-format` alone.
-
-`/usr/bin` carries the agent's entry point and nothing else. Everything on the
-privileged side lives in `/usr/lib/gettoken`, which `gettoken` puts on `PATH`
-before it crosses over; a human working on that side puts it on their own.
-
-Integrating a tool means publishing a package that depends on `gettoken` and
-installs one exchanger plugin into `/usr/lib/gettoken/exchangers`. Where the tool is one
-someone else already packages, that is a second package alongside theirs, because
-theirs is not ours to change — `gh-gettoken` next to `gh`. `integration-test-tool`
-stands in for that: the tool and the plugin beside it are two packages, because
-the tool is not ours to speak for and the plugin is.
 
 ## Vision
 
@@ -232,71 +153,3 @@ flowchart LR
   STS -.->|"new capability / renewal"| PH["phone app"]
   PH -.->|"2FA tap · approve"| STS
 ```
-
-## Layout
-
-`contracts/` is the wire between the two sides and belongs to neither.
-`components/` holds machinery more than one tool shares; a component nothing
-implements yet carries a `SEAT.md` saying what it is for, so the list stays whole.
-A tool lives under `tools/` and owns its own privileged half, so the boundary sits
-inside the tool rather than across the top of the tree. Man pages live with what
-they document. Each tool and component says beside its own files which of them
-go into which package, for apt and for brew, and the build assembles the
-packaging from that.
-
-<!-- layout -->
-```
-.github/
-  actions/
-    upload-reports/
-  workflows/
-docs/
-  adrs/
-  plans/
-    brew-distribution/
-    containers/
-      research/
-    shell-streaming/
-      research/
-    virtual-macos/
-      research/
-scripts/
-  debian/
-    source/
-  docker/
-  fixtures/
-  test/
-src/
-  components/
-    agent-identity-authority/
-    auth-canvas/
-    contract/
-      cmd/
-        format/
-        parse/
-      test/
-    entitlements/
-      test/
-    exchanger/
-      test/
-    notifier/
-    secret-manager/
-      test/
-    token-service/
-      test/
-  contracts/
-  integration-test/
-  tools/
-    gettoken/
-      bin/
-      man/
-      privileged/
-      test/
-    integration-test-tool/
-      bin/
-      man/
-      privileged/
-        exchangers/
-      test/
-```
-<!-- end layout -->

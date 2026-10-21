@@ -19,7 +19,8 @@ key=host-privileged/$service
 export key
 asked=$(format secret-get-request.schema.json key)
 
-fields=$(printf '%s' "$asked" | secret-get --with-key | parse secret-get-response.schema.json value)
+answer=$(printf '%s' "$asked" | secret-get --with-key)
+fields=$(printf '%s' "$answer" | parse secret-get-response.schema.json value)
 value=''
 eval "$fields"
 

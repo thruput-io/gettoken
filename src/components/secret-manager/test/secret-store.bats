@@ -30,31 +30,64 @@ getting_version() {
   format secret-get-request-version.schema.json key version | secret-get
 }
 @test "storing a secret answers with version and value" {
-  key=johans-laptop/github value=super-1
-  export key value
-  document=$(format secret-put-request.schema.json key value | secret-put)
-  [ "$(printf '%s' "$document" | jq -r '.version')" = "0" ]
-  [ "$(printf '%s' "$document" | jq -r '.value')" = "super-1" ]
+  run -0 --separate-stderr putting johans-laptop/github super-1
+  [ "$output" = '{"value":"super-1","version":0}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+}
+
+@test "storing a secret again answers with the next version" {
+  putting johans-laptop/github super-1
+  run -0 --separate-stderr putting johans-laptop/github super-2
+  [ "$output" = '{"value":"super-2","version":1}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+}
+
+@test "the store holds exactly the secret it was given, and nothing after it" {
+  putting johans-laptop/github super-1
+  run -0 --separate-stderr cmp "$store/johans-laptop/github/0" <(printf '%s' super-1)
+  [ "$output" = "" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+}
+
+@test "a secret made of digits only is stored and answered as the text it is" {
+  run -0 --separate-stderr putting johans-laptop/github 12345
+  [ "$output" = '{"value":"12345","version":0}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+}
+
+@test "a secret carrying quotes, a backslash and a second line comes back whole" {
+  secret=$(cat <<'LITERAL'
+super "1" \ and
+a second line
+LITERAL
+)
+  putting johans-laptop/github "$secret"
+  run -0 --separate-stderr getting johans-laptop/github
+  [ "$output" = "$(jq -cn --arg value "$secret" '{value: $value, version: 0}')" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "the first secret stored under a key is version zero" {
   putting johans-laptop/github super-1
   run -0 --separate-stderr getting_version johans-laptop/github 0
-  [ "$(printf '%s' "$output" | jq -r '.value')" = "super-1" ]
+  [ "$output" = '{"value":"super-1","version":0}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "the store gives each secret the next version, so no caller chooses one" {
   putting johans-laptop/github super-1
   putting johans-laptop/github super-2
   run -0 --separate-stderr getting_version johans-laptop/github 1
-  [ "$(printf '%s' "$output" | jq -r '.value')" = "super-2" ]
+  [ "$output" = '{"value":"super-2","version":1}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "storing a secret again never replaces the one already there" {
   putting johans-laptop/github super-1
   putting johans-laptop/github super-2
   run -0 --separate-stderr getting_version johans-laptop/github 0
-  [ "$(printf '%s' "$output" | jq -r '.value')" = "super-1" ]
+  [ "$output" = '{"value":"super-1","version":0}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "asking for a version that is not there hands over nothing and says so" {
@@ -68,11 +101,29 @@ getting_version() {
   putting johans-laptop/github super-1
   run -0 --separate-stderr getting johans-laptop/github
   [ "$output" = '{"value":"super-1","version":0}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+}
+
+@test "asking by key alone hands back the latest secret and its version" {
+  putting johans-laptop/github super-1
+  putting johans-laptop/github super-2
+  run -0 --separate-stderr getting johans-laptop/github
+  [ "$output" = '{"value":"super-2","version":1}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
+}
+
+@test "a secret ending in a newline comes back with that newline" {
+  printf -v secret '%s\n' super-1
+  putting johans-laptop/github "$secret"
+  run -0 --separate-stderr getting johans-laptop/github
+  [ "$output" = "$(jq -cn --arg value "$secret" '{value: $value, version: 0}')" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "the secret never appears on stderr" {
   putting johans-laptop/github super-1
   run -0 --separate-stderr getting johans-laptop/github
+  [ "$(printf '%s' "$output" | jq -r '.value')" = "super-1" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
@@ -86,7 +137,7 @@ getting_version() {
   run -1 --separate-stderr sh -c \
     'printf %s "{\"key\":\"Johans-Laptop\",\"value\":\"super-1\"}" | secret-put'
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: "Johans-Laptop" does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"')
+  expected=$(printf "parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /\$defs/Key: pattern: \"Johans-Laptop\" does not match regular expression \"^[a-z0-9-]+(/[a-z0-9-]+)*\$\"")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
@@ -94,7 +145,7 @@ getting_version() {
   run -1 --separate-stderr sh -c \
     'printf %s "{\"key\":\"..\",\"value\":\"super-1\"}" | secret-put'
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /$defs/Key: pattern: ".." does not match regular expression "^[a-z0-9-]+(/[a-z0-9-]+)*$"')
+  expected=$(printf "parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/key: validating /\$defs/Key: pattern: \"..\" does not match regular expression \"^[a-z0-9-]+(/[a-z0-9-]+)*\$\"")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
   [ ! -e "$(dirname "$store")/github" ]
 }
@@ -103,7 +154,7 @@ getting_version() {
   run -1 --separate-stderr sh -c \
     'printf %s "{\"key\":\"johans-laptop/github\",\"value\":\"\"}" | secret-put'
   [ "$output" = "" ]
-  expected=$(printf 'parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/value: validating /$defs/Secret: minLength: "" contains 0 Unicode code points, fewer than 1')
+  expected=$(printf "parse: the document does not satisfy secret-put-request.schema.json\nvalidating https://thruput.io/gettoken/secret-request.schema.json: validating /properties/value: validating /\$defs/Secret: minLength: \"\" contains 0 Unicode code points, fewer than 1")
   assert_equal "$(without_kcov_trace "$stderr")" "$expected"
 }
 
@@ -118,18 +169,20 @@ getting_version() {
   putting johans-laptop/github super-1
   run -0 --separate-stderr find "$store" -type d -perm 700
   [ "$(printf '%s\n' "$output" | sort)" = "$(printf '%s\n' "$store" "$store/johans-laptop" "$store/johans-laptop/github" | sort)" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "the stored secret is closed to everyone but its owner" {
   putting johans-laptop/github super-1
   run -0 --separate-stderr find "$store" -type f -perm 600
   [ "$output" = "$store/johans-laptop/github/0" ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
 
 @test "an entry that is not a file is not a version the store can hand back" {
   putting johans-laptop/github super-1
   mkdir "$store/johans-laptop/github/1"
   run -0 --separate-stderr getting johans-laptop/github
-  [ "$(printf '%s' "$output" | jq -r '.version')" = "0" ]
-  [ "$(printf '%s' "$output" | jq -r '.value')" = "super-1" ]
+  [ "$output" = '{"value":"super-1","version":0}' ]
+  assert_equal "$(without_kcov_trace "$stderr")" ""
 }
