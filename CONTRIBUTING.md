@@ -45,7 +45,10 @@ and `check-jsonschema`, and on Debian the toolchain that builds the `.deb`.
 
 `make unit` builds `parse` and `format` before it runs anything, into a
 directory it puts on `PATH`. Every check runs through a make target; there is no
-other way a check is run.
+other way a check is run. Every recipe line runs under `bash -euo pipefail`,
+set through `.SHELLFLAGS`, which GNU make has had since 3.82; the Makefile
+refuses an older make. Apple ships 3.81, so on macOS install Homebrew's `make`
+and put `$(brew --prefix make)/libexec/gnubin` first on `PATH`.
 
 The gate reads every file's first line: a script says which shell it is written
 for with a shebang, and a file that is sourced rather than run says it with a
