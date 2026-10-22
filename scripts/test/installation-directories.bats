@@ -18,11 +18,6 @@ built_for() {
   make -s -C "$built" "$@" > /dev/null
 }
 
-installed_as() {
-  printf '%s\n' '#!/bin/sh' 'set -eu' "$2" > "$1"
-  chmod 755 "$1"
-}
-
 asking_gettoken() {
   "$built/tools/gettoken/bin/gettoken" integrationtest/ci/run
 }
