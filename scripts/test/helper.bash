@@ -8,6 +8,6 @@ without_kcov_trace() {
 }
 
 installed_as() {
-  printf '%s\n' '#!/bin/sh' 'set -eu' "$2" > "$1"
+  { printf '%s\n' '#!/bin/sh' 'set -eu'; cat; } > "$1"
   chmod 755 "$1"
 }

@@ -11,10 +11,23 @@ setup() {
   mkdir -p "$home" "$bin" "$lib"
   touch "$RECORD_LOG"
   export root home bin lib RECORD_LOG
-  installed_as "$bin/record" 'printf "%s\n" "$*" >> "$RECORD_LOG"'
-  installed_as "$lib/secret-put" 'doc=$(cat); dir=$HOME/secrets/$(printf "%s" "$doc" | jq -r .key); mkdir -p "$dir"; printf "%s" "$doc" | jq -r .value > "$dir/0"'
-  installed_as "$bin/gettoken" 'test "$1" = integrationtest/ci/run; secret=$(cat "$HOME/secrets/host-privileged/integrationtest/0"); echo "${secret#super-}-ci-run-allowed"'
-  installed_as "$bin/integration-test-tool" 'echo "${INTEGRATIONTEST_TOKEN%-ci-run-allowed}"'
+  installed_as "$bin/record" <<'EOF'
+printf '%s\n' "$*" >> "$RECORD_LOG"
+EOF
+  installed_as "$lib/secret-put" <<'EOF'
+doc=$(cat)
+dir=$HOME/secrets/$(printf '%s' "$doc" | jq -r .key)
+mkdir -p "$dir"
+printf '%s' "$doc" | jq -r .value > "$dir/0"
+EOF
+  installed_as "$bin/gettoken" <<'EOF'
+test "$1" = integrationtest/ci/run
+secret=$(cat "$HOME/secrets/host-privileged/integrationtest/0")
+echo "${secret#super-}-ci-run-allowed"
+EOF
+  installed_as "$bin/integration-test-tool" <<'EOF'
+echo "${INTEGRATIONTEST_TOKEN%-ci-run-allowed}"
+EOF
 }
 
 running() {
@@ -44,7 +57,9 @@ report_of() {
 }
 
 @test "the tool running on something else fails the run, and says what was put and what ran" {
-  installed_as "$bin/integration-test-tool" 'echo not-what-was-put'
+  installed_as "$bin/integration-test-tool" <<'EOF'
+echo not-what-was-put
+EOF
   run -1 --separate-stderr running
   expected=$(report_of 'carried=[0-9a-f]{32}\nran_on=not-what-was-put')
   [[ "$output" =~ $expected ]]
@@ -52,14 +67,18 @@ report_of() {
 }
 
 @test "the packages are removed and the store purged even when the run fails" {
-  installed_as "$bin/integration-test-tool" 'echo not-what-was-put'
+  installed_as "$bin/integration-test-tool" <<'EOF'
+echo not-what-was-put
+EOF
   run -1 --separate-stderr running
   [ "$(cat "$RECORD_LOG")" = "$(printf 'install integration-test-tool\nremove')" ]
   [ ! -e "$home/secrets/host-privileged/integrationtest" ]
 }
 
 @test "a tool that cannot run leaves the report short, fails the run with its own words, and is still removed" {
-  installed_as "$bin/integration-test-tool" 'echo "integration-test-tool: boom" >&2; exit 3'
+  installed_as "$bin/integration-test-tool" <<'EOF'
+echo "integration-test-tool: boom" >&2; exit 3
+EOF
   run -3 --separate-stderr running
   expected=$(report_of 'carried=[0-9a-f]{32}')
   [[ "$output" =~ $expected ]]

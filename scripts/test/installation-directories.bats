@@ -50,7 +50,9 @@ directory_named_in() {
   built_for configured "prefix=$there"
   mkdir -p "$there/lib/gettoken"
   cp "$root/build/bin/format" "$there/lib/gettoken/format"
-  installed_as "$there/lib/gettoken/token-requester" 'cat > /dev/null; echo "the token-requester in the library directory ran"'
+  installed_as "$there/lib/gettoken/token-requester" <<'EOF'
+cat > /dev/null; echo "the token-requester in the library directory ran"
+EOF
   run -0 --separate-stderr asking_gettoken
   [ "$output" = "the token-requester in the library directory ran" ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
@@ -59,8 +61,12 @@ directory_named_in() {
 @test "the exchanger runs the plugins in the library directory it was built for" {
   built_for configured "prefix=$there"
   mkdir -p "$there/lib/gettoken/exchangers"
-  installed_as "$there/lib/gettoken/exchangers/integrationtest" 'cat > /dev/null; echo from-the-library-directory'
-  installed_as "$stubs/secret-get" 'version=0; value=super-sample; export version value; format secret-get-response.schema.json version value'
+  installed_as "$there/lib/gettoken/exchangers/integrationtest" <<'EOF'
+cat > /dev/null; echo from-the-library-directory
+EOF
+  installed_as "$stubs/secret-get" <<'EOF'
+version=0; value=super-sample; export version value; format secret-get-response.schema.json version value
+EOF
   run -0 --separate-stderr asking_the_exchanger
   [ "$output" = '{"access_token":"from-the-library-directory","expires_in":120}' ]
   assert_equal "$(without_kcov_trace "$stderr")" ""
