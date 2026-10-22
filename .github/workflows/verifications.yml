@@ -41,7 +41,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - run: make build
+      - run: brew install make
+      - run: gmake build
       - if: always()
         uses: ./.github/actions/upload-reports
         with:

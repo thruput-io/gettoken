@@ -1,7 +1,9 @@
 export ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
+$(if $(filter 4.% 5.%,$(MAKE_VERSION)),,$(error GNU make 4 or later is required, found $(MAKE_VERSION)))
+
 SHELL := /usr/bin/env bash
-SHELLOPTS := -euo pipefail
+.SHELLFLAGS := -euo pipefail -c
 
 -include $(ROOT_DIR)/build/config.mk
 
@@ -152,7 +154,7 @@ $(ROOT_DIR)/build/no-branching.checked: $(ROOT_DIR)/build/branching-report.txt $
 	[ "$$sites" -le 0 ] && [ "$(BATS_TEST_FILES)" -gt 0 ]
 
 $(ROOT_DIR)/build/bash-unit-test.checked: $(ROOT_DIR)/build/report.tap $(ROOT_DIR)/build/stats.txt
-	pass=$$(grep -c -- '^ok ' $<); fail=$$(grep -c -- '^not ok ' $<); \
+	pass=$$(sed -n '/^ok /p' $< | wc -l | tr -d ' '); fail=$$(sed -n '/^not ok /p' $< | wc -l | tr -d ' '); \
 	echo "bats: $$pass passed, $$fail failed (min 10, stat $(BATS_TESTS))"; \
 	[ "$$fail" -eq 0 ] && [ "$$pass" -ge 10 ] && [ "$$(( $$pass + $$fail ))" -eq "$(BATS_TESTS)" ]
 
@@ -167,7 +169,7 @@ $(ROOT_DIR)/build/go-coverage.checked: $(ROOT_DIR)/build/go-coverage.txt $(ROOT_
 	[ "$${percent%.*}" -ge 44 ] && [ "$$files" -gt 0 ]
 
 $(ROOT_DIR)/build/go-unit-test.checked: $(ROOT_DIR)/build/go-unit-test.json $(ROOT_DIR)/build/stats.txt
-	pass=$$(grep -c -- '--- PASS:' $<); fail=$$(grep -c -- '--- FAIL:' $<); ran=$$(grep -c -- '=== RUN' $<); \
+	pass=$$(sed -n '/--- PASS:/p' $< | wc -l | tr -d ' '); fail=$$(sed -n '/--- FAIL:/p' $< | wc -l | tr -d ' '); ran=$$(sed -n '/=== RUN/p' $< | wc -l | tr -d ' '); \
 	echo "go test: $$pass passed, $$fail failed, $$ran run (min 10, stat $(GO_TESTS))"; \
 	[ "$$fail" -eq 0 ] && [ "$$pass" -ge 10 ] && [ "$$ran" -eq "$$(($$pass + $$fail))" ] && [ "$$ran" -eq "$(GO_TESTS)" ]
 
@@ -185,7 +187,7 @@ $(ROOT_DIR)/build/integration-test-report.txt: $(ROOT_DIR)/build/config.mk $(ROO
 	$(ROOT_DIR)/src/integration-test/test.sh > $@
 
 $(ROOT_DIR)/build/integration-test.checked: $(ROOT_DIR)/build/integration-test-report.txt
-	carried=$$(sed -n 's/^carried=//p' $<); ran_on=$$(sed -n 's/^ran_on=//p' $<); runs=$$(grep -c '^ran_on=' $<); \
+	carried=$$(sed -n 's/^carried=//p' $<); ran_on=$$(sed -n 's/^ran_on=//p' $<); runs=$$(sed -n '/^ran_on=/p' $< | wc -l | tr -d ' '); \
 	echo "integration-test: integrationtest/ci/run ran on $$ran_on, carried $$carried ($$runs runs, min 1)"; \
 	[ "$$ran_on" = "$$carried" ] && [ "$$runs" -ge 1 ]
 
