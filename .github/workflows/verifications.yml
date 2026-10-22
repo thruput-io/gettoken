@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: brew install make
-      - run: PATH="$(brew --prefix make)/libexec/gnubin:$PATH" make build
+      - run: gmake build
       - if: always()
         uses: ./.github/actions/upload-reports
         with:
