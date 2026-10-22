@@ -56,7 +56,7 @@ report_of() {
   [ ! -e "$home/secrets/host-privileged/integrationtest" ]
 }
 
-@test "the tool running on something else fails the run, and says what was put and what ran" {
+@test "the tool running on something else fails the run, says what was put and what ran, and still removes the packages and purges the store" {
   installed_as "$bin/integration-test-tool" <<'EOF'
 echo not-what-was-put
 EOF
@@ -64,13 +64,6 @@ EOF
   expected=$(report_of 'carried=[0-9a-f]{32}\nran_on=not-what-was-put')
   [[ "$output" =~ $expected ]]
   assert_equal "$(without_kcov_trace "$stderr")" "integration-test: integrationtest/ci/run ran on 'not-what-was-put', not on the '$(carried_in "$output")' that was put in the store"
-}
-
-@test "the packages are removed and the store purged even when the run fails" {
-  installed_as "$bin/integration-test-tool" <<'EOF'
-echo not-what-was-put
-EOF
-  run -1 --separate-stderr running
   [ "$(cat "$RECORD_LOG")" = "$(printf 'install integration-test-tool\nremove')" ]
   [ ! -e "$home/secrets/host-privileged/integrationtest" ]
 }
