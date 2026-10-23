@@ -34,7 +34,10 @@ is the only place allowed to span them.
 
 `make unit` runs the suite where you invoke it. `make package` builds every
 format named in `PACKAGE_FORMATS`, and `make test` installs what was built and
-uses it, so only that one reaches the paths a package puts things at. What each
+uses it, so only that one reaches the paths a package puts things at. What that
+run put in the store and what the tool ran on land in
+`build/integration-test-report.txt`, and the check reads them back from there:
+a run that stopped short leaves a short report, which fails. What each
 of them needs is declared per platform in `constants.env`, and `make setup`
 installs it: a Go toolchain, which builds the contract component, `bats` with
 `bats-support` and `bats-assert`, `shellcheck`, `semgrep`, `kcov`, `checkmake`,

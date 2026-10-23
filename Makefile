@@ -7,7 +7,7 @@ SHELLOPTS := -euo pipefail
 
 export PATH := $(ROOT_DIR)/build/bin:$(PATH_PREFIX)$(PATH)
 
-.PHONY: all clean test diagrams stats config setup unit build contract lint lint-semgrep lint-shellcheck lint-go lint-make lint-schemas lint-permissions no-branching check-readme bash-unit-test bash-coverage go-unit-test go-coverage package integration-test readme $(ROOT_DIR)/build/shellcheck.checked $(ROOT_DIR)/build/make.checked $(ROOT_DIR)/build/schemas.checked $(ROOT_DIR)/build/go-lint.checked $(ROOT_DIR)/build/semgrep.checked $(ROOT_DIR)/build/lint.checked $(ROOT_DIR)/build/no-branching.checked $(ROOT_DIR)/build/bash-unit-test.checked $(ROOT_DIR)/build/bash-coverage.checked $(ROOT_DIR)/build/go-unit-test.checked $(ROOT_DIR)/build/go-coverage.checked $(ROOT_DIR)/build/unit.txt
+.PHONY: all clean test diagrams stats config setup unit build contract lint lint-semgrep lint-shellcheck lint-go lint-make lint-schemas lint-permissions no-branching check-readme bash-unit-test bash-coverage go-unit-test go-coverage package integration-test readme $(ROOT_DIR)/build/shellcheck.checked $(ROOT_DIR)/build/make.checked $(ROOT_DIR)/build/schemas.checked $(ROOT_DIR)/build/go-lint.checked $(ROOT_DIR)/build/semgrep.checked $(ROOT_DIR)/build/lint.checked $(ROOT_DIR)/build/no-branching.checked $(ROOT_DIR)/build/bash-unit-test.checked $(ROOT_DIR)/build/bash-coverage.checked $(ROOT_DIR)/build/go-unit-test.checked $(ROOT_DIR)/build/go-coverage.checked $(ROOT_DIR)/build/integration-test.checked $(ROOT_DIR)/build/unit.txt
 
 all:              test
 build:            package
@@ -179,10 +179,15 @@ $(ROOT_DIR)/build/package.txt: $(ROOT_DIR)/build/unit.txt $(ROOT_DIR)/build/lint
 	$(ROOT_DIR)/scripts/package.sh $(ROOT_DIR)/build/dist > $@
 	cat $@
 
-$(ROOT_DIR)/build/integration-test.checked: $(ROOT_DIR)/build/config.mk $(ROOT_DIR)/build/package.txt
+$(ROOT_DIR)/build/integration-test-report.txt: $(ROOT_DIR)/build/config.mk $(ROOT_DIR)/build/package.txt
 	@mkdir -p $(@D)
 	eval "$$ADD_ARCHIVE"
 	$(ROOT_DIR)/src/integration-test/test.sh > $@
+
+$(ROOT_DIR)/build/integration-test.checked: $(ROOT_DIR)/build/integration-test-report.txt
+	carried=$$(sed -n 's/^carried=//p' $<); ran_on=$$(sed -n 's/^ran_on=//p' $<); runs=$$(grep -c '^ran_on=' $<); \
+	echo "integration-test: integrationtest/ci/run ran on $$ran_on, carried $$carried ($$runs runs, min 1)"; \
+	[ "$$ran_on" = "$$carried" ] && [ "$$runs" -ge 1 ]
 
 $(ROOT_DIR)/build/diagrams.txt: $(ROOT_DIR)/build/sources $(ROOT_DIR)/README.md $(ROOT_DIR)/scripts/mermaid.sh
 	@mkdir -p $(@D)
